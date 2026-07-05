@@ -9,6 +9,14 @@ const os = require('os');
 
 const allResortsForecastPath = path.join(__dirname, '../weather_dataFull_7.json')
 
+const getLiftElevation = (resortData, liftName) => {
+    return resortData?.elevations?.[liftName]?.elevation_m ?? 0;
+};
+
+const getLiftSnowSum = (resortData, sumName, liftName) => {
+    return resortData?.[sumName]?.[liftName] ?? 0;
+};
+
 
 // Controller function to get snowfall data from JSON
 exports.getSnowfallForResorts = async (req, res) => {
@@ -17,21 +25,25 @@ exports.getSnowfallForResorts = async (req, res) => {
         const weatherData = JSON.parse(fs.readFileSync(allResortsForecastPath, 'utf-8'));
         
         // Transform the data structure and extract top lift information
-        const snowfallData = Object.entries(weatherData).map(([resortName, resortData]) => {
-            // Log the data to see what we're getting
-            //console.log('Resort Data:', resortName, resortData.url);
-            
-            return {
+        const snowfallData = Object.entries(weatherData).reduce((resorts, [resortName, resortData]) => {
+            if (!resortData?.elevations?.['Top Lift']) {
+                console.warn(`Skipping resort with missing top lift data: ${resortName}`);
+                return resorts;
+            }
+
+            resorts.push({
                 resort: resortName,
                 country: resortData.country,
                 url: resortData.url || '', // Provide a default empty string if url is undefined
-                elevation: resortData.elevations['Top Lift'].elevation_m,
-                history14daySum: resortData.history14daySum['Top Lift'],
-                threeDaySnowSum: resortData['3daysSnowSum']['Top Lift'],
-                sevenDaySnowSum: resortData['7daysSnowSum']['Top Lift'],
-                twoWeeksSnowSum: resortData['14daysSnowSum']['Top Lift']
-            };
-        });
+                elevation: getLiftElevation(resortData, 'Top Lift'),
+                history14daySum: getLiftSnowSum(resortData, 'history14daySum', 'Top Lift'),
+                threeDaySnowSum: getLiftSnowSum(resortData, '3daysSnowSum', 'Top Lift'),
+                sevenDaySnowSum: getLiftSnowSum(resortData, '7daysSnowSum', 'Top Lift'),
+                twoWeeksSnowSum: getLiftSnowSum(resortData, '14daysSnowSum', 'Top Lift')
+            });
+
+            return resorts;
+        }, []);
 
         // Sort by 7-day snowfall and get top 10 resorts
         const sortedByUpcoming7Days = snowfallData
@@ -86,8 +98,8 @@ exports.getAllResortsForecast = async (req, res) => {
                 resortsByCountry[resortCountry].push({
                     resort: resortName,
                     url: resortInfo.url || '#', // Provide fallback URL if missing
-                    topLiftSevenDaySnowSum: resortInfo['7daysSnowSum']['Top Lift'] || 0,
-                    topLiftElevation: resortInfo.elevations['Top Lift'].elevation_m || 0
+                    topLiftSevenDaySnowSum: getLiftSnowSum(resortInfo, '7daysSnowSum', 'Top Lift'),
+                    topLiftElevation: getLiftElevation(resortInfo, 'Top Lift')
                 });
             }
         });
@@ -126,13 +138,13 @@ exports.getCombinedForecast = async (req, res) => {
 
             if (countries.includes(resortCountry)) {
                 // Extract necessary data and round snowfall to the nearest integer
-                const topLiftElevation = resortInfo.elevations['Top Lift']?.elevation_m || '-';
-                const midLiftElevation = resortInfo.elevations['Mid Lift']?.elevation_m || '-';
-                const bottomLiftElevation = resortInfo.elevations['Bottom Lift']?.elevation_m || '-';
+                const topLiftElevation = resortInfo.elevations?.['Top Lift']?.elevation_m || '-';
+                const midLiftElevation = resortInfo.elevations?.['Mid Lift']?.elevation_m || '-';
+                const bottomLiftElevation = resortInfo.elevations?.['Bottom Lift']?.elevation_m || '-';
 
-                const topLiftSnowfall = Math.round(resortInfo['7daysSnowSum']['Top Lift'] || 0);
-                const midLiftSnowfall = Math.round(resortInfo['7daysSnowSum']['Mid Lift'] || 0);
-                const bottomLiftSnowfall = Math.round(resortInfo['7daysSnowSum']['Bottom Lift'] || 0);
+                const topLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '7daysSnowSum', 'Top Lift'));
+                const midLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '7daysSnowSum', 'Mid Lift'));
+                const bottomLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '7daysSnowSum', 'Bottom Lift'));
 
                 combinedResorts.push({
                     resort: resortName,
@@ -178,13 +190,13 @@ exports.get14dayForecastCombined = async (req, res) => {
 
             if (countries.includes(resortCountry)) {
                 // Extract necessary data and round snowfall to the nearest integer
-                const topLiftElevation = resortInfo.elevations['Top Lift']?.elevation_m || '-';
-                const midLiftElevation = resortInfo.elevations['Mid Lift']?.elevation_m || '-';
-                const bottomLiftElevation = resortInfo.elevations['Bottom Lift']?.elevation_m || '-';
+                const topLiftElevation = resortInfo.elevations?.['Top Lift']?.elevation_m || '-';
+                const midLiftElevation = resortInfo.elevations?.['Mid Lift']?.elevation_m || '-';
+                const bottomLiftElevation = resortInfo.elevations?.['Bottom Lift']?.elevation_m || '-';
 
-                const topLiftSnowfall = Math.round(resortInfo['14daysSnowSum']['Top Lift'] || 0);
-                const midLiftSnowfall = Math.round(resortInfo['14daysSnowSum']['Mid Lift'] || 0);
-                const bottomLiftSnowfall = Math.round(resortInfo['14daysSnowSum']['Bottom Lift'] || 0);
+                const topLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '14daysSnowSum', 'Top Lift'));
+                const midLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '14daysSnowSum', 'Mid Lift'));
+                const bottomLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, '14daysSnowSum', 'Bottom Lift'));
 
                 combinedResorts.push({
                     resort: resortName,
@@ -231,13 +243,13 @@ exports.getPast14DaySnow = async (req, res) => {
                 //I am going to extract url in future here 
                 //url
                 //url
-                const topLiftElevation = resortInfo.elevations['Top Lift']?.elevation_m || '-';
-                const midLiftElevation = resortInfo.elevations['Mid Lift']?.elevation_m || '-';
-                const bottomLiftElevation = resortInfo.elevations['Bottom Lift']?.elevation_m || '-';
+                const topLiftElevation = resortInfo.elevations?.['Top Lift']?.elevation_m || '-';
+                const midLiftElevation = resortInfo.elevations?.['Mid Lift']?.elevation_m || '-';
+                const bottomLiftElevation = resortInfo.elevations?.['Bottom Lift']?.elevation_m || '-';
 
-                const topLiftSnowfall = Math.round(resortInfo['history14daySum']['Top Lift'] || 0);
-                const midLiftSnowfall = Math.round(resortInfo['history14daySum']['Mid Lift'] || 0);
-                const bottomLiftSnowfall = Math.round(resortInfo['history14daySum']['Bottom Lift'] || 0);
+                const topLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, 'history14daySum', 'Top Lift'));
+                const midLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, 'history14daySum', 'Mid Lift'));
+                const bottomLiftSnowfall = Math.round(getLiftSnowSum(resortInfo, 'history14daySum', 'Bottom Lift'));
 
                 combinedResorts.push({
                     resort: resortName,

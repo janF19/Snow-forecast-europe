@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const axios = require('axios');
 const resortRoutes = require('./routes/resorts');
 const cron = require('node-cron');
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 const fs = require('fs');
 
 // Initialize the app and configure environment variables
@@ -35,6 +35,8 @@ app.listen(PORT, '0.0.0.0', () => {
 const scriptPath = path.join(__dirname, 'getForecastFull_all_resorts.py');
 const dataDir = process.env.DATA_DIR || __dirname;
 const jsonPath = path.join(__dirname, 'weather_dataFull_7.json');
+const venvPythonPath = path.join(__dirname, 'venv', 'bin', 'python3');
+const pythonPath = process.env.PYTHON_PATH || (fs.existsSync(venvPythonPath) ? venvPythonPath : 'python3');
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -45,17 +47,14 @@ function fetchWeatherData() {
     console.log('Script path:', scriptPath);
     console.log('JSON output path:', jsonPath);
 
-    // Use the Python from virtual environment
-    const pythonPath = path.join(__dirname, 'venv', 'bin', 'python3');
-    
-    // Check if virtual environment exists
-    if (!fs.existsSync(pythonPath)) {
-        console.error('Virtual environment Python not found at:', pythonPath);
-        return;
-    }
+    console.log('Python executable:', pythonPath);
 
     // Log Python packages
-    exec(`${pythonPath} -m pip list`, (error, stdout, stderr) => {
+    execFile(pythonPath, ['-m', 'pip', 'list'], (error, stdout, stderr) => {
+        if (error) {
+            console.error('Unable to list Python packages:', error.message);
+            return;
+        }
         console.log('Installed Python packages:', stdout);
     });
 
@@ -65,12 +64,11 @@ function fetchWeatherData() {
         cwd: __dirname,
         env: {
             ...process.env,
-            PYTHONPATH: path.join(__dirname, 'venv', 'lib', 'python3.11', 'site-packages'),
             PYTHONUNBUFFERED: "1"
         }
     };
 
-    exec(`${pythonPath} ${scriptPath}`, options, (error, stdout, stderr) => {
+    execFile(pythonPath, [scriptPath], options, (error, stdout, stderr) => {
         if (error) {
             console.error('Execution error:', error);
             console.error('Error code:', error.code);

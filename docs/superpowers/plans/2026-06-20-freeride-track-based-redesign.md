@@ -1,7 +1,7 @@
 # Freeride Terrain — Track-Based Redesign
 
 **Date:** 2026-06-20
-**Status:** Approved (brainstorming complete, ready for implementation plan)
+**Status:** Ready for implementation
 **Supersedes:** the DEM-primary production build merged to `main` (2026-06-18). The DEM
 computation is retained, demoted to a labeled fallback.
 

@@ -2,6 +2,9 @@
 # Node modules
 node_modules/
 
+# Isolated implementation worktrees
+.worktrees/
+
 # Build folders
 dist/
 build/

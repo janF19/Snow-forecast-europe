@@ -35,6 +35,24 @@
             </div>
         </header>
 
+        <% if (typeof topPowder !== 'undefined' && topPowder && topPowder.length) { %>
+        <section class="pqi-home-section">
+            <div class="section-one-header">
+                <h2>Experimental Powder Conditions Index</h2>
+                <div class="button-group"><a href="/powder-quality" class="btn">See experimental conditions</a></div>
+            </div>
+            <div class="pqi-home-grid">
+                <% topPowder.forEach(function(resort) { %>
+                    <a href="/powder-quality" class="pqi-card pqi-<%= resort.band %>-border">
+                        <span class="pqi-badge pqi-<%= resort.band %>"><%= resort.peakPQI %></span>
+                        <span class="pqi-card-name"><%= resort.resort %></span>
+                        <span class="pqi-card-meta"><%= resort.freshSnow %> cm &middot; <%= resort.peakDayLabel %></span>
+                    </a>
+                <% }); %>
+            </div>
+        </section>
+        <% } %>
+
         <section class="forecast-section">
             <div class="section-one-header">
                 <h2>Top 10 Resorts for Upcoming Powder</h2>
@@ -149,7 +167,7 @@
         <section class="article-section">
     <h2>Monthly Powder Paradise: Best times and resorts to chase fresh snow</h2>
     
-    <p>Our advanced machine learning analysis has revealed fascinating patterns in powder probability across European ski destinations. A "powder day" in our analysis is defined as any day with 10cm or more of fresh snow - the threshold that turns a good ski day into an unforgettable one. In table below you can see resorts with highest probability of powder day in each month. Overall La Clusaz-Manigod has the highest powder day probability</p>
+    <p>These monthly tables summarize historical powder-day frequencies from the underlying weather record. They are not a machine-learning forecast and do not guarantee future conditions.</p>
     
     <div class="chart-container">
       <table class="probability-table">

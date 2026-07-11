@@ -39,12 +39,17 @@ test('all public GET routes render successfully with deterministic fixtures', as
     if (pathname === '/') {
       assert.match(body, /European Powder Forecast/);
       assert.match(body, /freeride-home-section/);
+      assert.match(body, /Experimental Powder Conditions Index/);
       assert.doesNotMatch(body, /Missing Top/);
     }
-    if (pathname === '/powder-quality') assert.match(body, /Experimental Powder Conditions Index/);
+    if (pathname === '/powder-quality') {
+      assert.match(body, /Experimental Powder Conditions Index/);
+      assert.match(body, /best powder day in the next 7 days/);
+    }
     if (pathname === '/freeride') {
       assert.match(body, /Lift-served freeride terrain/);
       assert.match(body, /No terrain data/);
     }
   }
+  assert.doesNotMatch(require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8'), /advanced machine learning/);
 });

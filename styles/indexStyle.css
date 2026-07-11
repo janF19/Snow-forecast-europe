@@ -1319,3 +1319,32 @@ nav ul li a:hover {
         margin-top: 1rem;
     }
 }
+
+/* Experimental Powder Conditions Index */
+.pqi-badge { display: inline-block; min-width: 2.5rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 700; text-align: center; color: #fff; }
+.pqi-epic { background: #1e6fff; }
+.pqi-great { background: #3aa0ff; }
+.pqi-good { background: #43c4c4; }
+.pqi-ok { background: #9aa7b4; }
+.pqi-poor { background: #c4b59a; }
+.pqi-none { background: #d9dee3; color: #6b7682; }
+.pqi-row { cursor: pointer; }
+.pqi-row:hover { background: rgba(30, 111, 255, 0.06); }
+.pqi-row-open { background: rgba(30, 111, 255, 0.10); }
+.pqi-timeline { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
+.pqi-timeline th, .pqi-timeline td { padding: 0.35rem 0.5rem; text-align: center; }
+.pqi-timeline th:first-child, .pqi-timeline td:first-child { text-align: left; font-weight: 600; }
+.pqi-cell { border-radius: 4px; color: #fff; }
+.pqi-cell.pqi-none { color: #6b7682; }
+.pqi-empty { padding: 1.5rem 0; color: #6b7682; }
+.pqi-home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.pqi-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.75rem; border: 1px solid #e3e8ee; border-left-width: 4px; border-radius: 8px; text-decoration: none; color: inherit; background: #fff; }
+.pqi-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.pqi-card-name { font-weight: 600; }
+.pqi-card-meta { font-size: 0.85rem; color: #6b7682; }
+.pqi-epic-border { border-left-color: #1e6fff; }
+.pqi-great-border { border-left-color: #3aa0ff; }
+.pqi-good-border { border-left-color: #43c4c4; }
+.pqi-ok-border { border-left-color: #9aa7b4; }
+.pqi-poor-border { border-left-color: #c4b59a; }
+.pqi-none-border { border-left-color: #d9dee3; }

@@ -70,6 +70,23 @@ exports.getSnowfallForResorts = async (req, res) => {
             .sort((a, b) => b.history14daySum - a.history14daySum)
             .slice(0, 10);
 
+        const now = new Date();
+        const topPowder = Object.entries(weatherData)
+            .map(([resortName, resortData]) => {
+                const pqi = buildResortPQI(resortData);
+                return {
+                    resort: resortName,
+                    country: resortData.country,
+                    peakPQI: Math.round(pqi.peakPQI),
+                    band: pqiBand(pqi.peakPQI),
+                    peakDayLabel: forecastDayLabel(pqi.peakOffset, now),
+                    freshSnow: Math.round(pqi.freshSnowOnPeakDay),
+                };
+            })
+            .filter((resort) => resort.peakPQI > 0)
+            .sort((a, b) => b.peakPQI - a.peakPQI)
+            .slice(0, 5);
+
         // Log the sorted data to verify URLs are present
         //console.log('Sorted 7 Days Data:', sortedByUpcoming7Days);
         //console.log('Sorted 14 Days Data:', sortedByLast14Days);
@@ -79,7 +96,8 @@ exports.getSnowfallForResorts = async (req, res) => {
         res.render('index', {
             sortedByUpcoming7Days,
             sortedByLast14Days,
-            freerideTop5: rankedTerrain().ranked.filter(item => item.source === 'measured').slice(0, 5)
+            freerideTop5: rankedTerrain().ranked.filter(item => item.source === 'measured').slice(0, 5),
+            topPowder
         });
     } catch (error) {
         console.error('Error reading weather data:', error);

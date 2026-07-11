@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const terrainPath = path.join(__dirname, '..', 'freeride_terrain.json');
+const terrainPath = process.env.FREERIDE_TERRAIN_PATH ||
+    path.join(__dirname, '..', 'freeride_terrain.json');
 function loadFreerideTerrain(filePath = terrainPath) {
     if (!fs.existsSync(filePath)) return { _metadata: {}, resorts: {} };
     const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));

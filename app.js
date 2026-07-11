@@ -26,12 +26,6 @@ app.use('/styles', express.static(path.join(__dirname, 'styles')));
 // Use resort routes
 app.use('/', resortRoutes);
 
-// Start the server
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
 const scriptPath = path.join(__dirname, 'getForecastFull_all_resorts.py');
 const dataDir = process.env.DATA_DIR || __dirname;
 const jsonPath = path.join(__dirname, 'weather_dataFull_7.json');
@@ -95,6 +89,13 @@ function fetchWeatherData() {
     });
 }
 
-// Initial fetch
-fetchWeatherData();
+if (require.main === module) {
+    const PORT = process.env.PORT || 3002;
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+    fetchWeatherData();
+}
+
+module.exports = app;
 

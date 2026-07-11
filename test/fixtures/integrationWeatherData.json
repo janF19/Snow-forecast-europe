@@ -1,0 +1,50 @@
+{
+  "Test Powder": {
+    "country": "Austria",
+    "url": "https://example.test/test-powder",
+    "elevations": {
+      "Top Lift": {
+        "elevation_m": 2200,
+        "snowfall_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0],
+        "temperature_2m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-10,0,0,0,0,0,0,0,0,0,0,0,0],
+        "wind_speed_10m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0],
+        "rain_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+      },
+      "Mid Lift": {
+        "elevation_m": 1700,
+        "snowfall_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0],
+        "temperature_2m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-8,0,0,0,0,0,0,0,0,0,0,0,0],
+        "wind_speed_10m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0],
+        "rain_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+      },
+      "Bottom Lift": {
+        "elevation_m": 1200,
+        "snowfall_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0],
+        "temperature_2m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-2,0,0,0,0,0,0,0,0,0,0,0,0],
+        "wind_speed_10m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0],
+        "rain_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+      }
+    },
+    "history14daySum": {"Top Lift": 12, "Mid Lift": 8, "Bottom Lift": 4},
+    "3daysSnowSum": {"Top Lift": 30, "Mid Lift": 15, "Bottom Lift": 5},
+    "7daysSnowSum": {"Top Lift": 30, "Mid Lift": 15, "Bottom Lift": 5},
+    "14daysSnowSum": {"Top Lift": 30, "Mid Lift": 15, "Bottom Lift": 5}
+  },
+  "Missing Top": {
+    "country": "Austria",
+    "url": "https://example.test/missing-top",
+    "elevations": {
+      "Mid Lift": {
+        "elevation_m": 1500,
+        "snowfall_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "temperature_2m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "wind_speed_10m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "rain_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+      }
+    },
+    "history14daySum": {"Mid Lift": 0},
+    "3daysSnowSum": {"Mid Lift": 0},
+    "7daysSnowSum": {"Mid Lift": 0},
+    "14daysSnowSum": {"Mid Lift": 0}
+  }
+}

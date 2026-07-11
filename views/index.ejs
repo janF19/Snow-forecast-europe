@@ -139,7 +139,14 @@
         </section>
 
         
-<section class="article-section">
+        <section class="freeride-home-section">
+            <div class="section-one-header"><h2>Top mapped freeride terrain</h2><a href="/freeride" class="btn">View full leaderboard</a></div>
+            <div class="table-container"><table class="freeride-table"><thead><tr><th>Resort</th><th>Score</th><th>Mapped terrain</th></tr></thead><tbody>
+                <% (freerideTop5 || []).forEach(function(item) { %><tr><td><%= item.resort %></td><td><%= item.score.toFixed(1) %></td><td><%= Math.round(item.freeride_vertical_m).toLocaleString() %> m · <%= item.freeride_length_km.toFixed(1) %> km · <%= item.freeride_run_count %> routes</td></tr><% }); %>
+            </tbody></table></div>
+        </section>
+
+        <section class="article-section">
     <h2>Monthly Powder Paradise: Best times and resorts to chase fresh snow</h2>
     
     <p>Our advanced machine learning analysis has revealed fascinating patterns in powder probability across European ski destinations. A "powder day" in our analysis is defined as any day with 10cm or more of fresh snow - the threshold that turns a good ski day into an unforgettable one. In table below you can see resorts with highest probability of powder day in each month. Overall La Clusaz-Manigod has the highest powder day probability</p>

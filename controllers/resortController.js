@@ -4,6 +4,7 @@ const path = require('path');
 const { stdout, stderr } = require('process');
 const { exec } = require('child_process');
 const os = require('os');
+const { rankedTerrain } = require('../utils/freerideScore');
 
 
 
@@ -15,6 +16,15 @@ const getLiftElevation = (resortData, liftName) => {
 
 const getLiftSnowSum = (resortData, sumName, liftName) => {
     return resortData?.[sumName]?.[liftName] ?? 0;
+};
+
+exports.getFreerideTerrain = (req, res) => {
+    try {
+        res.render('freerideLeaderboard', rankedTerrain());
+    } catch (error) {
+        console.error('Error reading freeride terrain:', error);
+        res.status(500).render('error', { error: 'Failed to load freeride terrain' });
+    }
 };
 
 
@@ -65,7 +75,8 @@ exports.getSnowfallForResorts = async (req, res) => {
 
         res.render('index', {
             sortedByUpcoming7Days,
-            sortedByLast14Days
+            sortedByLast14Days,
+            freerideTop5: rankedTerrain().ranked.filter(item => item.source === 'measured').slice(0, 5)
         });
     } catch (error) {
         console.error('Error reading weather data:', error);

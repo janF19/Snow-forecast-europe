@@ -967,12 +967,19 @@ tr:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
-  .month-title {
+.month-title {
     font-size: 1.2em;
     font-weight: 600;
     margin-bottom: 15px;
     color: #1e40af;
   }
+
+.freeride-intro { max-width: 760px; margin: 0 auto 2rem; text-align: center; }
+.freeride-table td:nth-child(1), .freeride-table th:nth-child(1), .freeride-table td:nth-child(4), .freeride-table th:nth-child(4) { text-align: center; }
+.confidence-measured { color: #166534; font-weight: 600; }
+.confidence-estimated { color: #92400e; font-weight: 600; }
+.no-data-section { margin-top: 3rem; }
+.no-data-section ul { columns: 3; margin-top: 1rem; }
 
 
 

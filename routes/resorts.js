@@ -1,5 +1,5 @@
 const express = require('express');
-const { getSnowfallForResorts, getPast14DaySnow, getShortForecast, getHistoryData, calculateHistorySnow, getAllResortsForecast, getCombinedForecast, getAllHistoryData, calculateAllHistory, get14dayForecastCombined} = require('../controllers/resortController');
+const { getSnowfallForResorts, getPast14DaySnow, getShortForecast, getHistoryData, calculateHistorySnow, getAllResortsForecast, getCombinedForecast, getAllHistoryData, calculateAllHistory, get14dayForecastCombined, getFreerideTerrain} = require('../controllers/resortController');
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.get('/allResortsByCountry', getAllResortsForecast);
 //14 day forecast for all countries combined
 router.get('/14dayForecastCombined', get14dayForecastCombined);
 router.get('/past14daysnow', getPast14DaySnow);
+router.get('/freeride', getFreerideTerrain);
 
 
 router.get('/allHistory', getAllHistoryData);

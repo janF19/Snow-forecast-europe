@@ -1,6 +1,6 @@
 import unittest
 
-from freeride.match import match_resorts
+from freeride.match import load_curated_lists, match_resorts
 
 SQUARE = {"type": "Polygon", "coordinates": [[[0, 0], [0, 2], [2, 2], [2, 0], [0, 0]]]}
 ELSEWHERE = {"type": "Polygon", "coordinates": [[[10, 10], [10, 12], [12, 12], [12, 10], [10, 10]]]}
@@ -39,6 +39,13 @@ class MatchResortsTests(unittest.TestCase):
         matches = match_resorts(resorts, self.areas, ambiguous=ambiguous)
         self.assertEqual(matches["Dachstein West"]["match_method"], "ambiguous")
         self.assertNotIn("ski_area_id", matches["Dachstein West"])
+
+    def test_mitterdorf_is_denied_and_stale_alto_sangro_override_is_removed(self):
+        overrides, ambiguous = load_curated_lists()
+
+        self.assertNotIn("Mitterdorf-Almberg", overrides)
+        self.assertIn("284.8 km", ambiguous["Mitterdorf-Almberg"]["reason"])
+        self.assertNotIn("Alto Sangro-Roccaraso-\u200bRivisondoli", overrides)
 
 
 if __name__ == "__main__":

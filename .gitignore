@@ -29,4 +29,3 @@ __pycache__/
 # Only the manifest (freeride/data/openskimap/manifest.json) is tracked.
 freeride/data/openskimap/*.geojson
 freeride/data/dem/
-freeride_terrain.json

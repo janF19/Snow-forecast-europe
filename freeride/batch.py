@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import RESORTS_JSON, RUNS_URL, TERRAIN_JSON, OSM_DIR
-from .match import _download, load_curated_lists, load_matches
+from .match import _download, load_curated_lists, load_matches, write_manifest
 from .runs import classify_and_measure
 from .score_tracks import normalize_score, percentile, rollup_runs
 
@@ -36,14 +36,29 @@ def _linked_area_ids(feature):
     return result
 
 
-def _load_features(path):
+def _iter_features(path):
     path = Path(path)
     if path.stat().st_size > LARGE_FILE_THRESHOLD_BYTES:
         import ijson
         with path.open("rb") as handle:
-            return list(ijson.items(handle, "features.item"))
+            yield from ijson.items(handle, "features.item")
+        return
     with path.open(encoding="utf-8") as handle:
-        return json.load(handle).get("features", [])
+        yield from json.load(handle).get("features", [])
+
+
+def _load_features(path):
+    return list(_iter_features(path))
+
+
+def index_runs_for_area_ids(features, area_ids):
+    """Build run buckets while retaining only features for matched ski areas."""
+    area_ids = {str(area_id) for area_id in area_ids if area_id is not None}
+    runs_by_area = {}
+    for feature in features:
+        for area_id in set(_linked_area_ids(feature)).intersection(area_ids):
+            runs_by_area.setdefault(area_id, []).append(feature)
+    return runs_by_area
 
 
 def _run_matches_area(feature, match):
@@ -100,12 +115,16 @@ def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run
             ambiguous = default_ambiguous if ambiguous is None else ambiguous
         area_features = _load_features(areas_path)
         matches = match_resorts(resorts, area_features, overrides=overrides, ambiguous=ambiguous)
+    using_default_runs_path = runs_path is None
     runs_path = runs_path or _download(RUNS_URL, OSM_DIR / "runs.geojson")
-    run_features = _load_features(runs_path)
-    runs_by_area = {}
-    for feature in run_features:
-        for area_id in _linked_area_ids(feature):
-            runs_by_area.setdefault(area_id, []).append(feature)
+    if using_default_runs_path:
+        write_manifest()
+    matched_area_ids = {
+        match.get("ski_area_id")
+        for match in matches.values()
+        if match and match.get("match_method") != "ambiguous"
+    }
+    runs_by_area = index_runs_for_area_ids(_iter_features(runs_path), matched_area_ids)
 
     timestamp = datetime.now(timezone.utc).isoformat()
     preliminary = {}

@@ -1,0 +1,15 @@
+{
+  "retrieved_at": "2026-07-12T21:36:38.749248+00:00",
+  "files": [
+    {
+      "filename": "runs.geojson",
+      "size_bytes": 842223667,
+      "sha256": "e8d690acf5ae8c3c80162b17462a1033b42c9432acddbc13e1dc5ffc370575cd"
+    },
+    {
+      "filename": "ski_areas.geojson",
+      "size_bytes": 21672875,
+      "sha256": "f4af7de342225ad25b7098ee9659bc9e19de429d4b131bf438fb026cfcb3cc6c"
+    }
+  ]
+}

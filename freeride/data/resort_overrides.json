@@ -5,12 +5,6 @@
     "reviewer": "codex",
     "reviewed_at": "2026-07-12"
   },
-  "Alto Sangro-Roccaraso-​Rivisondoli": {
-    "ski_area_id": "4449c6d2075abebe5121d58af03f2492ea81035f",
-    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
-    "reviewer": "codex",
-    "reviewed_at": "2026-07-12"
-  },
   "Avoriaz (Les Portes du Soleil)": {
     "ski_area_id": "8fac9ee8808596fcea9b53902cf68bba6e8cd835",
     "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
@@ -211,12 +205,6 @@
   },
   "Méribel (Les 3 Vallées)": {
     "ski_area_id": "68b126bc3175516c9263aed7635d14e37ff360dc",
-    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
-    "reviewer": "codex",
-    "reviewed_at": "2026-07-12"
-  },
-  "Mitterdorf-Almberg": {
-    "ski_area_id": "f1293c4fd52daf01f50914ff7308f3a43f829e74",
     "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
     "reviewer": "codex",
     "reviewed_at": "2026-07-12"

@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from freeride.batch import run_batch
+from freeride.batch import index_runs_for_area_ids, run_batch
 from freeride.validation import validate_payload
 
 SQUARE = {"type": "Polygon", "coordinates": [[[0, 0], [0, 2], [2, 2], [2, 0], [0, 0]]]}
@@ -42,6 +42,16 @@ class RunBatchTests(unittest.TestCase):
         runs_path = self._write("runs.json", {"features": runs})
         return run_batch(areas_path=areas_path, runs_path=runs_path, resorts_path=resorts_path,
                           output_path=self.tmp_path / "out.json", dry_run=True, **kwargs)
+
+    def test_run_index_keeps_only_runs_linked_to_matched_areas(self):
+        matching_run = _run("area-1", "freeride", "classic", [2000, 1700], 25)
+        unrelated_run = _run("area-2", "freeride", "classic", [2000, 1700], 25)
+
+        runs_by_area = index_runs_for_area_ids(
+            iter([matching_run, unrelated_run]), {"area-1"}
+        )
+
+        self.assertEqual(runs_by_area, {"area-1": [matching_run]})
 
     def test_contains_match_with_mapped_runs_is_measured(self):
         resorts = [{"resort": "Measured Resort", "longitude": 1.0, "latitude": 1.0}]

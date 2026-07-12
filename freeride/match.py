@@ -85,12 +85,15 @@ def match_resorts(resorts, area_features, overrides=None, ambiguous=None):
     return output
 
 
-def load_matches():
-    area_path = _download(SKI_AREAS_URL, OSM_DIR / "ski_areas.geojson")
-    with area_path.open(encoding="utf-8") as handle:
-        areas = json.load(handle).get("features", [])
-    with RESORTS_JSON.open(encoding="utf-8") as handle:
-        resorts = json.load(handle)
+def load_curated_lists():
+    """Load the committed overrides/ambiguous files from freeride/data/.
+
+    Callers that pass explicit dicts (e.g. tests) bypass this; anything
+    that doesn't must still see the curated corrections, or matching
+    silently reverts to raw contains-only behavior -- which is exactly
+    the wrong-umbrella-area bug (e.g. Dachstein West -> Ski amade) the
+    overrides and ambiguous list exist to prevent.
+    """
     overrides = {}
     if OVERRIDES_JSON.exists():
         with OVERRIDES_JSON.open(encoding="utf-8") as handle:
@@ -99,4 +102,14 @@ def load_matches():
     if AMBIGUOUS_JSON.exists():
         with AMBIGUOUS_JSON.open(encoding="utf-8") as handle:
             ambiguous = json.load(handle)
+    return overrides, ambiguous
+
+
+def load_matches():
+    area_path = _download(SKI_AREAS_URL, OSM_DIR / "ski_areas.geojson")
+    with area_path.open(encoding="utf-8") as handle:
+        areas = json.load(handle).get("features", [])
+    with RESORTS_JSON.open(encoding="utf-8") as handle:
+        resorts = json.load(handle)
+    overrides, ambiguous = load_curated_lists()
     return match_resorts(resorts, areas, overrides, ambiguous)

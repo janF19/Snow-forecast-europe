@@ -26,6 +26,20 @@ class TrackClassificationTests(unittest.TestCase):
         self.assertEqual(metrics["vertical_m"], 0.0)
         self.assertAlmostEqual(metrics["length_m"], 1111.95, delta=2)
 
+    def test_geometry_length_tolerates_elevation_as_third_coordinate(self):
+        # Real OpenSkiMap coordinates are [lon, lat, elevation]; this crashed
+        # in production ("too many values to unpack") before the fix.
+        run = {"geometry": {"type": "LineString", "coordinates": [[0, 0, 1800], [0, 0.01, 1750]]}}
+        metrics = extract_run_metrics(run)
+        self.assertAlmostEqual(metrics["length_m"], 1111.95, delta=2)
+
+    def test_non_line_geometry_is_unmeasured_not_a_crash(self):
+        # Some OpenSkiMap run features carry Polygon geometry; this crashed
+        # in production ("must be real number, not list") before the fix.
+        run = {"geometry": {"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 1], [0, 0]]]}}
+        metrics = extract_run_metrics(run)
+        self.assertEqual(metrics, {"vertical_m": 0.0, "length_m": 0.0})
+
 
 class TrackScoringTests(unittest.TestCase):
     def test_rollup_applies_tier_weights(self):

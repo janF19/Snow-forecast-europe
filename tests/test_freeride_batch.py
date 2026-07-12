@@ -88,6 +88,18 @@ class RunBatchTests(unittest.TestCase):
         })
         validate_payload(payload)
 
+    def test_areas_path_run_still_loads_committed_ambiguous_list_by_default(self):
+        # Regression: passing --areas/--runs (a pinned-manifest style run) must not
+        # silently skip freeride/data/ambiguous_resorts.json just because the caller
+        # didn't pass ambiguous= explicitly. This is the actual committed denylist,
+        # not a synthetic one, and it must be honored by default.
+        resorts = [{"resort": "Dachstein West", "longitude": 1.0, "latitude": 1.0}]
+        areas = [_area("area-1", "Area One", SQUARE)]
+        runs = [_run("area-1", "freeride", "classic", [2000, 1700], 25)]
+        payload = self._run_batch(resorts, areas, runs)
+        self.assertEqual(payload["Dachstein West"]["source"], "unavailable")
+        self.assertEqual(payload["Dachstein West"]["reason"], "ambiguous")
+
     def test_no_dem_import_anywhere_in_batch_module(self):
         import freeride.batch as batch_module
         source = Path(batch_module.__file__).read_text(encoding="utf-8")

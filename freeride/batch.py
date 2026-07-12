@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import RESORTS_JSON, RUNS_URL, TERRAIN_JSON, OSM_DIR
-from .match import _download, load_matches
+from .match import _download, load_curated_lists, load_matches
 from .runs import classify_and_measure
 from .score_tracks import normalize_score, percentile, rollup_runs
 
@@ -94,10 +94,18 @@ def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run
         matches = load_matches()
     else:
         from .match import match_resorts
+        if overrides is None or ambiguous is None:
+            default_overrides, default_ambiguous = load_curated_lists()
+            overrides = default_overrides if overrides is None else overrides
+            ambiguous = default_ambiguous if ambiguous is None else ambiguous
         area_features = _load_features(areas_path)
         matches = match_resorts(resorts, area_features, overrides=overrides, ambiguous=ambiguous)
     runs_path = runs_path or _download(RUNS_URL, OSM_DIR / "runs.geojson")
     run_features = _load_features(runs_path)
+    runs_by_area = {}
+    for feature in run_features:
+        for area_id in _linked_area_ids(feature):
+            runs_by_area.setdefault(area_id, []).append(feature)
 
     timestamp = datetime.now(timezone.utc).isoformat()
     preliminary = {}
@@ -111,7 +119,8 @@ def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run
         if match.get("match_method") == "ambiguous":
             preliminary[name] = _unavailable("ambiguous")
             continue
-        runs = [result for feature in run_features if _run_matches_area(feature, match)
+        candidate_features = runs_by_area.get(str(match.get("ski_area_id")), [])
+        runs = [result for feature in candidate_features if _run_matches_area(feature, match)
                 if (result := classify_and_measure(feature))]
         if not runs:
             preliminary[name] = _unavailable("no_mapped_routes", match.get("ski_area_name"), match.get("match_method"))

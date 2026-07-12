@@ -23,7 +23,9 @@ def classify_tier(difficulty, grooming):
 
 
 def _haversine_m(a, b):
-    lon1, lat1 = a; lon2, lat2 = b
+    # Coordinates may carry a third (elevation) value; only lon/lat matter here.
+    lon1, lat1 = a[0], a[1]
+    lon2, lat2 = b[0], b[1]
     radius = 6371008.8
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1); dlambda = math.radians(lon2 - lon1)
@@ -34,8 +36,18 @@ def _haversine_m(a, b):
 def _geometry_length_m(geometry):
     if not geometry:
         return 0.0
+    geometry_type = geometry.get("type")
     coordinates = geometry.get("coordinates", [])
-    lines = coordinates if geometry.get("type") == "MultiLineString" else [coordinates]
+    if geometry_type == "LineString":
+        lines = [coordinates]
+    elif geometry_type == "MultiLineString":
+        lines = coordinates
+    else:
+        # Some OpenSkiMap run features carry Polygon/Point/other geometry
+        # types; there is no well-defined "run length" for those, so treat
+        # them as unmeasured rather than misreading nested ring coordinates
+        # as a line (which previously crashed on non-numeric unpacking).
+        return 0.0
     return sum(_haversine_m(a, b) for line in lines for a, b in zip(line, line[1:]))
 
 

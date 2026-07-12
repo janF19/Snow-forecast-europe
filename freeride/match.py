@@ -8,7 +8,10 @@ There is intentionally no nearest-polygon fallback: that mechanism produced
 the wrong-area matches that blocked the prior release. Names listed in
 ambiguous_resorts.json are always excluded regardless of match.
 """
+import argparse
+import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 import requests
 
@@ -26,6 +29,39 @@ def _download(url, destination):
                 if chunk:
                     handle.write(chunk)
     return destination
+
+
+def _sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_manifest(osm_dir=OSM_DIR):
+    """Record size/hash of the fetched OpenSkiMap snapshot files.
+
+    The .geojson snapshots are gitignored (too large to commit); this
+    manifest is the small, committable stand-in that lets reviewers see
+    what was fetched without shipping the raw data.
+    """
+    osm_dir = Path(osm_dir)
+    retrieved_at = datetime.now(timezone.utc).isoformat()
+    files = []
+    for path in sorted(osm_dir.glob("*.geojson")):
+        files.append({
+            "filename": path.name,
+            "size_bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+        })
+    manifest = {"retrieved_at": retrieved_at, "files": files}
+    manifest_path = osm_dir / "manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    with manifest_path.open("w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+    return manifest
 
 
 def _contains(geometry, point):
@@ -107,9 +143,23 @@ def load_curated_lists():
 
 def load_matches():
     area_path = _download(SKI_AREAS_URL, OSM_DIR / "ski_areas.geojson")
+    write_manifest()
     with area_path.open(encoding="utf-8") as handle:
         areas = json.load(handle).get("features", [])
     with RESORTS_JSON.open(encoding="utf-8") as handle:
         resorts = json.load(handle)
     overrides, ambiguous = load_curated_lists()
     return match_resorts(resorts, areas, overrides, ambiguous)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", choices=["manifest"])
+    args = parser.parse_args()
+    if args.command == "manifest":
+        manifest = write_manifest()
+        print(json.dumps(manifest, indent=2))
+
+
+if __name__ == "__main__":
+    main()

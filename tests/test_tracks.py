@@ -2,7 +2,6 @@ import unittest
 
 from freeride.runs import classify_tier, extract_run_metrics
 from freeride.score_tracks import normalize_score, rollup_runs
-from freeride.batch import classify_source
 
 
 class TrackClassificationTests(unittest.TestCase):
@@ -41,11 +40,6 @@ class TrackScoringTests(unittest.TestCase):
 
     def test_normalization_clamps_each_component(self):
         self.assertEqual(normalize_score(10000, 10000, 5000, 5000), 100.0)
-
-    def test_source_states_are_explicit(self):
-        self.assertEqual(classify_source(True, True), "measured")
-        self.assertEqual(classify_source(False, True), "estimated")
-        self.assertEqual(classify_source(False, False), "none")
 
 
 if __name__ == "__main__":

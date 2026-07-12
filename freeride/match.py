@@ -1,10 +1,18 @@
-"""Coordinate-based OpenSkiMap ski-area matching."""
+"""High-confidence OpenSkiMap ski-area matching.
+
+Only two ways a resort becomes eligible for ranking:
+- "contains": the resort coordinate falls inside an OpenSkiMap ski-area polygon.
+- "override": the resort name has a curated entry in resort_overrides.json.
+
+There is intentionally no nearest-polygon fallback: that mechanism produced
+the wrong-area matches that blocked the prior release. Names listed in
+ambiguous_resorts.json are always excluded regardless of match.
+"""
 import json
-import math
 from pathlib import Path
 import requests
 
-from .config import OSM_DIR, RESORTS_JSON, SKI_AREAS_URL, OVERRIDES_JSON
+from .config import AMBIGUOUS_JSON, OSM_DIR, RESORTS_JSON, SKI_AREAS_URL, OVERRIDES_JSON
 
 
 def _download(url, destination):
@@ -18,26 +26,6 @@ def _download(url, destination):
                 if chunk:
                     handle.write(chunk)
     return destination
-
-
-def _distance_m(a, b):
-    lon1, lat1 = a; lon2, lat2 = b
-    x = math.radians(lon2 - lon1) * math.cos(math.radians((lat1 + lat2) / 2))
-    y = math.radians(lat2 - lat1)
-    return 6371008.8 * math.sqrt(x * x + y * y)
-
-
-def _area_center(geometry):
-    coords = geometry.get("coordinates", []) if geometry else []
-    points = []
-    def collect(value):
-        if value and isinstance(value[0], (int, float)):
-            points.append(value[:2])
-        else:
-            for child in value:
-                collect(child)
-    collect(coords)
-    return (sum(p[0] for p in points) / len(points), sum(p[1] for p in points) / len(points)) if points else None
 
 
 def _contains(geometry, point):
@@ -62,30 +50,37 @@ def _contains(geometry, point):
         return False
 
 
-def match_resorts(resorts, area_features, overrides=None, max_distance_m=5000):
+def _area_id(props):
+    return props.get("id") or props.get("osm_id") or props.get("skiAreaId")
+
+
+def match_resorts(resorts, area_features, overrides=None, ambiguous=None):
     overrides = overrides or {}
+    ambiguous = ambiguous or {}
     output = {}
     for resort in resorts:
         name = resort["resort"]
+        if name in ambiguous:
+            output[name] = {"match_method": "ambiguous", "reason": ambiguous[name].get("reason")}
+            continue
         point = (float(resort["longitude"]), float(resort["latitude"]))
-        selected = None
+        selected, method = None, None
         if name in overrides:
-            selected = next((feature for feature in area_features if feature.get("properties", {}).get("name") == overrides[name]), None)
+            target_id = overrides[name].get("ski_area_id")
+            selected = next((f for f in area_features if str(_area_id(f.get("properties", {}))) == str(target_id)), None)
+            method = "override" if selected is not None else None
         if selected is None:
-            selected = next((feature for feature in area_features if _contains(feature.get("geometry"), point)), None)
-        if selected is None:
-            candidates = [(feature, _distance_m(point, _area_center(feature.get("geometry")))) for feature in area_features if _area_center(feature.get("geometry"))]
-            candidates = [(feature, distance) for feature, distance in candidates if distance <= max_distance_m]
-            if candidates:
-                selected = min(candidates, key=lambda item: item[1])[0]
+            selected = next((f for f in area_features if _contains(f.get("geometry"), point)), None)
+            method = "contains" if selected is not None else None
         if selected is None:
             output[name] = None
             continue
         props = selected.get("properties", {})
         output[name] = {
-            "ski_area_id": props.get("id") or props.get("osm_id") or props.get("skiAreaId"),
+            "ski_area_id": _area_id(props),
             "ski_area_name": props.get("name") or name,
             "geometry": selected.get("geometry"),
+            "match_method": method,
         }
     return output
 
@@ -100,4 +95,8 @@ def load_matches():
     if OVERRIDES_JSON.exists():
         with OVERRIDES_JSON.open(encoding="utf-8") as handle:
             overrides = json.load(handle)
-    return match_resorts(resorts, areas, overrides)
+    ambiguous = {}
+    if AMBIGUOUS_JSON.exists():
+        with AMBIGUOUS_JSON.open(encoding="utf-8") as handle:
+            ambiguous = json.load(handle)
+    return match_resorts(resorts, areas, overrides, ambiguous)

@@ -1,35 +1,54 @@
-"""Build the all-resort freeride terrain JSON atomically."""
+"""Build the mapped-routes-only freeride terrain JSON.
+
+Beta scope: ranks only resorts with a high-confidence or explicitly reviewed
+OpenSkiMap area match (see freeride/match.py) and at least one qualifying
+mapped run inside that area. No DEM fallback exists anywhere in this module.
+"""
 import argparse
 import json
 import logging
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import DATA, DEM_DIR, RESORTS_JSON, RUNS_URL, TERRAIN_JSON, OSM_DIR
+from .config import RESORTS_JSON, RUNS_URL, TERRAIN_JSON, OSM_DIR
 from .match import _download, load_matches
 from .runs import classify_and_measure
-from .score_dem import find_dem, score_dem_file
 from .score_tracks import normalize_score, percentile, rollup_runs
 
 LOG = logging.getLogger(__name__)
 
+LARGE_FILE_THRESHOLD_BYTES = 100 * 1024 * 1024
 
-def classify_source(has_runs, has_area):
-    return "measured" if has_runs else "estimated" if has_area else "none"
+
+def _linked_area_ids(feature):
+    props = feature.get("properties", {})
+    linked = props.get("skiAreas") or props.get("ski_areas") or props.get("skiAreaIds") or []
+    if isinstance(linked, (str, int, dict)):
+        linked = [linked]
+    result = []
+    for value in linked:
+        if isinstance(value, dict):
+            value = value.get("id") or value.get("properties", {}).get("id")
+        if value is not None:
+            result.append(str(value))
+    return result
 
 
 def _load_features(path):
-    with Path(path).open(encoding="utf-8") as handle:
+    path = Path(path)
+    if path.stat().st_size > LARGE_FILE_THRESHOLD_BYTES:
+        import ijson
+        with path.open("rb") as handle:
+            return list(ijson.items(handle, "features.item"))
+    with path.open(encoding="utf-8") as handle:
         return json.load(handle).get("features", [])
 
 
 def _run_matches_area(feature, match):
-    props = feature.get("properties", {})
     area_id = match.get("ski_area_id")
-    linked = props.get("skiAreas") or props.get("ski_areas") or props.get("skiAreaIds") or []
-    if isinstance(linked, (str, int)):
-        linked = [linked]
-    if area_id is not None and str(area_id) in {str(value) for value in linked}:
+    if area_id is not None and str(area_id) in set(_linked_area_ids(feature)):
         return True
     try:
         from shapely.geometry import shape
@@ -37,39 +56,49 @@ def _run_matches_area(feature, match):
         run_geometry = feature.get("geometry")
         return bool(area_geometry and run_geometry and shape(area_geometry).intersects(shape(run_geometry)))
     except ImportError:
-        def bounds(geometry):
-            points = []
-            def collect(value):
-                if value and isinstance(value[0], (int, float)):
-                    points.append(value)
-                else:
-                    for child in value:
-                        collect(child)
-            collect(geometry.get("coordinates", []))
-            return (min(p[0] for p in points), min(p[1] for p in points), max(p[0] for p in points), max(p[1] for p in points)) if points else None
-        left, right = bounds(area_geometry), bounds(run_geometry)
-        return bool(left and right and left[0] <= right[2] and right[0] <= left[2] and left[1] <= right[3] and right[1] <= left[3])
+        return False
 
 
 def _write_atomic(path, payload):
     path = Path(path)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
-    temporary.replace(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2, allow_nan=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
-def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run=False):
-    with RESORTS_JSON.open(encoding="utf-8") as handle:
+def _unavailable(reason, ski_area_name=None, match_method=None):
+    return {
+        "score": None,
+        "source": "unavailable",
+        "reason": reason,
+        "ski_area_name": ski_area_name,
+        "match_method": match_method,
+    }
+
+
+def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run=False,
+              resorts_path=None, overrides=None, ambiguous=None):
+    with Path(resorts_path or RESORTS_JSON).open(encoding="utf-8") as handle:
         resorts = json.load(handle)
-    matches = load_matches() if areas_path is None else None
-    if matches is None:
-        area_features = _load_features(areas_path)
+    if areas_path is None:
+        matches = load_matches()
+    else:
         from .match import match_resorts
-        matches = match_resorts(resorts, area_features)
+        area_features = _load_features(areas_path)
+        matches = match_resorts(resorts, area_features, overrides=overrides, ambiguous=ambiguous)
     runs_path = runs_path or _download(RUNS_URL, OSM_DIR / "runs.geojson")
     run_features = _load_features(runs_path)
+
     timestamp = datetime.now(timezone.utc).isoformat()
     preliminary = {}
     measured_rollups = []
@@ -77,30 +106,44 @@ def run_batch(areas_path=None, runs_path=None, output_path=TERRAIN_JSON, dry_run
         name = resort["resort"]
         match = matches.get(name)
         if not match:
-            preliminary[name] = {"score": None, "source": "none", "ski_area_name": None, "computed_at": timestamp}
+            preliminary[name] = _unavailable("no_match")
             continue
-        runs = [result for feature in run_features if _run_matches_area(feature, match) if (result := classify_and_measure(feature))]
+        if match.get("match_method") == "ambiguous":
+            preliminary[name] = _unavailable("ambiguous")
+            continue
+        runs = [result for feature in run_features if _run_matches_area(feature, match)
+                if (result := classify_and_measure(feature))]
+        if not runs:
+            preliminary[name] = _unavailable("no_mapped_routes", match.get("ski_area_name"), match.get("match_method"))
+            continue
         rollup = rollup_runs(runs)
-        source = classify_source(bool(runs), True)
-        preliminary[name] = {"score": None, "source": source, **rollup, "ski_area_name": match.get("ski_area_name"), "computed_at": timestamp}
-        if runs:
-            measured_rollups.append((name, rollup))
+        preliminary[name] = {
+            "score": None,
+            "source": "measured",
+            **rollup,
+            "ski_area_name": match.get("ski_area_name"),
+            "match_method": match.get("match_method"),
+            "computed_at": timestamp,
+        }
+        measured_rollups.append((name, rollup))
+
     vertical_cap = percentile([rollup["freeride_vertical_m"] for _, rollup in measured_rollups])
     length_cap = percentile([rollup["freeride_length_km"] for _, rollup in measured_rollups])
-    for name, result in preliminary.items():
+    for result in preliminary.values():
         if result["source"] == "measured":
             result["score"] = normalize_score(result["freeride_vertical_m"], vertical_cap, result["freeride_length_km"], length_cap)
-        elif result["source"] == "estimated":
-            dem_path = find_dem(DEM_DIR, name, result.get("ski_area_name"))
-            if dem_path:
-                result["dem"] = score_dem_file(dem_path)
-                result["score"] = result["dem"]["combined"]
-            else:
-                result["dem"] = None
-                result["error"] = "No DEM fallback raster available"
+            result["vertical_cap_m"], result["length_cap_km"] = vertical_cap, length_cap
+
+    counts = {state: sum(value["source"] == state for value in preliminary.values()) for state in ("measured", "unavailable")}
     payload = {
-        "_metadata": {"computed_at": timestamp, "vertical_cap_m": vertical_cap, "length_cap_km": length_cap,
-                      "counts": {state: sum(value["source"] == state for value in preliminary.values()) for state in ("measured", "estimated", "none")}},
+        "_metadata": {
+            "computed_at": timestamp,
+            "beta": True,
+            "vertical_cap_m": vertical_cap,
+            "length_cap_km": length_cap,
+            "counts": counts,
+            "total_resorts": len(resorts),
+        },
         **preliminary,
     }
     if not dry_run:

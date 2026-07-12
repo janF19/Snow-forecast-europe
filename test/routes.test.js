@@ -48,7 +48,7 @@ test('all public GET routes render successfully with deterministic fixtures', as
     }
     if (pathname === '/freeride') {
       assert.match(body, /Lift-served freeride terrain/);
-      assert.match(body, /No terrain data/);
+      assert.match(body, /No mapped route data/);
     }
   }
   assert.doesNotMatch(require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8'), /advanced machine learning/);

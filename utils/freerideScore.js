@@ -13,9 +13,8 @@ function rankedTerrain(filePath = terrainPath) {
     const all = Object.entries(data.resorts).map(([resort, terrain]) => ({ resort, ...terrain }));
     return {
         metadata: data._metadata,
-        ranked: all.filter(item => item.score !== null && item.score !== undefined && item.source !== 'none').sort((a, b) => b.score - a.score),
-        noData: all.filter(item => item.source === 'none'),
-        unscored: all.filter(item => item.source === 'estimated' && (item.score === null || item.score === undefined))
+        ranked: all.filter(item => item.source === 'measured').sort((a, b) => b.score - a.score),
+        unavailable: all.filter(item => item.source === 'unavailable')
     };
 }
 module.exports = { loadFreerideTerrain, rankedTerrain };

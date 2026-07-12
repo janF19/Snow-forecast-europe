@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Freeride Terrain</title><link rel="stylesheet" href="/styles/indexStyle.css"></head>
 <body><%- include('partials/navbar') %><main class="container freeride-page">
-<h1>Lift-served freeride terrain</h1><p class="freeride-intro">Ranked by mapped off-piste and steep-run vertical plus length. This is a terrain indicator, not avalanche guidance.</p>
-<div class="table-container"><table class="freeride-table"><thead><tr><th>#</th><th>Resort</th><th>Confidence</th><th>Score</th><th>Terrain metrics</th></tr></thead><tbody>
-<% ranked.forEach((item, index) => { %><tr><td><%= index + 1 %></td><td><%= item.resort %></td><td><span class="confidence confidence-<%= item.source %>"><%= item.source === 'measured' ? '📍 measured' : '~ estimated' %></span></td><td><strong><%= item.score.toFixed(1) %></strong></td><td><% if (item.source === 'measured') { %><%= Math.round(item.freeride_vertical_m).toLocaleString() %> m vertical · <%= item.freeride_length_km.toFixed(1) %> km · <%= item.freeride_run_count %> routes<% } else { %>Terrain estimate (no mapped routes)<% } %></td></tr><% }); %>
-</tbody></table></div><section class="no-data-section"><h2>Terrain estimates unavailable</h2><p>These matched resorts need a DEM raster before an estimate can be calculated.</p><ul><% unscored.forEach(item => { %><li><%= item.resort %></li><% }); %></ul><h2>No terrain data</h2><p>These resorts could not be matched to an OpenSkiMap ski area within 5 km.</p><ul><% noData.forEach(item => { %><li><%= item.resort %></li><% }); %></ul></section>
+<h1>Lift-served freeride terrain <span class="beta-badge">Beta</span></h1>
+<p class="freeride-intro">Ranked by mapped off-piste and steep-run vertical plus length, for resorts with a high-confidence or explicitly reviewed OpenSkiMap match. This is not complete terrain coverage, and it is not avalanche or safety guidance.</p>
+<div class="table-container"><table class="freeride-table"><thead><tr><th>#</th><th>Resort</th><th>Score</th><th>Terrain metrics</th></tr></thead><tbody>
+<% ranked.forEach((item, index) => { %><tr><td><%= index + 1 %></td><td><%= item.resort %></td><td><strong><%= item.score.toFixed(1) %></strong></td><td><%= Math.round(item.freeride_vertical_m).toLocaleString() %> m vertical · <%= item.freeride_length_km.toFixed(1) %> km · <%= item.freeride_run_count %> routes</td></tr><% }); %>
+</tbody></table></div>
+<section class="no-data-section"><h2>No mapped route data</h2><p>These resorts are not ranked: no reviewed OpenSkiMap match, an ambiguous identity, or no qualifying mapped routes found.</p><ul><% unavailable.forEach(item => { %><li><%= item.resort %> <span class="unavailable-reason">(<%= item.reason %>)</span></li><% }); %></ul></section>
 </main></body></html>

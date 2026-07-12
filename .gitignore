@@ -24,3 +24,9 @@ python_help_scripts
 .cache.sqlite
 __pycache__/
 *.pyc
+
+# Large OpenSkiMap snapshot -- fetched at run time, never committed.
+# Only the manifest (freeride/data/openskimap/manifest.json) is tracked.
+freeride/data/openskimap/*.geojson
+freeride/data/dem/
+freeride_terrain.json

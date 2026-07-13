@@ -313,3 +313,41 @@ test('plan-future keeps a history-only resort that has no terrain (unavailable, 
   assert.equal(only.terrain.status, 'unavailable');
   assert.equal(only.history.status, 'ok');
 });
+
+test('same-day go-soon range works (start==end) and history uses that single-day window', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 1, endOffset: 1, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+  assert.equal(res.window.startMMDD, res.window.endMMDD);
+  assert.equal(res.rows[0].primarySnowCm, 30); // just offset 1 for Big Dump
+});
+
+test('cross-year plan-future window keeps a season together', () => {
+  const crossNow = new Date('2025-12-30T12:00:00');
+  const hist = { _metadata: {}, resorts: { 'NYE': { country: 'Austria', elevation: 1800,
+    record_period: { first: '2022-12-01', last: '2023-04-29' },
+    seasons: { '2022-23': { daily: { '12-30': 12, '12-31': 0, '01-01': 0, '01-02': 11 } } } } } };
+  const res = buildPlanFuture({ terrainData: { _metadata: {}, resorts: {} }, historyRecords: hist,
+    window: { startMMDD: '12-30', endMMDD: '01-02' }, now: crossNow, sort: 'reliability', filters: {} });
+  const row = res.rows.find((r) => r.resort === 'NYE');
+  assert.equal(row.history.status, 'ok');
+  assert.equal(row.history.seasonsExpected, 4);
+});
+
+test('every evidence-availability combination is representable and never coerced to zero', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 0, endOffset: 2, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+  const small = res.rows.find((r) => r.resort === 'Small Dump');
+  assert.equal(small.forecast.status, 'ok');        // has forecast
+  assert.equal(small.terrain.status, 'unavailable'); // unmapped terrain -> unavailable, not score 0
+  assert.equal(small.terrain.score, null);
+  assert.equal(small.history.status, 'unavailable'); // no history record -> unavailable, not reliability 0
+  assert.equal(small.history.reliability, null);
+});
+
+test('go-soon never emits a combined/blended score field on rows or result', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 0, endOffset: 2, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+  const banned = ['combined', 'combinedScore', 'overall', 'overallScore', 'totalScore', 'rankScore'];
+  for (const row of res.rows) for (const key of banned) assert.ok(!(key in row), `row has banned key ${key}`);
+  for (const key of banned) assert.ok(!(key in res), `result has banned key ${key}`);
+});

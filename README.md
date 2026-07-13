@@ -32,6 +32,14 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
   - Season-by-season evidence with confidence badges (High/Moderate/Limited by sample size)
   - Recent 14-day snowfall tracking
 
+- **Experimental Powder Conditions Index (EPCI)**
+  - Snowfall-first: resorts are ranked by best fresh-snow day, with EPCI shown as a secondary, experimental badge
+  - Every result carries an explicit disclaimer: *"Experimental estimate based on forecast weather—not an observed measurement of snow quality."*
+  - Current formula version `epci/v1`; the version, every input factor, and per-factor breakdown are inspectable in the expanded view
+  - Temperature, rain, and wind are always shown as their own separate figures, never folded invisibly into the index
+  - Missing forecast inputs are shown as degraded/unavailable, never silently treated as favourable
+  - Long-term accuracy validation is in progress: immutable forecast snapshots are being accumulated and will be compared against observed conditions and transparent baselines across at least two winter seasons before any accuracy claim is made — see `docs/epci-acceptance-gates.md`
+
 - **Navigation Structure**
   - Home (Overview and top rankings)
   - Week Ahead Forecast
@@ -39,6 +47,7 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
   - 2-Week Forecast
   - Recent Snowfall
   - Historical Data
+  - Powder Quality (EPCI, experimental)
 
 ## Key Insights
 

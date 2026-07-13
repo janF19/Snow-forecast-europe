@@ -1,8 +1,7 @@
 'use strict';
 
-const { resortReliability } = require('./historicalReliability');
-
 function buildHistoricalReliability(records, window) {
+  const { resortReliability } = require('./historicalReliability');
   const meta = records._metadata || {};
   const resorts = records.resorts || {};
   const country = (window.country || 'all').toLowerCase();

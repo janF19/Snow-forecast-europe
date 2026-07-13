@@ -214,3 +214,58 @@ test('country filter is exact and counted', () => {
   assert.deepEqual(kept.map((r) => r.resort), ['IT']);
   assert.equal(exclusions.length, 1);
 });
+
+// Task 6: go-soon mode builder
+const { buildGoSoon } = require('../utils/combinedDecision');
+
+function padElev(over) {
+  const pad = (arr) => Array(14).fill(0).concat(arr, Array(7).fill(0)).slice(0, 28);
+  return { elevation_m: over.elevation_m ?? 2000,
+    snowfall_sum: pad(over.snow || [0,0,0,0,0,0,0]),
+    temperature_2m_max: pad(over.tmax || [-5,-5,-5,-5,-5,-5,-5]),
+    rain_sum: pad(over.rain || [0,0,0,0,0,0,0]),
+    wind_speed_10m_max: pad(over.wind || [5,5,5,5,5,5,5]) };
+}
+
+const GS_WEATHER = {
+  'Big Dump': { country: 'Austria', url: 'a', elevations: { 'Top Lift': padElev({ snow: [10, 30, 5, 0, 0, 0, 0] }) } },
+  'Small Dump': { country: 'Italy', url: 'b', elevations: { 'Top Lift': padElev({ snow: [2, 3, 1, 0, 0, 0, 0] }) } },
+  'No Forecast': { country: 'France', url: 'c', elevations: {} },
+};
+const GS_TERRAIN = { _metadata: { computed_at: 'T' }, resorts: {
+  'Big Dump': { score: 90, source: 'measured', computed_at: 'T' },
+  'Small Dump': { score: null, source: 'unavailable', reason: 'no_match' },
+  'No Forecast': { score: 40, source: 'measured', computed_at: 'T' },
+} };
+const GS_HISTORY = { _metadata: { generated_at: 'G', snowfall_term: 'modelled snowfall' }, resorts: {} };
+
+test('go-soon defaults to accumulated fresh snowfall and keeps every resort (missing = unavailable)', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 0, endOffset: 2, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+  assert.equal(res.mode, 'go-soon');
+  assert.equal(res.guard, null);
+  assert.deepEqual(res.rows.map((r) => r.resort), ['Big Dump', 'Small Dump', 'No Forecast']);
+  assert.equal(res.rows[0].primarySnowCm, 45); // 10+30+5
+  assert.equal(res.rows[0].forecast.status, 'ok');
+  assert.equal(res.rows[2].forecast.status, 'unavailable');
+  assert.equal(res.rows[2].primarySnowCm, null);
+  // Every row carries all four evidence blocks.
+  assert.ok(res.rows.every((r) => r.forecast && r.epci && r.terrain && r.history));
+  assert.equal(res.meta.epciVersion, 'epci/v1');
+});
+
+test('go-soon rejects a range past the forecast horizon with a guard, never a partial total', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 4, endOffset: 9, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+  assert.equal(res.guard, 'range_exceeds_horizon');
+  assert.deepEqual(res.rows, []);
+  assert.ok(res.warnings.some((w) => /horizon/i.test(w)));
+});
+
+test('go-soon filters exclude and count without dropping resorts silently', () => {
+  const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
+    startOffset: 0, endOffset: 2, now: NOW, sort: 'snowfall', filters: { minSnow: 10 }, weatherFreshness: 'W' });
+  assert.deepEqual(res.rows.map((r) => r.resort), ['Big Dump']);
+  assert.equal(res.excludedCount, 2); // Small Dump (below min) + No Forecast (unavailable)
+  assert.equal(res.exclusions.length, 2);
+});

@@ -1,8 +1,9 @@
 'use strict';
 
 const { buildResortEPCI, epciBand, EPCI_VERSION, FORECAST_START } = require('./epci');
-const { forecastDayLabel } = require('./forecastDate');
+const { forecastDayLabel, windowFromOffsets, rangeLabels } = require('./forecastDate');
 const { resortReliability } = require('./historicalReliability');
+const { buildRegistry } = require('./resortIdentity');
 
 const HORIZON = { minOffset: 0, maxOffset: 6 };
 const LIFT = 'Top Lift';
@@ -230,7 +231,48 @@ function confidenceAtLeast(history, min) {
   return (CONFIDENCE_RANK[history.confidence] ?? -1) >= (CONFIDENCE_RANK[min] ?? 99);
 }
 
+function buildGoSoon({ weatherData, terrainData, historyRecords, startOffset, endOffset, now,
+  sort = 'snowfall', filters = {}, weatherFreshness = null }) {
+  const window = windowFromOffsets(startOffset, endOffset, now);
+  const { startLabel, endLabel, dayLabels } = rangeLabels(startOffset, endOffset, now);
+  const range = { startOffset, endOffset, startLabel, endLabel, dayLabels };
+  const meta = { epciVersion: EPCI_VERSION, terrain: (terrainData && terrainData._metadata) || {},
+    historyProvenance: (historyRecords && historyRecords._metadata) || {} };
+
+  if (startOffset < HORIZON.minOffset || endOffset > HORIZON.maxOffset) {
+    return { mode: 'go-soon', guard: 'range_exceeds_horizon', sort, filters, range, window,
+      rows: [], excludedCount: 0, exclusions: [],
+      warnings: ['Selected dates extend beyond the 7-day forecast horizon. Pick a fully forecastable range or switch to Plan future dates.'],
+      meta };
+  }
+
+  const { list, byId } = buildRegistry({ weatherData, terrainData, historyRecords });
+  const terrainResorts = (terrainData && terrainData.resorts) || {};
+  const historyResorts = (historyRecords && historyRecords.resorts) || {};
+
+  const allRows = list.map((entry) => {
+    const weatherRecord = entry.weatherKey ? weatherData[entry.weatherKey] : null;
+    const terrainRecord = entry.terrainKey ? terrainResorts[entry.terrainKey] : null;
+    const historyRecord = entry.historyKey ? historyResorts[entry.historyKey] : null;
+    const forecast = buildForecastBlock(weatherRecord, startOffset, endOffset, now, weatherFreshness);
+    return {
+      id: entry.id, resort: entry.displayName, country: entry.country,
+      url: (weatherRecord && weatherRecord.url) || '#',
+      primarySnowCm: forecast.status === 'ok' ? forecast.accumulatedSnowCm : null,
+      forecast,
+      epci: buildEpciBlock(weatherRecord || {}, startOffset, endOffset, now),
+      terrain: buildTerrainBlock(terrainRecord, meta.terrain.computed_at || null),
+      history: buildHistoryBlock(entry.displayName, historyRecord, window),
+    };
+  });
+
+  const { rows: filtered, exclusions } = filterRows(allRows, filters);
+  const rows = sortRows(filtered, { mode: 'go-soon', sort });
+  return { mode: 'go-soon', guard: null, sort, filters, range, window, rows,
+    excludedCount: exclusions.length, exclusions, warnings: [], meta };
+}
+
 module.exports = {
   HORIZON, SORTS, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock,
-  sortRows, filterRows,
+  sortRows, filterRows, buildGoSoon,
 };

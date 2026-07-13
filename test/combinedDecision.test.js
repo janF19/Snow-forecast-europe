@@ -269,3 +269,47 @@ test('go-soon filters exclude and count without dropping resorts silently', () =
   assert.equal(res.excludedCount, 2); // Small Dump (below min) + No Forecast (unavailable)
   assert.equal(res.exclusions.length, 2);
 });
+
+// Task 7: plan-future mode builder
+const { buildPlanFuture } = require('../utils/combinedDecision');
+
+const PF_TERRAIN = { _metadata: { computed_at: 'T' }, resorts: {
+  'Reliable': { score: 70, source: 'measured', computed_at: 'T' },
+  'Flaky': { score: 55, source: 'measured', computed_at: 'T' },
+} };
+function seasonsWithPowder(pct) {
+  // 10 seasons; `pct/10` of them contain a >=10cm powder day in window 02-01..02-02.
+  const seasons = {};
+  for (let i = 0; i < 10; i += 1) {
+    const yr = 2010 + i;
+    seasons[`${yr}-${String((yr + 1) % 100).padStart(2, '0')}`] =
+      { daily: { '02-01': i < pct / 10 ? 15 : 0, '02-02': 0 } };
+  }
+  return seasons;
+}
+const PF_HISTORY = { _metadata: { generated_at: 'G', snowfall_term: 'modelled snowfall' }, resorts: {
+  'Reliable': { country: 'Austria', elevation: 2000, record_period: { first: '2010-12-01', last: '2020-04-29' }, seasons: seasonsWithPowder(90) },
+  'Flaky': { country: 'Italy', elevation: 1800, record_period: { first: '2010-12-01', last: '2020-04-29' }, seasons: seasonsWithPowder(30) },
+} };
+const PF_WINDOW = { startMMDD: '02-01', endMMDD: '02-02' };
+
+test('plan-future ranks by full-record reliability and contains no forecast or epci', () => {
+  const res = buildPlanFuture({ terrainData: PF_TERRAIN, historyRecords: PF_HISTORY,
+    window: PF_WINDOW, now: NOW, sort: 'reliability', filters: {} });
+  assert.equal(res.mode, 'plan-future');
+  assert.deepEqual(res.rows.map((r) => r.resort), ['Reliable', 'Flaky']);
+  assert.ok(res.rows.every((r) => !('forecast' in r) && !('epci' in r)));
+  assert.ok(res.rows.every((r) => r.terrain && r.history));
+});
+
+test('plan-future keeps a history-only resort that has no terrain (unavailable, not dropped)', () => {
+  const historyOnly = { _metadata: {}, resorts: Object.assign({}, PF_HISTORY.resorts, {
+    'History Only': { country: 'Switzerland', elevation: 2100, record_period: { first: '2010-12-01', last: '2020-04-29' }, seasons: seasonsWithPowder(50) },
+  }) };
+  const res = buildPlanFuture({ terrainData: PF_TERRAIN, historyRecords: historyOnly,
+    window: PF_WINDOW, now: NOW, sort: 'reliability', filters: {} });
+  const only = res.rows.find((r) => r.resort === 'History Only');
+  assert.ok(only);
+  assert.equal(only.terrain.status, 'unavailable');
+  assert.equal(only.history.status, 'ok');
+});

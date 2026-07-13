@@ -272,7 +272,34 @@ function buildGoSoon({ weatherData, terrainData, historyRecords, startOffset, en
     excludedCount: exclusions.length, exclusions, warnings: [], meta };
 }
 
+// Plan-future intentionally never receives weatherData, so no forecast/EPCI can leak.
+// The resort universe is the union of terrain and history keys.
+function buildPlanFuture({ terrainData, historyRecords, window, now, sort = 'reliability', filters = {} }) {
+  const { list } = buildRegistry({ weatherData: {}, terrainData, historyRecords });
+  const terrainResorts = (terrainData && terrainData.resorts) || {};
+  const historyResorts = (historyRecords && historyRecords.resorts) || {};
+  const meta = { epciVersion: EPCI_VERSION, terrain: (terrainData && terrainData._metadata) || {},
+    historyProvenance: (historyRecords && historyRecords._metadata) || {} };
+
+  const allRows = list.map((entry) => {
+    const terrainRecord = entry.terrainKey ? terrainResorts[entry.terrainKey] : null;
+    const historyRecord = entry.historyKey ? historyResorts[entry.historyKey] : null;
+    return {
+      id: entry.id, resort: entry.displayName, country: entry.country, url: '#',
+      terrain: buildTerrainBlock(terrainRecord, meta.terrain.computed_at || null),
+      history: buildHistoryBlock(entry.displayName, historyRecord, window),
+    };
+  });
+
+  const { rows: filtered, exclusions } = filterRows(allRows, filters);
+  const rows = sortRows(filtered, { mode: 'plan-future', sort });
+  return { mode: 'plan-future', guard: null, sort, filters, range: null, window, rows,
+    excludedCount: exclusions.length, exclusions,
+    warnings: ['Historical reliability describes past seasons in this calendar window. It is not a forecast for the selected year.'],
+    meta };
+}
+
 module.exports = {
   HORIZON, SORTS, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock,
-  sortRows, filterRows, buildGoSoon,
+  sortRows, filterRows, buildGoSoon, buildPlanFuture,
 };

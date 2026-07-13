@@ -6,6 +6,10 @@ const { validateSnapshot } = require('./snapshotSchema');
 const BERLIN_WINTER_OFFSET_H = 1;
 
 function leadHours(issueTimeUtc, targetDate) {
+  // No guard for lead < 0: the fixed forecast window (FORECAST_START to FORECAST_START+FORECAST_DAYS)
+  // never contains a genuinely past day. Same-day forecasts (target_date == issue date) can have
+  // mildly negative lead_hours (e.g., -7h) due to Berlin-midnight boundary; this is intentional
+  // and correctly represents a valid same-day forecast, not a past-day skip candidate.
   const issue = new Date(issueTimeUtc).getTime();
   const [y, m, d] = targetDate.split('-').map(Number);
   const targetMidnightUtc = Date.UTC(y, m - 1, d) - BERLIN_WINTER_OFFSET_H * 3600 * 1000;

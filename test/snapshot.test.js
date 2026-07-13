@@ -53,6 +53,7 @@ test('builder emits one row per forecast day, frozen version, and flags degraded
   assert.equal(day0.snowfall_cm, 24);
   assert.equal(day0.epci_status, 'ok');
   assert.ok(day0.epci_score > 0);
+  assert.equal(day0.lead_hours, -7); // same-day forecast with mildly negative lead due to Berlin-midnight boundary
   const degraded = rows[2];
   assert.equal(degraded.epci_status, 'degraded');
   assert.equal(degraded.epci_score, null);

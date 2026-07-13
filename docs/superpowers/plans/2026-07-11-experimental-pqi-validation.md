@@ -112,7 +112,7 @@ One append-only JSON object per line in `data/forecast_snapshots/YYYY-MM.jsonl`.
 }
 ```
 
-- `lead_hours` = whole hours from `issue_time_utc` to `00:00 Europe/Berlin` on `target_date` (floored, may be negative for past days — those are skipped by the builder).
+- `lead_hours` = whole hours from `issue_time_utc` to `00:00 Europe/Berlin` on `target_date` (floored, may be negative for same-day forecasts due to UTC/Berlin-midnight boundary — these are intentionally stored, not skipped, as they represent valid same-day forecasts).
 - `epci_score`/`epci_status` are the frozen `epci/v1` values for that resort/lift/day; `degraded`/`unavailable` days store `epci_score:null` with the reason in `missing_variables`.
 - `retrieval_status` ∈ `ok` | `partial` | `failed`. `partial` when some daily variables are missing; `failed` when the elevation had no daily data.
 

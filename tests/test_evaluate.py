@@ -3,7 +3,7 @@ import os
 import unittest
 
 from validation.observations import normalise_observation
-from validation.evaluate import season_of, join_pairs, spearman, evaluate
+from validation.evaluate import season_of, join_pairs, count_rejected, spearman, evaluate
 from validation.report import build_report, to_markdown
 from validation.station_match import match_station
 
@@ -66,11 +66,29 @@ class TestEvaluate(unittest.TestCase):
         snaps, obs = load()
         matched = join_pairs(snaps, obs, RESORTS)
         result = evaluate(matched, ["2024-25"], ["2025-26"])
-        report = build_report(matched, result)
+        rejected = count_rejected(snaps, obs, RESORTS)
+        report = build_report(matched, result, rejected=rejected)
         self.assertIn("by_lead", report)
         self.assertIn("coverage", report)
         self.assertIn("rejected", report)
         self.assertIsInstance(to_markdown(report), str)
+
+    def test_count_rejected_counts_the_far_station_candidate(self):
+        # STN2_FAR shares its target_date (2024-12-15) with an accepted
+        # snapshot/observation pair, so it is a real same-day candidate that
+        # match_station rejects on distance. That is exactly one genuine
+        # rejection in the fixture data.
+        snaps, obs = load()
+        rejected = count_rejected(snaps, obs, RESORTS)
+        self.assertEqual(rejected, 1)
+
+    def test_report_rejected_reflects_real_count_not_hardcoded_zero(self):
+        snaps, obs = load()
+        matched = join_pairs(snaps, obs, RESORTS)
+        result = evaluate(matched, ["2024-25"], ["2025-26"])
+        rejected = count_rejected(snaps, obs, RESORTS)
+        report = build_report(matched, result, rejected=rejected)
+        self.assertEqual(report["rejected"], 1)
 
 
 if __name__ == "__main__":

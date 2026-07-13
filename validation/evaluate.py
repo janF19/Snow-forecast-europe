@@ -31,6 +31,24 @@ def join_pairs(snapshots, observations, resorts):
     return matched
 
 
+def count_rejected(snapshots, observations, resorts):
+    """Count same-day snapshot/observation candidates that match_station
+    rejects. Walks the same candidate pairs as join_pairs, but tallies the
+    ones that are NOT accepted instead of discarding them silently."""
+    rejected = 0
+    for snap in snapshots:
+        resort = resorts.get(snap["resort"])
+        if not resort:
+            continue
+        for obs in observations:
+            if not _same_day(snap, obs):
+                continue
+            m = match_station(resort, obs)
+            if not m["accepted"]:
+                rejected += 1
+    return rejected
+
+
 def _rank(values):
     order = sorted(range(len(values)), key=lambda i: values[i])
     ranks = [0] * len(values)

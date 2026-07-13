@@ -30,8 +30,7 @@ def _grouped(rows, key_fn):
     return {k: _group_metrics(v) for k, v in sorted(groups.items(), key=lambda kv: str(kv[0]))}
 
 
-def build_report(matched, evaluation):
-    rejected = 0  # accepted-only matches reach here; rejected are counted upstream when available
+def build_report(matched, evaluation, rejected=0):
     return {
         "coverage": len(matched),
         "rejected": rejected,

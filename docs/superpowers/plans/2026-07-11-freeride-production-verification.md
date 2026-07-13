@@ -1,5 +1,10 @@
 # Freeride Production Verification Implementation Plan
 
+> **Status: Superseded — do not execute.** This plan was replaced on 2026-07-12 by
+> [Freeride Plan 2 replacement: mapped-routes-only ranking (beta)](../specs/2026-07-12-freeride-mapped-routes-only-spec.md).
+> It remains in the repository only as historical context for the abandoned DEM fallback,
+> nearest-area matching, and full 294-resort review approach.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Produce and approve one reproducible OpenSkiMap-backed freeride-terrain release that accounts for all 294 configured resorts, reports every anomaly, and presents the three source states honestly.

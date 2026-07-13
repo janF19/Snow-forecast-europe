@@ -1,8 +1,12 @@
 # Real-Data Freeride Production Verification
 
 **Date:** 2026-07-11
-**Status:** Approved design
+**Status:** Superseded on 2026-07-12 by
+[Freeride Plan 2 replacement: mapped-routes-only ranking (beta)](2026-07-12-freeride-mapped-routes-only-spec.md)
 **Depends on:** Integration baseline
+
+> Historical design only. Do not execute this specification. The replacement removes
+> DEM estimates, nearest-area fallback, and the full 294-resort review workflow.
 
 ## Purpose
 

@@ -23,14 +23,14 @@ inspectable evidence rather than being blended into an opaque overall score.
 ## Specifications and dependencies
 
 1. [Integration baseline](2026-07-11-integration-baseline-design.md)
-2. [Real-data freeride verification](2026-07-11-freeride-production-verification-design.md)
+2. [Mapped-routes-only freeride beta](2026-07-12-freeride-mapped-routes-only-spec.md)
 3. [Historical trip reliability](2026-07-11-historical-trip-reliability-design.md)
 4. [Experimental PQI validation](2026-07-11-experimental-pqi-validation-design.md)
 5. [Combined resort decision view](2026-07-11-combined-resort-decision-view-design.md)
 
 ```text
 Integration baseline
-├── Real-data freeride verification
+├── Mapped-routes-only freeride beta
 ├── Historical trip reliability
 └── Experimental PQI transparency and validation infrastructure
                   │
@@ -43,7 +43,8 @@ baseline. The combined view starts only after all three expose stable, tested in
 ## Recommended delivery sequence
 
 1. Consolidate the merged freeride implementation and earlier PQI work on one baseline.
-2. Run and review the real freeride batch for all 294 resorts.
+2. Ship the mapped-routes-only freeride beta with reviewed or containment-based matches;
+   keep unmatched and ambiguous resorts explicitly unavailable.
 3. Replace average-only historical ranking with season-by-season trip reliability.
 4. Rename PQI to EPCI, expose its inputs, and start forecast/observation collection.
 5. Build the snowfall-first combined comparison view.
@@ -63,6 +64,8 @@ that it improves on transparent empirical baselines.
 
 ## Program completion
 
-The roadmap is complete when all five specifications pass their acceptance gates, every
-public metric exposes provenance and freshness, and the product clearly separates what is
-forecast, historical, mapped, estimated, observed, or experimental.
+The roadmap is complete when the integration baseline and the four active feature
+specifications pass their acceptance gates, every public metric exposes provenance and
+freshness, and the product clearly separates what is forecast, historical, mapped,
+unavailable, observed, or experimental. The superseded real-data freeride verification
+design is historical context and is not an additional completion gate.

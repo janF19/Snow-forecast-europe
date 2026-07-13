@@ -5,6 +5,7 @@ const path = require('node:path');
 
 process.env.WEATHER_DATA_PATH = path.join(__dirname, 'fixtures', 'integrationWeatherData.json');
 process.env.FREERIDE_TERRAIN_PATH = path.join(__dirname, 'fixtures', 'integrationFreerideTerrain.json');
+process.env.HISTORY_RECORDS_PATH = path.join(__dirname, 'fixtures', 'historySeasonRecords.json');
 process.env.PORT = '0';
 
 const app = require('../app');
@@ -49,6 +50,11 @@ test('all public GET routes render successfully with deterministic fixtures', as
     if (pathname === '/freeride') {
       assert.match(body, /Lift-served freeride terrain/);
       assert.match(body, /No mapped route data/);
+    }
+    if (pathname === '/allHistory') {
+      assert.match(body, /historical reliability/i);
+      assert.match(body, /modelled snowfall/);
+      assert.doesNotMatch(body, /average historical snowfall in last 30 years/);
     }
   }
   assert.doesNotMatch(require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8'), /advanced machine learning/);

@@ -78,7 +78,6 @@ The website is built with:
 ## Future Development
 
 Areas for potential enhancement:
-- Integration of machine learning for improved predictions
 - Additional historical data analysis features
 - Enhanced visualization tools
 - Real-time condition updates

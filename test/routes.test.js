@@ -57,5 +57,8 @@ test('all public GET routes render successfully with deterministic fixtures', as
       assert.doesNotMatch(body, /average historical snowfall in last 30 years/);
     }
   }
-  assert.doesNotMatch(require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8'), /advanced machine learning/);
+  const indexHtml = require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8');
+  assert.doesNotMatch(indexHtml, /advanced machine learning/);
+  assert.doesNotMatch(indexHtml, /probability-table/);
+  assert.doesNotMatch(indexHtml, /Monthly Powder Paradise/);
 });

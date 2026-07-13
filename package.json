@@ -4,7 +4,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "build": "pip install -r requirements.txt",
+    "build": "pip install -r requirements.txt && python -m history.build_records",
     "test": "node --test test/powderQuality.test.js test/forecastDate.test.js test/freerideScore.test.js && python -m unittest discover -s tests -v"
   },
   "keywords": [],

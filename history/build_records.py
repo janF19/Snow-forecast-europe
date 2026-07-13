@@ -40,7 +40,7 @@ def write_records(payload, output_path):
                                     dir=output_path.parent)
     tmp = Path(tmp_name)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(payload, handle, ensure_ascii=False, indent=2,
                       sort_keys=True, allow_nan=False)
             handle.write("\n")

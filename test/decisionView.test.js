@@ -52,3 +52,37 @@ test('a range beyond the horizon renders the guard prompt, not a partial total',
   assert.match(body, /beyond the .*forecast horizon/i);
   assert.doesNotMatch(body, /accumulated/i);
 });
+
+test('comparison table is semantic and expansion is keyboard-accessible', async () => {
+  const { body } = await get('/decision?mode=go-soon');
+  assert.match(body, /<caption[^>]*>/i);
+  assert.match(body, /scope="col"/);
+  assert.match(body, /aria-expanded="false"/);
+  assert.match(body, /aria-controls="/);
+});
+
+test('missing evidence is shown explicitly as unavailable, never as zero', async () => {
+  const { body } = await get('/decision?mode=go-soon');
+  assert.match(body, /Small Dump/);
+  assert.match(body, /unavailable/i);      // Small Dump terrain + history are unavailable
+});
+
+test('safety and methodology copy is present and forbidden claims are absent', async () => {
+  const { body } = await get('/decision?mode=go-soon');
+  assert.match(body, /not avalanche/i);
+  assert.match(body, /elevation/i);         // explains differing elevations
+  assert.doesNotMatch(body, /\bguaranteed\b/i);
+  assert.doesNotMatch(body, /\bbest powder next year\b/i);
+  assert.doesNotMatch(body, /\bsafe\b/i);
+});
+
+test('exclusion count is surfaced when a filter removes resorts', async () => {
+  const { body } = await get('/decision?mode=go-soon&minSnow=10');
+  assert.match(body, /excluded/i);
+});
+
+test('future mode keeps provenance and warnings (no forecast leak, reliability numerator/denominator shown)', async () => {
+  const { body } = await get('/decision?mode=plan-future&window=02-01..02-05');
+  assert.match(body, /of \d+ comparable seasons/i);  // numerator/denominator visible
+  assert.doesNotMatch(body, /Fresh snow \(forecast\)/i);
+});

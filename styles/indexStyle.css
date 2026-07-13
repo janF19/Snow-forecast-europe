@@ -1348,3 +1348,25 @@ nav ul li a:hover {
 .pqi-ok-border { border-left-color: #9aa7b4; }
 .pqi-poor-border { border-left-color: #c4b59a; }
 .pqi-none-border { border-left-color: #d9dee3; }
+
+/* Combined decision view */
+.decision-modes { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
+.decision-mode { padding: 0.4rem 0.9rem; border-radius: 6px; background: #eef; text-decoration: none; }
+.decision-mode.active { background: #2b5; color: #fff; font-weight: 600; }
+.decision-table { width: 100%; border-collapse: collapse; }
+.decision-table th, .decision-table td { padding: 0.5rem; border-bottom: 1px solid #ddd; text-align: left; }
+.decision-snow strong { font-size: 1.5rem; color: #06c; }   /* fresh snow is the strongest element */
+.decision-unavailable { color: #999; font-style: italic; }
+.decision-source, .decision-elev, .decision-country { color: #666; font-size: 0.85rem; }
+.epci-experimental { font-size: 0.75rem; color: #a60; text-transform: uppercase; }
+.decision-guard, .decision-excluded { padding: 0.5rem; background: #fff3cd; border-radius: 6px; }
+.decision-safety { margin-top: 1.5rem; font-size: 0.9rem; color: #444; }
+.decision-timeline th, .decision-timeline td { padding: 0.3rem 0.6rem; }
+@media (max-width: 640px) {
+  /* Preserve the same hierarchy: snow stays the largest element; provenance and warnings stay visible. */
+  .decision-table, .decision-table tbody, .decision-table tr, .decision-table td, .decision-table th { display: block; width: 100%; }
+  .decision-table thead { display: none; }
+  .decision-row { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 0.75rem; padding: 0.5rem; }
+  .decision-snow strong { font-size: 1.8rem; }
+  .decision-safety { display: block; }
+}

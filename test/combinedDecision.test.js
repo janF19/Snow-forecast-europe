@@ -175,6 +175,27 @@ test('plan-future reliability sort tie-breaks on historical median then name', (
   assert.deepEqual(sorted.map((r) => r.resort), ['A', 'B']); // equal reliability, A has higher median
 });
 
+test('two rows both missing the primary metric fall through to secondary metric, then name', () => {
+  const rows = [
+    row({ resort: 'Beta', primarySnowCm: null, terrain: { status: 'unavailable', score: null } }),
+    row({ resort: 'Alpha', primarySnowCm: 15, terrain: { status: 'unavailable', score: null } }),
+    row({ resort: 'Gamma', primarySnowCm: 5, terrain: { status: 'unavailable', score: null } }),
+  ];
+  // Sorting by terrain (all unavailable => tied primary) must not leave the comparator
+  // returning NaN; it should fall through to snowfall (the go-soon secondary), descending.
+  const sorted = sortRows(rows, { mode: 'go-soon', sort: 'terrain' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['Alpha', 'Gamma', 'Beta']);
+});
+
+test('two rows tied on both primary and secondary metric fall through to name ascending', () => {
+  const rows = [
+    row({ resort: 'Zeta', primarySnowCm: null, terrain: { status: 'unavailable', score: null } }),
+    row({ resort: 'Alpha', primarySnowCm: null, terrain: { status: 'unavailable', score: null } }),
+  ];
+  const sorted = sortRows(rows, { mode: 'go-soon', sort: 'terrain' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['Alpha', 'Zeta']);
+});
+
 test('filtering on unavailable evidence excludes the resort and records the reason', () => {
   const rows = [
     row({ resort: 'Keep', primarySnowCm: 30, terrain: { status: 'ok', score: 60 } }),

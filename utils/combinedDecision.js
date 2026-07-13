@@ -184,6 +184,7 @@ function metric(row, key) {
 function desc(a, b) {
   const av = a === null ? -Infinity : a;
   const bv = b === null ? -Infinity : b;
+  if (av === bv) return 0;
   return bv - av;
 }
 

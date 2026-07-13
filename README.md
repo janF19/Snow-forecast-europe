@@ -27,9 +27,9 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
   - Country-specific forecasting views
 
 - **Historical Analysis**
-  - 30-year historical snowfall data analysis
-  - Powder day probability calculations (10cm+ fresh snow)
-  - Monthly powder probability rankings by country
+  - 30-season historical trip reliability, computed per resort for any chosen date window
+  - Powder day probability calculations (10cm+ fresh modelled snow)
+  - Season-by-season evidence with confidence badges (High/Moderate/Limited by sample size)
   - Recent 14-day snowfall tracking
 
 - **Navigation Structure**
@@ -42,28 +42,19 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
 
 ## Key Insights
 
-### Powder Probability Analysis
-The site features a unique powder prediction system based on 30-year historical data. Key findings include:
+### Historical Trip Reliability
+The Historical Data page answers "how often has powder actually shown up here in this date window?" using empirical season-by-season evidence rather than a single average or forecast:
 
-- **Top Overall Resort**: La Clusaz-Manigod with highest powder day probability
-- **Country Strengths**:
-  - France: Dominates early season (December-January)
-  - Switzerland: Most consistent through core winter months
-  - Austria: Excellence in spring conditions
-  - Italy: Strong late-season performance
-
-### Monthly Recommendations
-
-- **December-January**: Focus on French resorts, particularly La Clusaz area
-- **February**: Swiss resorts offer most consistent powder
-- **March-April**: High-altitude Austrian and Swiss resorts for late-season powder
+- **Reliability** = the share of comparably complete historical seasons with at least one powder day in the chosen window (e.g. "18 of 30 seasons — 60%")
+- **Confidence badges** (High ≥25 seasons, Moderate 15–24, Limited <15) flag how much historical sample backs each result
+- Every number exposes its count and denominator, plus median/IQR snowfall and a recent-10-season check, so nothing is presented as a bare percentage
 
 ## Methodology
 
-The powder probability analysis is based on:
-- Definition of a powder day: 10cm+ fresh snow
-- 30-year historical data analysis
-- Validation through random forest regression modeling
+The historical reliability analysis is based on:
+- Definition of a powder day: 10cm+ fresh modelled snow in one local day
+- Up to 30 seasons of modelled historical snowfall (Open-Meteo reanalysis, see `docs/historical-provenance.md`)
+- Seasons below 90% data completeness for the chosen window are excluded, never counted as zero
 - Inspired by [Best Snow](https://bestsnow.net/pwdrpct.htm) methodology
 
 ## Technical Implementation

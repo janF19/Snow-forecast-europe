@@ -9,6 +9,7 @@ function clamp(x, lo, hi) {
 }
 
 function finite(v) {
+  if (v === null || v === undefined) return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
@@ -54,6 +55,65 @@ function epciBand(result) {
   return 'none';
 }
 
+function computeEPCISeries({ snowfall, tmax, wind, rain }) {
+  const daily = snowfall.map((_, i) =>
+    computeDayEPCI({ snow: snowfall[i], tmax: tmax[i], wind: wind[i], rain: rain[i] }));
+  let peak = 0;
+  let peakOffset = 0;
+  daily.forEach((d, i) => {
+    if (d.status === 'ok' && d.score > peak) { peak = d.score; peakOffset = i; }
+  });
+  return { daily, peak, peakOffset };
+}
+
+function elevationForecastSlice(ed) {
+  const end = FORECAST_START + FORECAST_DAYS;
+  return {
+    snowfall: ed.snowfall_sum.slice(FORECAST_START, end),
+    tmax: ed.temperature_2m_max.slice(FORECAST_START, end),
+    wind: ed.wind_speed_10m_max.slice(FORECAST_START, end),
+    rain: ed.rain_sum.slice(FORECAST_START, end),
+  };
+}
+
+const LIFTS = ['Top Lift', 'Mid Lift', 'Bottom Lift'];
+
+function buildResortEPCI(resortData) {
+  const elevations = (resortData && resortData.elevations) || {};
+  const perElevation = {};
+  for (const lift of LIFTS) {
+    const ed = elevations[lift];
+    perElevation[lift] = (ed && Array.isArray(ed.snowfall_sum))
+      ? computeEPCISeries(elevationForecastSlice(ed)) : null;
+  }
+  const top = perElevation['Top Lift'];
+  const peakScore = top ? top.peak : 0;
+  const peakOffset = top ? top.peakOffset : 0;
+
+  let freshSnowOnPeakDay = 0;
+  let bestSnowDay = { offset: 0, snow: 0 };
+  const topEd = elevations['Top Lift'];
+  if (top && topEd && Array.isArray(topEd.snowfall_sum)) {
+    const snowSlice = topEd.snowfall_sum.slice(FORECAST_START, FORECAST_START + FORECAST_DAYS);
+    freshSnowOnPeakDay = Number(snowSlice[peakOffset]) || 0;
+    snowSlice.forEach((v, i) => {
+      const n = Number(v) || 0;
+      if (n > bestSnowDay.snow) bestSnowDay = { offset: i, snow: n };
+    });
+  }
+
+  const degradedDays = top ? top.daily.filter((d) => d.status === 'degraded').length : 0;
+  const unavailableDays = top ? top.daily.filter((d) => d.status === 'unavailable').length : 0;
+
+  return {
+    version: EPCI_VERSION,
+    peakScore, peakOffset,
+    peakBand: epciBand({ status: 'ok', score: peakScore }),
+    freshSnowOnPeakDay, bestSnowDay, degradedDays, unavailableDays, perElevation,
+  };
+}
+
 module.exports = {
   EPCI_VERSION, FORECAST_START, FORECAST_DAYS, clamp, computeDayEPCI, epciBand,
+  computeEPCISeries, buildResortEPCI,
 };

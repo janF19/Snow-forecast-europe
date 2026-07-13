@@ -4,6 +4,8 @@ import sys
 import os
 import logging
 import subprocess
+from datetime import datetime, timezone
+from forecast_provenance import build_provenance
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -140,6 +142,20 @@ def fetch_weather_data(resort):
                 # Store daily values in the output for the specific elevation
                 for idx, var in enumerate(COMMON_PARAMS['daily']):
                     output[resort['resort']]["elevations"][lift_name][var] = daily_data.Variables(idx).ValuesAsNumpy().tolist()
+
+                # Record provenance
+                issue_time = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+                present = [v for v in COMMON_PARAMS['daily'] if output[resort['resort']]["elevations"][lift_name].get(v)]
+                output[resort['resort']]["elevations"][lift_name]["provenance"] = build_provenance(
+                    provider="open-meteo",
+                    model=params.get("models", ["best_match"])[0] if isinstance(params.get("models"), list) else "best_match",
+                    issue_time_utc=issue_time,
+                    api_url=API_URL,
+                    generated_at=issue_time,
+                    units={"snowfall": "cm", "temperature": "°C", "rain": "mm", "wind": "km/h"},
+                    present_vars=present,
+                    expected_vars=["snowfall_sum", "temperature_2m_max", "rain_sum", "wind_speed_10m_max"],
+                )
             else:
                 logging.warning(f"No daily data available for {resort['resort']} at {lift_name}")
         

@@ -237,7 +237,17 @@ const GS_TERRAIN = { _metadata: { computed_at: 'T' }, resorts: {
   'Small Dump': { score: null, source: 'unavailable', reason: 'no_match' },
   'No Forecast': { score: 40, source: 'measured', computed_at: 'T' },
 } };
-const GS_HISTORY = { _metadata: { generated_at: 'G', snowfall_term: 'modelled snowfall' }, resorts: {} };
+const GS_HISTORY = { _metadata: { generated_at: 'G', snowfall_term: 'modelled snowfall' }, resorts: {
+  // Window for startOffset:0..endOffset:2 from NOW (2026-01-15) is 01-15..01-17.
+  // Three seasons, each with all three days present (valid), two of them with a
+  // >=10cm powder day, giving a non-zero, non-null reliability for 'Big Dump'.
+  'Big Dump': { country: 'Austria', elevation: 2200, record_period: { first: '2015-12-01', last: '2024-04-29' },
+    seasons: {
+      '2019-20': { daily: { '01-15': 12, '01-16': 0, '01-17': 0 } },
+      '2020-21': { daily: { '01-15': 0, '01-16': 0, '01-17': 0 } },
+      '2021-22': { daily: { '01-15': 15, '01-16': 11, '01-17': 0 } },
+    } },
+} };
 
 test('go-soon defaults to accumulated fresh snowfall and keeps every resort (missing = unavailable)', () => {
   const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
@@ -336,12 +346,38 @@ test('cross-year plan-future window keeps a season together', () => {
 test('every evidence-availability combination is representable and never coerced to zero', () => {
   const res = buildGoSoon({ weatherData: GS_WEATHER, terrainData: GS_TERRAIN, historyRecords: GS_HISTORY,
     startOffset: 0, endOffset: 2, now: NOW, sort: 'snowfall', filters: {}, weatherFreshness: 'W' });
+
+  // Combination: forecast=ok, terrain=unavailable, history=unavailable (Small Dump: has
+  // a forecast, is unmapped in terrain data, has no history record at all).
   const small = res.rows.find((r) => r.resort === 'Small Dump');
   assert.equal(small.forecast.status, 'ok');        // has forecast
   assert.equal(small.terrain.status, 'unavailable'); // unmapped terrain -> unavailable, not score 0
   assert.equal(small.terrain.score, null);
   assert.equal(small.history.status, 'unavailable'); // no history record -> unavailable, not reliability 0
   assert.equal(small.history.reliability, null);
+
+  // Combination: forecast=ok, terrain=ok, history=ok (Big Dump: has a forecast, a measured
+  // terrain score, and a history record with comparable seasons in the window).
+  const big = res.rows.find((r) => r.resort === 'Big Dump');
+  assert.equal(big.forecast.status, 'ok');
+  assert.equal(big.terrain.status, 'ok');
+  assert.equal(big.terrain.score, 90);
+  assert.equal(big.history.status, 'ok');
+  assert.notEqual(big.history.reliability, null);
+  assert.ok(big.history.reliability > 0); // never zero-coerced despite genuine variability
+  assert.notEqual(big.history.prob1, null);
+  assert.ok(big.history.prob1.denom > 0);
+  assert.notEqual(big.history.prob1.pct, null);
+
+  // Combination: forecast=unavailable, terrain=ok, history=unavailable (No Forecast:
+  // Top Lift forecast missing entirely, but it is mapped in the terrain dataset).
+  const noForecast = res.rows.find((r) => r.resort === 'No Forecast');
+  assert.equal(noForecast.forecast.status, 'unavailable');
+  assert.equal(noForecast.primarySnowCm, null);
+  assert.equal(noForecast.terrain.status, 'ok');
+  assert.equal(noForecast.terrain.score, 40);
+  assert.equal(noForecast.history.status, 'unavailable');
+  assert.equal(noForecast.history.reliability, null);
 });
 
 test('go-soon never emits a combined/blended score field on rows or result', () => {

@@ -172,4 +172,5 @@ module.exports = {
   expectedDays,
   seasonWindowStats,
   resortReliability,
+  buildHistoricalReliability: require('./historicalRanking').buildHistoricalReliability,
 };

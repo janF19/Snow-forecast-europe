@@ -117,3 +117,79 @@ test('history block is unavailable (never zeroed) when no comparable seasons exi
   assert.equal(block.status, 'unavailable');
   assert.equal(block.reliability, null);
 });
+
+// Task 5: sorting and filtering
+const { SORTS, sortRows, filterRows } = require('../utils/combinedDecision');
+
+function row(over) {
+  return Object.assign({
+    id: 't', resort: 'T', country: 'Austria', primarySnowCm: 0,
+    epci: { status: 'unavailable', peakScore: null },
+    terrain: { status: 'unavailable', score: null },
+    history: { status: 'unavailable', reliability: null, median: null, confidence: 'Limited',
+      recentTen: { reliability: null } },
+  }, over);
+}
+
+test('SORTS lists only evidence present in each mode; no combined score key exists', () => {
+  assert.deepEqual(SORTS['go-soon'], ['snowfall', 'epci', 'terrain', 'reliability', 'recentTen', 'median']);
+  assert.deepEqual(SORTS['plan-future'], ['reliability', 'recentTen', 'median', 'terrain']);
+  assert.ok(!SORTS['go-soon'].includes('combined'));
+  assert.ok(!SORTS['go-soon'].includes('score'));
+});
+
+test('go-soon default sort is fresh snowfall desc, name asc on ties', () => {
+  const rows = [
+    row({ resort: 'Beta', primarySnowCm: 10 }),
+    row({ resort: 'Alpha', primarySnowCm: 10 }),
+    row({ resort: 'Gamma', primarySnowCm: 25 }),
+  ];
+  const sorted = sortRows(rows, { mode: 'go-soon', sort: 'snowfall' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['Gamma', 'Alpha', 'Beta']);
+});
+
+test('unavailable primary metric sorts last regardless of secondary', () => {
+  const rows = [
+    row({ resort: 'HasSnow', primarySnowCm: 3 }),
+    row({ resort: 'NoForecast', forecast: { status: 'unavailable' }, primarySnowCm: null }),
+  ];
+  const sorted = sortRows(rows, { mode: 'go-soon', sort: 'snowfall' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['HasSnow', 'NoForecast']);
+});
+
+test('terrain sort tie-breaks on the mode secondary (snowfall in go-soon) then name', () => {
+  const rows = [
+    row({ resort: 'B', primarySnowCm: 5, terrain: { status: 'ok', score: 70 } }),
+    row({ resort: 'A', primarySnowCm: 20, terrain: { status: 'ok', score: 70 } }),
+  ];
+  const sorted = sortRows(rows, { mode: 'go-soon', sort: 'terrain' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['A', 'B']); // equal score, A has more snow
+});
+
+test('plan-future reliability sort tie-breaks on historical median then name', () => {
+  const rows = [
+    row({ resort: 'B', history: { status: 'ok', reliability: 80, median: 10, recentTen: {} } }),
+    row({ resort: 'A', history: { status: 'ok', reliability: 80, median: 25, recentTen: {} } }),
+  ];
+  const sorted = sortRows(rows, { mode: 'plan-future', sort: 'reliability' });
+  assert.deepEqual(sorted.map((r) => r.resort), ['A', 'B']); // equal reliability, A has higher median
+});
+
+test('filtering on unavailable evidence excludes the resort and records the reason', () => {
+  const rows = [
+    row({ resort: 'Keep', primarySnowCm: 30, terrain: { status: 'ok', score: 60 } }),
+    row({ resort: 'DropSnow', primarySnowCm: 2, terrain: { status: 'ok', score: 60 } }),
+    row({ resort: 'DropTerrain', primarySnowCm: 30, terrain: { status: 'unavailable', score: null } }),
+  ];
+  const { rows: kept, exclusions } = filterRows(rows, { minSnow: 10, minTerrain: 50 });
+  assert.deepEqual(kept.map((r) => r.resort), ['Keep']);
+  assert.equal(exclusions.length, 2);
+  assert.ok(exclusions.find((e) => e.resort === 'DropTerrain' && /terrain/.test(e.reason)));
+});
+
+test('country filter is exact and counted', () => {
+  const rows = [row({ resort: 'AT', country: 'Austria' }), row({ resort: 'IT', country: 'Italy' })];
+  const { rows: kept, exclusions } = filterRows(rows, { country: 'Italy' });
+  assert.deepEqual(kept.map((r) => r.resort), ['IT']);
+  assert.equal(exclusions.length, 1);
+});

@@ -160,4 +160,76 @@ function buildHistoryBlock(displayName, historyRecord, window) {
   };
 }
 
-module.exports = { HORIZON, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock };
+const SORTS = {
+  'go-soon': ['snowfall', 'epci', 'terrain', 'reliability', 'recentTen', 'median'],
+  'plan-future': ['reliability', 'recentTen', 'median', 'terrain'],
+};
+
+const SECONDARY = { 'go-soon': 'snowfall', 'plan-future': 'median' };
+
+// Single documented metric extractor. Returns null when the backing evidence is
+// unavailable, so unavailable rows sort last (never treated as a real 0).
+function metric(row, key) {
+  switch (key) {
+    case 'snowfall': return typeof row.primarySnowCm === 'number' ? row.primarySnowCm : null;
+    case 'epci': return row.epci && row.epci.status === 'ok' ? row.epci.peakScore : null;
+    case 'terrain': return row.terrain && row.terrain.status === 'ok' ? row.terrain.score : null;
+    case 'reliability': return row.history && row.history.status === 'ok' ? row.history.reliability : null;
+    case 'recentTen': return row.history && row.history.recentTen ? row.history.recentTen.reliability : null;
+    case 'median': return row.history ? row.history.median : null;
+    default: return null;
+  }
+}
+
+function desc(a, b) {
+  const av = a === null ? -Infinity : a;
+  const bv = b === null ? -Infinity : b;
+  return bv - av;
+}
+
+function sortRows(rows, { mode, sort }) {
+  const primary = sort;
+  const secondary = SECONDARY[mode];
+  return rows.slice().sort((a, b) => {
+    const p = desc(metric(a, primary), metric(b, primary));
+    if (p !== 0) return p;
+    if (secondary !== primary) {
+      const s = desc(metric(a, secondary), metric(b, secondary));
+      if (s !== 0) return s;
+    }
+    return a.resort.localeCompare(b.resort);
+  });
+}
+
+// A filter on evidence a resort lacks excludes it and records why. Excluded resorts
+// are counted (exclusions.length), never silently dropped.
+function filterRows(rows, filters = {}) {
+  const kept = [];
+  const exclusions = [];
+  for (const r of rows) {
+    let reason = null;
+    if (filters.country && r.country !== filters.country) reason = `country != ${filters.country}`;
+    else if (filters.minSnow != null && !(typeof r.primarySnowCm === 'number' && r.primarySnowCm >= filters.minSnow))
+      reason = `forecast snowfall below ${filters.minSnow} or unavailable`;
+    else if (filters.minTerrain != null && !(r.terrain && r.terrain.status === 'ok' && r.terrain.score >= filters.minTerrain))
+      reason = `terrain score below ${filters.minTerrain} or unavailable`;
+    else if (filters.terrainSource === 'measured' && !(r.terrain && r.terrain.status === 'ok'))
+      reason = 'terrain not measured';
+    else if (filters.minConfidence && !confidenceAtLeast(r.history, filters.minConfidence))
+      reason = `historical confidence below ${filters.minConfidence} or unavailable`;
+    if (reason) exclusions.push({ resort: r.resort, reason });
+    else kept.push(r);
+  }
+  return { rows: kept, exclusions };
+}
+
+const CONFIDENCE_RANK = { Limited: 0, Moderate: 1, High: 2 };
+function confidenceAtLeast(history, min) {
+  if (!history || history.status !== 'ok') return false;
+  return (CONFIDENCE_RANK[history.confidence] ?? -1) >= (CONFIDENCE_RANK[min] ?? 99);
+}
+
+module.exports = {
+  HORIZON, SORTS, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock,
+  sortRows, filterRows,
+};

@@ -29,3 +29,6 @@ __pycache__/
 # Only the manifest (freeride/data/openskimap/manifest.json) is tracked.
 freeride/data/openskimap/*.geojson
 freeride/data/dem/
+
+# Forecast snapshots accumulate daily; keep only the README.
+data/forecast_snapshots/*.jsonl

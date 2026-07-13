@@ -4,7 +4,7 @@ const path = require('path');
 const { stdout, stderr } = require('process');
 const { exec } = require('child_process');
 const { rankedTerrain } = require('../utils/freerideScore');
-const { buildResortPQI, pqiBand } = require('../utils/powderQuality');
+const { buildResortEPCI, epciBand, EPCI_VERSION } = require('../utils/epci');
 const { forecastDayLabel } = require('../utils/forecastDate');
 const { buildHistoricalReliability } = require('../utils/historicalReliability');
 
@@ -30,6 +30,14 @@ const getLiftElevation = (resortData, liftName) => {
 
 const getLiftSnowSum = (resortData, sumName, liftName) => {
     return resortData?.[sumName]?.[liftName] ?? 0;
+};
+
+const FORECAST_START = 14;
+const seriesSnow = (rd, lift, i) =>
+    Math.round(Number(rd?.elevations?.[lift]?.snowfall_sum?.[FORECAST_START + i]) || 0);
+const seriesVar = (rd, lift, key, i) => {
+    const v = Number(rd?.elevations?.[lift]?.[key]?.[FORECAST_START + i]);
+    return Number.isFinite(v) ? Math.round(v) : null;
 };
 
 exports.getFreerideTerrain = (req, res) => {
@@ -84,18 +92,19 @@ exports.getSnowfallForResorts = async (req, res) => {
         const now = new Date();
         const topPowder = Object.entries(weatherData)
             .map(([resortName, resortData]) => {
-                const pqi = buildResortPQI(resortData);
+                const epci = buildResortEPCI(resortData);
+                const top = epci.perElevation['Top Lift'];
                 return {
-                    resort: resortName,
-                    country: resortData.country,
-                    peakPQI: Math.round(pqi.peakPQI),
-                    band: pqiBand(pqi.peakPQI),
-                    peakDayLabel: forecastDayLabel(pqi.peakOffset, now),
-                    freshSnow: Math.round(pqi.freshSnowOnPeakDay),
+                    resort: resortName, country: resortData.country,
+                    bestSnow: Math.round(epci.bestSnowDay.snow),
+                    peakDayLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
+                    peakScore: Math.round(epci.peakScore),
+                    band: epci.peakBand,
+                    status: top ? top.daily[epci.peakOffset].status : 'unavailable',
                 };
             })
-            .filter((resort) => resort.peakPQI > 0)
-            .sort((a, b) => b.peakPQI - a.peakPQI)
+            .filter((r) => r.bestSnow > 0)
+            .sort((a, b) => b.bestSnow - a.bestSnow)
             .slice(0, 5);
 
         // Log the sorted data to verify URLs are present
@@ -389,6 +398,9 @@ exports.getAllHistoryData = (req, res) => {
     res.render('allHistory');
 };
 
+const EPCI_DISCLAIMER =
+    'Experimental estimate based on forecast weather—not an observed measurement of snow quality.';
+
 exports.getPowderQuality = async (req, res) => {
     try {
         const weatherData = JSON.parse(fs.readFileSync(allResortsForecastPath, 'utf-8'));
@@ -397,32 +409,38 @@ exports.getPowderQuality = async (req, res) => {
 
         const resorts = Object.entries(weatherData)
             .map(([resortName, resortData]) => {
-                const pqi = buildResortPQI(resortData);
+                const epci = buildResortEPCI(resortData);
+                const top = epci.perElevation['Top Lift'];
                 const elevations = {};
                 ['Top Lift', 'Mid Lift', 'Bottom Lift'].forEach((lift) => {
-                    const series = pqi.perElevation[lift];
-                    elevations[lift] = series
-                        ? series.dailyPQI.map((value) => ({ value: Math.round(value), band: pqiBand(value) }))
-                        : null;
+                    const series = epci.perElevation[lift];
+                    elevations[lift] = series ? series.daily.map((d, i) => ({
+                        score: d.score === null ? null : Math.round(d.score),
+                        band: epciBand(d), status: d.status,
+                        snow: seriesSnow(resortData, lift, i),
+                        tmax: seriesVar(resortData, lift, 'temperature_2m_max', i),
+                        rain: seriesVar(resortData, lift, 'rain_sum', i),
+                        wind: seriesVar(resortData, lift, 'wind_speed_10m_max', i),
+                    })) : null;
                 });
+                const peakStatus = top ? top.daily[epci.peakOffset].status : 'unavailable';
                 return {
-                    resort: resortName,
-                    country: resortData.country,
-                    url: resortData.url || '#',
-                    peakPQI: Math.round(pqi.peakPQI),
-                    band: pqiBand(pqi.peakPQI),
-                    peakDayLabel: forecastDayLabel(pqi.peakOffset, now),
-                    freshSnow: Math.round(pqi.freshSnowOnPeakDay),
+                    resort: resortName, country: resortData.country, url: resortData.url || '#',
+                    bestSnow: Math.round(epci.bestSnowDay.snow),
+                    bestSnowLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
+                    peakScore: Math.round(epci.peakScore),
+                    band: epci.peakBand, status: peakStatus,
+                    degradedDays: epci.degradedDays, unavailableDays: epci.unavailableDays,
                     elevations,
                 };
             })
-            .filter((resort) => resort.peakPQI > 0)
-            .sort((a, b) => b.peakPQI - a.peakPQI);
+            .filter((r) => r.bestSnow > 0)
+            .sort((a, b) => b.bestSnow - a.bestSnow);
 
-        res.render('powderQuality', { resorts, dayLabels });
+        res.render('epci', { resorts, dayLabels, epciVersion: EPCI_VERSION, disclaimer: EPCI_DISCLAIMER });
     } catch (error) {
-        console.error('Error computing powder quality:', error);
-        res.status(500).render('error', { error: 'Failed to load powder quality data' });
+        console.error('Error computing EPCI:', error);
+        res.status(500).render('error', { error: 'Failed to load EPCI data' });
     }
 };
 

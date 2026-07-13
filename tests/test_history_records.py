@@ -1,5 +1,9 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
+from history.build_records import build_from_rows, write_records
 from history.records import season_label, build_records
 from history.validation import validate_records
 
@@ -63,6 +67,34 @@ class ValidationTests(unittest.TestCase):
     def test_validate_records_requires_metadata_and_resorts(self):
         with self.assertRaisesRegex(ValueError, "missing _metadata"):
             validate_records({"resorts": {}})
+
+
+class BatchOutputTests(unittest.TestCase):
+    def test_build_from_rows_embeds_provenance_metadata(self):
+        payload = build_from_rows(ROWS, snowfall_term="modelled snowfall",
+                                  provenance_status="documented",
+                                  generated_at="2026-07-11T00:00:00Z")
+        meta = payload["_metadata"]
+        self.assertEqual(meta["schema_version"], "history-reliability/v1")
+        self.assertEqual(meta["snowfall_term"], "modelled snowfall")
+        self.assertEqual(meta["provenance_status"], "documented")
+        self.assertEqual(meta["powder_day_cm"], 10)
+        self.assertEqual(meta["generated_at"], "2026-07-11T00:00:00Z")
+
+    def test_write_records_is_deterministic_and_atomic(self):
+        payload = build_from_rows(ROWS, snowfall_term="modelled snowfall",
+                                  provenance_status="documented",
+                                  generated_at="2026-07-11T00:00:00Z")
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "records.json"
+            write_records(payload, out)
+            first = out.read_text(encoding="utf-8")
+            write_records(payload, out)
+            second = out.read_text(encoding="utf-8")
+            self.assertEqual(first, second)
+            self.assertFalse(list(Path(tmp).glob("*.tmp")))
+            reloaded = json.loads(first)
+            self.assertEqual(reloaded["_metadata"]["resort_count"], 1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compare resorts | European Powder Forecast</title><link rel="stylesheet" href="/styles/indexStyle.css"></head>
+<body><%- include('partials/navbar') %>
+<div class="container">
+  <a href="/decision?mode=go-soon">Go soon</a> <a href="/decision?mode=plan-future">Plan future dates</a>
+  <% if (model.guard === 'range_exceeds_horizon') { %><p class="decision-guard"><%= model.warnings[0] %></p><% } %>
+  <% if (mode === 'go-soon') { %><p>Fresh snow ranking. EPCI is experimental (<%= model.meta.epciVersion %>).</p><% } %>
+  <% if (mode === 'plan-future') { %><p>Historical reliability is not a forecast for the selected year.</p><% } %>
+</div></body></html>

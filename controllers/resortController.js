@@ -3,10 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const { stdout, stderr } = require('process');
 const { exec } = require('child_process');
-const { rankedTerrain } = require('../utils/freerideScore');
+const { rankedTerrain, loadFreerideTerrain } = require('../utils/freerideScore');
 const { buildResortEPCI, epciBand, EPCI_VERSION } = require('../utils/epci');
-const { forecastDayLabel } = require('../utils/forecastDate');
+const { forecastDayLabel, offsetForDate } = require('../utils/forecastDate');
 const { buildHistoricalReliability } = require('../utils/historicalReliability');
+const { buildGoSoon, buildPlanFuture } = require('../utils/combinedDecision');
 
 
 
@@ -23,6 +24,61 @@ function loadHistoryRecords() {
     historyRecordsCache = JSON.parse(raw);
     return historyRecordsCache;
 }
+
+// terrain records loaded once; mirrors loadHistoryRecords caching. Reuses
+// loadFreerideTerrain (utils/freerideScore.js) instead of re-parsing the file,
+// since that function already strips _metadata and shapes { _metadata, resorts }.
+const freerideTerrainPath = process.env.FREERIDE_TERRAIN_PATH ||
+    path.join(__dirname, '..', 'freeride_terrain.json');
+let terrainCache = null;
+function loadTerrain() {
+    if (terrainCache) return terrainCache;
+    terrainCache = loadFreerideTerrain(freerideTerrainPath);
+    return terrainCache;
+}
+
+function parseWindowParam(windowStr) {
+    const m = /^(\d{2}-\d{2})\.\.(\d{2}-\d{2})$/.exec(String(windowStr || ''));
+    return m ? { startMMDD: m[1], endMMDD: m[2] } : { startMMDD: '02-01', endMMDD: '02-05' };
+}
+
+function collectFilters(q) {
+    const filters = {};
+    if (q.country) filters.country = q.country;
+    if (q.minSnow) filters.minSnow = Number(q.minSnow);
+    if (q.minTerrain) filters.minTerrain = Number(q.minTerrain);
+    if (q.terrainSource) filters.terrainSource = q.terrainSource;
+    if (q.minConfidence) filters.minConfidence = q.minConfidence;
+    return filters;
+}
+
+exports.getDecisionView = (req, res) => {
+    try {
+        const q = req.query || {};
+        const mode = q.mode === 'plan-future' ? 'plan-future' : 'go-soon';
+        const now = q.today ? new Date(`${q.today}T12:00:00`) : new Date();
+        const weatherData = JSON.parse(fs.readFileSync(allResortsForecastPath, 'utf-8'));
+        const terrainData = loadTerrain();
+        const historyRecords = loadHistoryRecords();
+        const filters = collectFilters(q);
+        const weatherFreshness = (() => { try { return fs.statSync(allResortsForecastPath).mtime.toISOString(); } catch { return null; } })();
+
+        let model;
+        if (mode === 'plan-future') {
+            model = buildPlanFuture({ terrainData, historyRecords, window: parseWindowParam(q.window), now,
+                sort: q.sort || 'reliability', filters });
+        } else {
+            const startOffset = q.start ? offsetForDate(q.start, now) : 0;
+            const endOffset = q.end ? offsetForDate(q.end, now) : startOffset;
+            model = buildGoSoon({ weatherData, terrainData, historyRecords, startOffset, endOffset, now,
+                sort: q.sort || 'snowfall', filters, weatherFreshness });
+        }
+        res.render('combinedDecision', { model, mode });
+    } catch (error) {
+        console.error('Error building decision view:', error);
+        res.status(500).render('error', { error: 'Failed to load decision view' });
+    }
+};
 
 const getLiftElevation = (resortData, liftName) => {
     return resortData?.elevations?.[liftName]?.elevation_m ?? 0;

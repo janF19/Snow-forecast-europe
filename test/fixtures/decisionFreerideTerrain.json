@@ -1,0 +1,6 @@
+{
+  "_metadata": { "computed_at": "2026-07-12T21:36:37Z", "beta": true, "counts": { "measured": 2, "unavailable": 1 }, "total_resorts": 3 },
+  "Big Dump": { "score": 90, "source": "measured", "freeride_vertical_m": 1500, "freeride_length_km": 8.2, "tierA_count": 4, "tierB_count": 6, "freeride_run_count": 10, "ski_area_name": "Big Area", "match_method": "override", "computed_at": "2026-07-12T21:36:37Z" },
+  "No Forecast": { "score": 40, "source": "measured", "freeride_vertical_m": 600, "freeride_length_km": 3.1, "tierA_count": 1, "tierB_count": 2, "freeride_run_count": 3, "ski_area_name": "Quiet Area", "match_method": "containment", "computed_at": "2026-07-12T21:36:37Z" },
+  "Small Dump": { "score": null, "source": "unavailable", "reason": "no_match", "ski_area_name": null, "match_method": null }
+}

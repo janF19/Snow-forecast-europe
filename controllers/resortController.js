@@ -94,16 +94,17 @@ exports.getSnowfallForResorts = async (req, res) => {
             .map(([resortName, resortData]) => {
                 const epci = buildResortEPCI(resortData);
                 const top = epci.perElevation['Top Lift'];
+                const bestSnowDayResult = top ? top.daily[epci.bestSnowDay.offset] : null;
                 return {
                     resort: resortName, country: resortData.country,
                     bestSnow: Math.round(epci.bestSnowDay.snow),
                     peakDayLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
-                    peakScore: Math.round(epci.peakScore),
-                    band: epci.peakBand,
-                    status: top ? top.daily[epci.peakOffset].status : 'unavailable',
+                    peakScore: Math.round((bestSnowDayResult && bestSnowDayResult.score) || 0),
+                    band: epciBand(bestSnowDayResult),
+                    status: bestSnowDayResult ? bestSnowDayResult.status : 'unavailable',
                 };
             })
-            .filter((r) => r.bestSnow > 0)
+            .filter((r) => r.bestSnow > 0 || r.status === 'unavailable')
             .sort((a, b) => b.bestSnow - a.bestSnow)
             .slice(0, 5);
 
@@ -423,18 +424,19 @@ exports.getPowderQuality = async (req, res) => {
                         wind: seriesVar(resortData, lift, 'wind_speed_10m_max', i),
                     })) : null;
                 });
-                const peakStatus = top ? top.daily[epci.peakOffset].status : 'unavailable';
+                const bestSnowDayResult = top ? top.daily[epci.bestSnowDay.offset] : null;
+                const status = bestSnowDayResult ? bestSnowDayResult.status : 'unavailable';
                 return {
                     resort: resortName, country: resortData.country, url: resortData.url || '#',
                     bestSnow: Math.round(epci.bestSnowDay.snow),
                     bestSnowLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
-                    peakScore: Math.round(epci.peakScore),
-                    band: epci.peakBand, status: peakStatus,
+                    peakScore: Math.round((bestSnowDayResult && bestSnowDayResult.score) || 0),
+                    band: epciBand(bestSnowDayResult), status,
                     degradedDays: epci.degradedDays, unavailableDays: epci.unavailableDays,
                     elevations,
                 };
             })
-            .filter((r) => r.bestSnow > 0)
+            .filter((r) => r.bestSnow > 0 || r.status === 'unavailable')
             .sort((a, b) => b.bestSnow - a.bestSnow);
 
         res.render('epci', { resorts, dayLabels, epciVersion: EPCI_VERSION, disclaimer: EPCI_DISCLAIMER });

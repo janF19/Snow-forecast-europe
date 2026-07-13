@@ -134,5 +134,22 @@
     "wind": 9,
     "wet_snow": false,
     "flags": []
+  },
+  {
+    "station_id": "STN2_FAR",
+    "lat": 47.40,
+    "lon": 13.30,
+    "elevation": 2100,
+    "type": "automated",
+    "exposure": "wind_sheltered",
+    "time": "2024-12-15T06:00:00Z",
+    "aggregation": "daily",
+    "new_snow": 40,
+    "new_snow_source": "manual_board",
+    "t": -6,
+    "rain": 0,
+    "wind": 14,
+    "wet_snow": false,
+    "flags": []
   }
 ]

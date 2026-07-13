@@ -5,6 +5,7 @@ import unittest
 from validation.observations import normalise_observation
 from validation.evaluate import season_of, join_pairs, spearman, evaluate
 from validation.report import build_report, to_markdown
+from validation.station_match import match_station
 
 HERE = os.path.dirname(__file__)
 RESORTS = {"Fixture Alpha": {"latitude": 47.20, "longitude": 13.30, "elevation_m": 2100}}
@@ -32,9 +33,24 @@ class TestEvaluate(unittest.TestCase):
 
     def test_join_keeps_only_accepted_matches(self):
         snaps, obs = load()
+        # obs now includes one far-away station (STN2_FAR, ~22km from the
+        # resort) sharing a target_date with an accepted snapshot. If
+        # join_pairs stopped filtering on match_station's acceptance, this
+        # extra same-day candidate would leak into matched and push the
+        # count to 9.
+        self.assertEqual(len(obs), 9)
         matched = join_pairs(snaps, obs, RESORTS)
         self.assertTrue(all(m["match"]["accepted"] for m in matched))
+        self.assertEqual(len(matched), 8)
         self.assertTrue(len(matched) >= 4)
+
+    def test_far_station_is_rejected_by_match_station(self):
+        snaps, obs = load()
+        far = next(o for o in obs if o["station_id"] == "STN2_FAR")
+        result = match_station(RESORTS["Fixture Alpha"], far)
+        self.assertFalse(result["accepted"])
+        self.assertEqual(result["reason"], "distance")
+        self.assertGreater(result["distance_km"], 15)
 
     def test_evaluation_is_time_separated_and_uncalibrated(self):
         snaps, obs = load()

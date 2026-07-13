@@ -3,15 +3,26 @@ const fs = require('fs');
 const path = require('path');
 const { stdout, stderr } = require('process');
 const { exec } = require('child_process');
-const os = require('os');
 const { rankedTerrain } = require('../utils/freerideScore');
 const { buildResortPQI, pqiBand } = require('../utils/powderQuality');
 const { forecastDayLabel } = require('../utils/forecastDate');
+const { buildHistoricalReliability } = require('../utils/historicalReliability');
 
 
 
 const allResortsForecastPath = process.env.WEATHER_DATA_PATH ||
     path.join(__dirname, '../weather_dataFull_7.json');
+
+const historyRecordsPath = process.env.HISTORY_RECORDS_PATH ||
+    path.join(__dirname, '..', 'history_season_records.json');
+
+let historyRecordsCache = null;
+function loadHistoryRecords() {
+    if (historyRecordsCache) return historyRecordsCache;
+    const raw = fs.readFileSync(historyRecordsPath, 'utf-8');
+    historyRecordsCache = JSON.parse(raw);
+    return historyRecordsCache;
+}
 
 const getLiftElevation = (resortData, liftName) => {
     return resortData?.elevations?.[liftName]?.elevation_m ?? 0;
@@ -416,121 +427,26 @@ exports.getPowderQuality = async (req, res) => {
 };
 
 exports.calculateAllHistory = (req, res) => {
+    const dateFormatRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
     const startDate = req.body.startDate;
     const endDate = req.body.endDate;
     const country = req.body.country || 'all';
 
-    console.log('Received parameters:', { startDate, endDate, country });
-    console.log('Environment variables:', {
-        VIRTUAL_ENV: process.env.VIRTUAL_ENV,
-        PATH: process.env.PATH
-    });
-
-    // Input validation
     if (!startDate || !endDate) {
-        console.log('Missing date parameters');
         return res.status(400).json({ message: 'Start date and end date are required' });
     }
-
-    // Validate date format (MM-DD)
-    const dateFormatRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
     if (!dateFormatRegex.test(startDate) || !dateFormatRegex.test(endDate)) {
-        console.log('Invalid date format received:', { startDate, endDate });
         return res.status(400).json({ message: 'Invalid date format. Use MM-DD format.' });
     }
 
-    // Construct the absolute path to the Python script
-    const scriptPath = path.join(__dirname, '..', 'calculateAllHistory.py');
-    const csvPath = path.join(__dirname, '..', 'filtered_weather_data.csv');
-    
-    console.log('Executing Python script:', scriptPath);
-    console.log('CSV path:', csvPath);
-    console.log('Current working directory:', process.cwd());
-    
-    // Check if the CSV file exists
-    if (!fs.existsSync(csvPath)) {
-        console.error('CSV file not found at path:', csvPath);
-        return res.status(500).json({ message: 'Data file not found' });
+    try {
+        const records = loadHistoryRecords();
+        const result = buildHistoricalReliability(records, {
+            startMMDD: startDate, endMMDD: endDate, country,
+        });
+        return res.json(result);
+    } catch (error) {
+        console.error('Error computing historical reliability:', error);
+        return res.status(500).json({ message: 'Error computing historical reliability' });
     }
-
-    // Create a temporary directory for the virtual environment
-    const tempVenvDir = path.join(os.tmpdir(), 'temp_venv_' + Date.now());
-    console.log('Creating temporary virtual environment at:', tempVenvDir);
-
-    // Create a virtual environment and install pandas
-    const setupCommand = `python3 -m venv ${tempVenvDir} && 
-                         ${tempVenvDir}/bin/pip install pandas && 
-                         ${tempVenvDir}/bin/python "${scriptPath}" "${startDate}" "${endDate}" "${country}"`;
-    
-    console.log('Running setup command:', setupCommand);
-    
-    exec(setupCommand, { cwd: path.join(__dirname, '..') }, (error, stdout, stderr) => {
-        // Log all outputs for debugging
-        console.log('Python stdout:', stdout);
-        if (stderr) {
-            console.error('Python stderr:', stderr);
-        }
-        
-        // Clean up the temporary virtual environment
-        try {
-            exec(`rm -rf ${tempVenvDir}`);
-            console.log('Cleaned up temporary virtual environment');
-        } catch (cleanupError) {
-            console.error('Error cleaning up virtual environment:', cleanupError);
-        }
-        
-        if (error) {
-            console.error('Python script execution error:', error);
-            return res.status(500).json({ 
-                message: 'Error calculating snowfall', 
-                error: error.message,
-                stderr: stderr
-            });
-        }
-
-        try {
-            // Split output into lines and process only relevant lines
-            const lines = stdout.split('\n');
-            const results = [];
-
-            for (const line of lines) {
-                if (!line.startsWith('Location:')) continue;
-                
-                // Parse the line using more robust string manipulation
-                const parts = line.split(', ');
-                if (parts.length >= 4) {
-                    const location = parts[0].replace('Location:', '').trim();
-                    const avgSnowfall = parseFloat(parts[1].replace('Avg Snowfall:', '').trim());
-                    const totalSnowfall = parseFloat(parts[2].replace('Total Snowfall:', '').trim());
-                    const country = parts[3].replace('Country:', '').trim();
-
-                    if (location && !isNaN(avgSnowfall) && !isNaN(totalSnowfall)) {
-                        results.push({
-                            location,
-                            avg_snowfall: avgSnowfall,
-                            total_snowfall: totalSnowfall,
-                            country
-                        });
-                    }
-                }
-            }
-
-            if (results.length > 0) {
-                res.json({ results });
-            } else {
-                res.json({ 
-                    results: [], 
-                    message: country === 'all' 
-                        ? 'No data found for the specified dates.' 
-                        : `No data found for ${country} in the specified dates.`
-                });
-            }
-        } catch (parseError) {
-            console.error('Error parsing output:', parseError);
-            res.json({
-                results: [],
-                message: 'Error parsing snowfall data. Please try again.'
-            });
-        }
-    });
 };

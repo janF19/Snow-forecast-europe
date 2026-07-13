@@ -1,13 +1,62 @@
-const { test } = require('node:test');
+const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
+const http = require('node:http');
 const path = require('node:path');
 const fs = require('node:fs');
 const { buildResortEPCI, epciBand } = require('../utils/epci');
 
-test('controller builds snowfall-first topPowder without throwing', () => {
-  process.env.WEATHER_DATA_PATH = path.join(__dirname, 'fixtures', 'epciWeatherData.json');
-  const ctrl = require('../controllers/resortController');
-  assert.equal(typeof ctrl.getPowderQuality, 'function');
+process.env.WEATHER_DATA_PATH = path.join(__dirname, 'fixtures', 'epciWeatherData.json');
+
+const app = require('../app');
+let server;
+
+function get(pathname) {
+  return new Promise((resolve, reject) => {
+    const request = http.get({ hostname: '127.0.0.1', port: server.address().port, path: pathname }, (res) => {
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => resolve({ res, body }));
+    });
+    request.on('error', reject);
+  });
+}
+
+before(async () => {
+  server = app.listen(0);
+  await new Promise((resolve) => server.once('listening', resolve));
+});
+
+after(async () => {
+  await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+});
+
+test('powder-quality renders snowfall-first, disclaimer, version, separated fields', async () => {
+  const { res, body } = await get('/powder-quality');
+  assert.equal(res.statusCode, 200);
+  assert.match(body, /Experimental Powder Conditions Index/);
+  assert.match(body, /Experimental estimate based on forecast weather—not an observed measurement of snow quality\./);
+  assert.match(body, /epci\/v1/);
+  assert.match(body, /Fresh snow/i);
+  assert.match(body, /Temp/i);
+  assert.match(body, /Rain/i);
+  assert.match(body, /Wind/i);
+  assert.doesNotMatch(body, /\bvalidated\b/i);
+  assert.doesNotMatch(body, /physical snow-quality model/i);
+  assert.ok(body.indexOf('Fixture Strong') < body.indexOf('Fixture Degraded'));
+});
+
+test('degraded resort is labelled degraded, not given a favourable badge', async () => {
+  const { body } = await get('/powder-quality');
+  assert.match(body, /Fixture Degraded/);
+  assert.match(body, /degraded/i);
+});
+
+test('home page EPCI cards lead with fresh snow, carry disclaimer and version', async () => {
+  const { body } = await get('/');
+  assert.match(body, /Experimental Powder Conditions Index/);
+  assert.match(body, /Experimental estimate based on forecast weather/);
+  assert.match(body, /epci\/v1/);
 });
 
 // The controller only exports Express handlers (req, res) => ..., so there is no

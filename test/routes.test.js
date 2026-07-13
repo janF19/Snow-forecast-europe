@@ -41,11 +41,14 @@ test('all public GET routes render successfully with deterministic fixtures', as
       assert.match(body, /European Powder Forecast/);
       assert.match(body, /freeride-home-section/);
       assert.match(body, /Experimental Powder Conditions Index/);
-      assert.doesNotMatch(body, /Missing Top/);
+      // "Missing Top" has no Top Lift forecast data at all, so EPCI now correctly
+      // surfaces it as 'unavailable' rather than silently hiding it (old behaviour).
+      assert.match(body, /Missing Top/);
+      assert.match(body, /unavailable/i);
     }
     if (pathname === '/powder-quality') {
       assert.match(body, /Experimental Powder Conditions Index/);
-      assert.match(body, /best powder day in the next 7 days/);
+      assert.match(body, /best fresh-snow day in the next 7 days/);
     }
     if (pathname === '/freeride') {
       assert.match(body, /Lift-served freeride terrain/);

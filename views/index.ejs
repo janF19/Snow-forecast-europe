@@ -36,16 +36,18 @@
 
         <% if (typeof topPowder !== 'undefined' && topPowder && topPowder.length) { %>
         <section class="pqi-home-section">
-            <div class="section-one-header">
+            <div class="section-header">
                 <h2>Experimental Powder Conditions Index</h2>
+                <p class="epci-disclaimer"><%= epciDisclaimer %></p>
+                <p class="epci-version">Formula version: <%= epciVersion %></p>
                 <div class="button-group"><a href="/powder-quality" class="btn">See experimental conditions</a></div>
             </div>
             <div class="pqi-home-grid">
                 <% topPowder.forEach(function(resort) { %>
                     <a href="/powder-quality" class="pqi-card pqi-<%= resort.band %>-border">
-                        <span class="pqi-badge pqi-<%= resort.band %>"><%= resort.peakPQI %></span>
                         <span class="pqi-card-name"><%= resort.resort %></span>
-                        <span class="pqi-card-meta"><%= resort.freshSnow %> cm &middot; <%= resort.peakDayLabel %></span>
+                        <span class="pqi-card-meta"><%= resort.bestSnow %> cm fresh &middot; <%= resort.peakDayLabel %></span>
+                        <span class="pqi-badge pqi-<%= resort.band %>"><%= resort.status === 'ok' ? resort.peakScore : resort.status %></span>
                     </a>
                 <% }); %>
             </div>

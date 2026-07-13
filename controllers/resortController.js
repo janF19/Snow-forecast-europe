@@ -118,7 +118,9 @@ exports.getSnowfallForResorts = async (req, res) => {
             sortedByUpcoming7Days,
             sortedByLast14Days,
             freerideTop5: rankedTerrain().ranked.filter(item => item.source === 'measured').slice(0, 5),
-            topPowder
+            topPowder,
+            epciVersion: EPCI_VERSION,
+            epciDisclaimer: EPCI_DISCLAIMER
         });
     } catch (error) {
         console.error('Error reading weather data:', error);

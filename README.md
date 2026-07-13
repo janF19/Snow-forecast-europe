@@ -38,7 +38,7 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
   - Current formula version `epci/v1`; the version, every input factor, and per-factor breakdown are inspectable in the expanded view
   - Temperature, rain, and wind are always shown as their own separate figures, never folded invisibly into the index
   - Missing forecast inputs are shown as degraded/unavailable, never silently treated as favourable
-  - Long-term accuracy validation is in progress: immutable forecast snapshots are being accumulated and will be compared against observed conditions and transparent baselines across at least two winter seasons before any accuracy claim is made — see `docs/epci-acceptance-gates.md`
+  - Long-term accuracy validation is planned but not yet underway: the immutable forecast-snapshot infrastructure is built and tested but not yet wired to run on a schedule, so no snapshot history has begun accumulating; once it is, snapshots will be compared against observed conditions and transparent baselines across at least two winter seasons before any accuracy claim is made — see `docs/epci-acceptance-gates.md`
 
 - **Navigation Structure**
   - Home (Overview and top rankings)

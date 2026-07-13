@@ -21,9 +21,15 @@ score. All items below were delivered:
       are inspectable in the expanded/detail view for each resort and day.
 - [x] Missing or unavailable inputs render as `degraded` or `unavailable`
       status — never as a silently favourable score.
-- [x] Immutable forecast snapshots begin accumulating via
-      `snapshots/buildSnapshot.js`, using the append-only schema in
-      `snapshots/snapshotSchema.js`. Historical snapshots are never rewritten.
+- [x] Immutable, append-only forecast-snapshot infrastructure exists and is
+      tested: `snapshots/buildSnapshot.js` builds snapshot rows from forecast
+      data with frozen `epci/v1` scores and lead hours, and
+      `snapshots/snapshotSchema.js` validates and appends them
+      duplicate-safely. Historical snapshots are never rewritten. **Not yet
+      wired to a scheduled job** — no process currently calls this builder on
+      a recurring basis, so no real snapshot history has begun accumulating.
+      Wiring a batch caller (e.g. a cron-triggered script) is required before
+      the long-term validation gate below has any data to evaluate.
 - [x] The observation-source feasibility report
       (`docs/epci-observation-feasibility.md`) identifies at least one lawful
       pilot network for official weather-station observations, plus the

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Before any part of the Experimental PQI (EPCI) pipeline compares forecast inputs
+Before any part of the Experimental Powder Conditions Index (EPCI) pipeline compares forecast inputs
 against real outcomes, we need a lawful, well-documented source of official
 weather and snow observations to check them against. This report surveys the
 candidate official observation networks that cover Alpine terrain, records

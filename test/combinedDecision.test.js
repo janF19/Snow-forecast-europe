@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  HORIZON, buildForecastBlock, buildEpciBlock,
+  HORIZON, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock,
 } = require('../utils/combinedDecision');
 
 const NOW = new Date('2026-01-15T09:00:00');
@@ -71,4 +71,49 @@ test('epci block reports degraded (not a favourable badge) when an input is miss
   assert.equal(block.band, 'degraded');
   assert.equal(block.peakScore, null);
   assert.deepEqual(block.missing, ['temperature']);
+});
+
+test('terrain block from a measured record exposes score, provenance, and freshness', () => {
+  const block = buildTerrainBlock({
+    score: 82, source: 'measured', freeride_vertical_m: 1200.4, freeride_length_km: 6.1,
+    tierA_count: 3, tierB_count: 5, freeride_run_count: 8, ski_area_name: 'Demo Area',
+    match_method: 'containment', computed_at: '2026-07-12T21:36:37Z',
+  }, '2026-07-12T21:36:37Z');
+  assert.equal(block.status, 'ok');
+  assert.equal(block.source, 'measured');
+  assert.equal(block.score, 82);
+  assert.equal(block.verticalM, 1200.4);
+  assert.equal(block.runCount, 8);
+  assert.equal(block.skiAreaName, 'Demo Area');
+  assert.equal(block.freshness, '2026-07-12T21:36:37Z');
+});
+
+test('terrain block is unavailable (never a zero score) when unmapped or missing', () => {
+  assert.equal(buildTerrainBlock({ score: null, source: 'unavailable', reason: 'no_match' }, null).status, 'unavailable');
+  assert.equal(buildTerrainBlock({ score: null, source: 'unavailable', reason: 'no_match' }, null).score, null);
+  assert.equal(buildTerrainBlock(null, null).status, 'unavailable');
+});
+
+test('history block carries reliability with numerator/denominator and record period', () => {
+  const record = { country: 'Italy', elevation: 2000, record_period: { first: '2019-12-01', last: '2024-04-29' },
+    seasons: {
+      '2019-20': { daily: { '02-01': 12, '02-02': 0, '02-03': 0, '02-04': 5, '02-05': 0 } },
+      '2020-21': { daily: { '02-01': 0, '02-02': 0, '02-03': 0, '02-04': 0, '02-05': 0 } },
+      '2021-22': { daily: { '02-01': 15, '02-02': 11, '02-03': 0, '02-04': 0, '02-05': 0 } },
+      '2022-23': { daily: { '02-01': 10, '02-02': 0, '02-03': 0, '02-04': 8, '02-05': 0 } },
+      '2023-24': { daily: { '02-01': 0, '02-02': 0, '02-03': 0, '02-04': 0, '02-05': 9 } },
+    } };
+  const block = buildHistoryBlock('Demo', record, { startMMDD: '02-01', endMMDD: '02-05' });
+  assert.equal(block.status, 'ok');
+  assert.equal(block.source, 'history');
+  assert.equal(block.reliability, 60);
+  assert.deepEqual(block.prob1, { count: 3, denom: 5, pct: 60 });
+  assert.deepEqual(block.freshness, { first: '2019-12-01', last: '2024-04-29' });
+  assert.equal(block.elevationM, 2000);
+});
+
+test('history block is unavailable (never zeroed) when no comparable seasons exist', () => {
+  const block = buildHistoryBlock('None', null, { startMMDD: '02-01', endMMDD: '02-05' });
+  assert.equal(block.status, 'unavailable');
+  assert.equal(block.reliability, null);
 });

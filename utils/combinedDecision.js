@@ -2,6 +2,7 @@
 
 const { buildResortEPCI, epciBand, EPCI_VERSION, FORECAST_START } = require('./epci');
 const { forecastDayLabel } = require('./forecastDate');
+const { resortReliability } = require('./historicalReliability');
 
 const HORIZON = { minOffset: 0, maxOffset: 6 };
 const LIFT = 'Top Lift';
@@ -123,4 +124,40 @@ function buildEpciBlock(weatherRecord, startOffset, endOffset, now) {
     peakDayLabel: forecastDayLabel(peakOffset, now), factors: peak.factors, missing: peak.missing };
 }
 
-module.exports = { HORIZON, buildForecastBlock, buildEpciBlock };
+function buildTerrainBlock(terrainRecord, terrainFreshness = null) {
+  if (!terrainRecord || terrainRecord.source !== 'measured') {
+    return { status: 'unavailable', source: (terrainRecord && terrainRecord.source) || 'unavailable',
+      freshness: terrainFreshness, score: null, verticalM: null, lengthKm: null, runCount: null,
+      tierACount: null, tierBCount: null, skiAreaName: (terrainRecord && terrainRecord.ski_area_name) || null,
+      matchMethod: null, reason: (terrainRecord && terrainRecord.reason) || null };
+  }
+  return {
+    status: 'ok', source: 'measured', freshness: terrainFreshness ?? terrainRecord.computed_at ?? null,
+    score: terrainRecord.score, verticalM: terrainRecord.freeride_vertical_m ?? null,
+    lengthKm: terrainRecord.freeride_length_km ?? null, runCount: terrainRecord.freeride_run_count ?? null,
+    tierACount: terrainRecord.tierA_count ?? null, tierBCount: terrainRecord.tierB_count ?? null,
+    skiAreaName: terrainRecord.ski_area_name ?? null, matchMethod: terrainRecord.match_method ?? null, reason: null,
+  };
+}
+
+function buildHistoryBlock(displayName, historyRecord, window) {
+  if (!historyRecord) {
+    return { status: 'unavailable', source: 'history', freshness: null, elevationM: null,
+      reliability: null, reliabilityText: 'No historical record for this resort in this window.',
+      confidence: 'Limited', seasonsValid: 0, seasonsExpected: 0,
+      prob1: { count: 0, denom: 0, pct: null }, prob2: { count: 0, denom: 0, pct: null },
+      median: null, p25: null, p75: null,
+      recentTen: { reliability: null, prob1: { count: 0, denom: 0, pct: null }, seasonsUsed: 0 }, seasons: [] };
+  }
+  const r = resortReliability(displayName, historyRecord, window);
+  return {
+    status: r.seasonsValid > 0 ? 'ok' : 'unavailable', source: 'history', freshness: r.recordPeriod || null,
+    elevationM: r.elevation ?? null,
+    reliability: r.reliability, reliabilityText: r.reliabilityText, confidence: r.confidence,
+    seasonsValid: r.seasonsValid, seasonsExpected: r.seasonsExpected,
+    prob1: r.prob1, prob2: r.prob2, median: r.median, p25: r.p25, p75: r.p75,
+    recentTen: r.recentTen, seasons: r.seasons,
+  };
+}
+
+module.exports = { HORIZON, buildForecastBlock, buildEpciBlock, buildTerrainBlock, buildHistoryBlock };

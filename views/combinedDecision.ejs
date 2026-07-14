@@ -38,7 +38,7 @@
       <% if (!model.guard && model.rows.length === 0) { %>
         <p class="decision-empty">No resorts match. Try widening your filters.</p>
       <% } else if (!model.guard) { %>
-      <div class="table-container">
+      <div class="decision-table-container">
         <table class="decision-table">
           <caption>Resort comparison — <%= mode === 'go-soon' ? 'Go soon (forecast horizon)' : 'Plan future dates (historical)' %>. Each evidence column keeps its own source and freshness; no combined score is used.</caption>
           <thead>

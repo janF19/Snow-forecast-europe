@@ -1353,8 +1353,25 @@ nav ul li a:hover {
 .decision-modes { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
 .decision-mode { padding: 0.4rem 0.9rem; border-radius: 6px; background: #eef; text-decoration: none; }
 .decision-mode.active { background: #2b5; color: #fff; font-weight: 600; }
+/* Own wrapper for the decision table so it never inherits the unrelated
+   6-column .table-container column-position rules (nth-child widths,
+   table-layout: fixed, blanket white-space: nowrap) used elsewhere. */
+.decision-table-container {
+  overflow-x: auto;
+  margin-bottom: 3rem;
+  background-color: var(--accent-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.decision-table-container table.decision-table {
+  width: 100%;
+  table-layout: auto; /* column widths follow content; column count/content differs per mode */
+  margin: 0 auto;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
 .decision-table { width: 100%; border-collapse: collapse; }
-.decision-table th, .decision-table td { padding: 0.5rem; border-bottom: 1px solid #ddd; text-align: left; }
+.decision-table th, .decision-table td { padding: 0.5rem; border-bottom: 1px solid #ddd; text-align: left; white-space: normal; }
 .decision-snow strong { font-size: 1.5rem; color: #06c; }   /* fresh snow is the strongest element */
 .decision-unavailable { color: #999; font-style: italic; }
 .decision-source, .decision-elev, .decision-country { color: #666; font-size: 0.85rem; }

@@ -4,7 +4,7 @@
 
 **Goal:** Capture every successfully deployed daily forecast as immutable, duplicate-safe monthly EPCI JSONL on a Coolify persistent volume while removing all Python/weather-fetch work from the live Node runtime.
 
-**Architecture:** A pure Python batch helper creates one run-level issue time and atomically replaces the forecast artifact. A focused JavaScript capture service derives that issue time from provenance, validates resort metadata, acquires a volume lock, builds frozen EPCI rows, and flushes a monthly append. `app.js` calls the service at startup but catches every failure before listening. A multi-stage image performs deterministic Python build work and ships a Python-free Node 24 runtime.
+**Architecture:** A pure Python batch helper creates one run-level issue time and atomically replaces the forecast artifact. A focused JavaScript capture service normalizes the provenance issue time to canonical UTC, validates resort metadata, atomically acquires a volume lock directory, builds frozen EPCI rows, and flushes a monthly append. `app.js` calls the service at startup but catches every failure before listening. A multi-stage image performs deterministic Python build work and ships a Python-free Node 24 runtime.
 
 **Tech Stack:** Python 3.12 / `unittest`, Node.js 24 / `node:test`, JSONL, filesystem locks, Docker multi-stage builds, Coolify persistent volumes.
 
@@ -385,7 +385,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { captureForecastSnapshot, acquireLock } = require('../snapshots/captureSnapshot');
+const { captureForecastSnapshot, acquireLock, releaseLock, normalizeIssueTime } = require('../snapshots/captureSnapshot');
 
 function fixturePaths() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'capture-'));
@@ -414,25 +414,89 @@ test('capture routes by UTC month and duplicate rerun writes zero', () => {
   assert.equal(second.skipped, 7);
 });
 
-test('different provenance issue times reject the batch', () => {
+test('equivalent numeric offsets normalize to one canonical UTC issue time and route by UTC month', () => {
   const p = fixturePaths();
   const weather = JSON.parse(fs.readFileSync(p.weatherPath));
-  weather['Fixture Alpha'].elevations['Top Lift'].provenance.issue_time_utc = '2026-01-06T06:00:00Z';
+  weather['Fixture Alpha'].elevations['Top Lift'].provenance.issue_time_utc = '2026-02-01T00:30:00+01:00';
+  weather['Fixture Alpha'].elevations['Mid Lift'].provenance.issue_time_utc = '2026-01-31T22:30:00-01:00';
+  weather['Fixture Alpha'].elevations['Bottom Lift'].provenance.issue_time_utc = '2026-01-31T23:30:00Z';
   fs.writeFileSync(p.weatherPath, JSON.stringify(weather));
-  assert.throws(() => captureForecastSnapshot({ ...p, dataDir: p.root }), /one issue time/);
+  const result = captureForecastSnapshot({ ...p, dataDir: p.root, logger: { info() {}, error() {} } });
+  assert.equal(result.issueTime, '2026-01-31T23:30:00Z');
+  assert.match(result.filePath, /2026-01\.jsonl$/);
+  assert.ok(fs.readFileSync(result.filePath, 'utf8').split('\n').filter(Boolean)
+    .every((line) => JSON.parse(line).issue_time_utc === '2026-01-31T23:30:00Z'));
 });
 
-test('active lock skips capture and stale lock is replaceable', () => {
+test('different instants, no timezone, and invalid issue times reject the batch', () => {
+  const p = fixturePaths();
+  const weather = JSON.parse(fs.readFileSync(p.weatherPath));
+  weather['Fixture Alpha'].elevations['Top Lift'].provenance.issue_time_utc = '2026-01-05T07:00:00Z';
+  fs.writeFileSync(p.weatherPath, JSON.stringify(weather));
+  assert.throws(() => captureForecastSnapshot({ ...p, dataDir: p.root }), /one issue time/);
+  assert.throws(() => normalizeIssueTime('2026-01-05T06:00:00'), /timezone/i);
+  assert.throws(() => normalizeIssueTime('not-a-time'), /invalid/i);
+});
+
+test('lock mutually excludes captures; active and stale locks both skip without takeover', () => {
   const p = fixturePaths();
   const dir = path.join(p.root, 'forecast_snapshots');
-  const active = acquireLock(dir, { nowMs: 1_000_000, pid: 10 });
+  const active = acquireLock(dir, { nowMs: 1_000_000, pid: 10, token: 'owner-token' });
   assert.equal(active.acquired, true);
   const blocked = acquireLock(dir, { nowMs: 1_001_000, pid: 11 });
   assert.equal(blocked.acquired, false);
-  fs.utimesSync(active.lockPath, new Date(0), new Date(0));
+  assert.equal(blocked.lockStale, false);
+  fs.writeFileSync(path.join(active.lockPath, 'owner.json'), JSON.stringify({
+    token: 'owner-token', pid: 10, hostname: 'test', acquiredAt: '1970-01-01T00:00:00Z', sourceCommit: null,
+  }));
   const stale = acquireLock(dir, { nowMs: 700_000, pid: 12 });
-  assert.equal(stale.acquired, true);
-  fs.unlinkSync(stale.lockPath);
+  assert.equal(stale.acquired, false);
+  assert.equal(stale.lockStale, true);
+  releaseLock(active);
+});
+
+test('malformed ownership is compromised, never deleted, and reports a stable lock failure', () => {
+  const p = fixturePaths();
+  const dir = path.join(p.root, 'forecast_snapshots');
+  fs.mkdirSync(path.join(dir, '.capture.lock'), { recursive: true });
+  const owner = path.join(dir, '.capture.lock', 'owner.json');
+  fs.writeFileSync(owner, '{bad json}');
+  assert.throws(() => acquireLock(dir), /compromised/i);
+  assert.ok(fs.existsSync(owner));
+  const logs = [];
+  assert.throws(() => captureForecastSnapshot({ ...p, dataDir: p.root,
+    logger: { info() {}, error(message) { logs.push(message); } } }), /compromised/i);
+  assert.match(logs.join('\n'), /storage_error|lock/i);
+});
+
+test('only the matching owner token releases, and a held lock prevents a second append', () => {
+  const p = fixturePaths();
+  const dir = path.join(p.root, 'forecast_snapshots');
+  const lock = acquireLock(dir, { token: 'owner-token' });
+  assert.equal(releaseLock({ ...lock, token: 'wrong-token' }), false);
+  assert.ok(fs.existsSync(lock.lockPath));
+  let appends = 0;
+  const blocked = captureForecastSnapshot({ ...p, dataDir: p.root, appendSnapshotsFn() { appends += 1; } });
+  assert.equal(blocked.event, 'lock_skipped');
+  assert.equal(appends, 0);
+  assert.equal(releaseLock(lock), true);
+  const first = captureForecastSnapshot({ ...p, dataDir: p.root, appendSnapshotsFn(...args) {
+    appends += 1; return require('../snapshots/snapshotSchema').appendSnapshots(...args);
+  } });
+  const second = captureForecastSnapshot({ ...p, dataDir: p.root });
+  assert.equal(first.event, 'captured');
+  assert.equal(second.event, 'duplicate');
+  assert.equal(appends, 1);
+});
+
+test('missing owner token fields are compromised and are never removed', () => {
+  const p = fixturePaths();
+  const dir = path.join(p.root, 'forecast_snapshots');
+  const lockDir = path.join(dir, '.capture.lock');
+  fs.mkdirSync(lockDir, { recursive: true });
+  fs.writeFileSync(path.join(lockDir, 'owner.json'), JSON.stringify({ acquiredAt: '2026-01-05T06:00:00Z' }));
+  assert.throws(() => acquireLock(dir), /compromised/i);
+  assert.ok(fs.existsSync(lockDir));
 });
 
 test('injected writer failure is reported and leaves weather bytes unchanged', () => {
@@ -464,6 +528,7 @@ module.exports = {
   LOCK_STALE_MS,
   acquireLock,
   releaseLock,
+  normalizeIssueTime,
   issueTimeFromWeather,
   loadResortMeta,
   summarizeWeather,
@@ -480,6 +545,8 @@ const path = require('node:path');
 const { performance } = require('node:perf_hooks');
 const { buildSnapshotRows } = require('./buildSnapshot');
 const { appendSnapshots } = require('./snapshotSchema');
+const crypto = require('node:crypto');
+const os = require('node:os');
 
 const LOCK_STALE_MS = 10 * 60 * 1000;
 const LIFTS = ['Top Lift', 'Mid Lift', 'Bottom Lift'];
@@ -490,13 +557,20 @@ function issueTimeFromWeather(weather) {
   for (const resort of Object.values(weather)) {
     for (const lift of LIFTS) {
       const value = resort?.elevations?.[lift]?.provenance?.issue_time_utc;
-      if (value) times.add(value);
+      if (value) times.add(normalizeIssueTime(value));
     }
   }
   if (times.size !== 1) throw new Error(`forecast batch must contain one issue time; found ${times.size}`);
-  const issueTime = [...times][0];
-  if (!Number.isFinite(new Date(issueTime).getTime())) throw new Error('forecast issue time is invalid');
-  return issueTime;
+  return [...times][0];
+}
+
+function normalizeIssueTime(value) {
+  if (typeof value !== 'string' || !/(Z|[+-]\\d{2}:\\d{2})$/i.test(value)) {
+    throw new Error('forecast issue time must include Z or a numeric timezone offset');
+  }
+  const instant = new Date(value);
+  if (!Number.isFinite(instant.getTime())) throw new Error('forecast issue time is invalid');
+  return instant.toISOString().replace('.000Z', 'Z');
 }
 
 function loadResortMeta(records) {
@@ -508,28 +582,49 @@ function loadResortMeta(records) {
   return map;
 }
 
-function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid } = {}) {
+function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid,
+  hostname = process.env.HOSTNAME || os.hostname(), sourceCommit = process.env.SOURCE_COMMIT || null,
+  token = crypto.randomBytes(32).toString('hex') } = {}) {
   fs.mkdirSync(snapshotDir, { recursive: true });
   const lockPath = path.join(snapshotDir, '.capture.lock');
   try {
-    const fd = fs.openSync(lockPath, 'wx');
-    fs.writeFileSync(fd, JSON.stringify({ pid, acquiredAt: new Date(nowMs).toISOString() }));
-    fs.closeSync(fd);
-    return { acquired: true, lockPath, staleReplaced: false };
+    fs.mkdirSync(lockPath);
+    const owner = { token, pid, hostname, acquiredAt: new Date(nowMs).toISOString().replace('.000Z', 'Z'), sourceCommit };
+    fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify(owner));
+    return { acquired: true, lockPath, token, owner };
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
-    const ageMs = nowMs - fs.statSync(lockPath).mtimeMs;
-    if (ageMs <= LOCK_STALE_MS) return { acquired: false, lockPath, ageMs };
-    fs.unlinkSync(lockPath);
-    const retried = acquireLock(snapshotDir, { nowMs, pid });
-    return { ...retried, staleReplaced: retried.acquired };
+    const ownerPath = path.join(lockPath, 'owner.json');
+    let owner;
+    try {
+      owner = JSON.parse(fs.readFileSync(ownerPath, 'utf8'));
+      if (!owner || typeof owner.token !== 'string' || !Number.isInteger(owner.pid) ||
+          typeof owner.hostname !== 'string' ||
+          !(owner.sourceCommit === null || typeof owner.sourceCommit === 'string')) throw new Error();
+      owner.acquiredAt = normalizeIssueTime(owner.acquiredAt);
+    } catch { throw new Error('compromised snapshot lock ownership'); }
+    const ageMs = nowMs - new Date(owner.acquiredAt).getTime();
+    return { acquired: false, lockPath, owner, ageMs, lockStale: ageMs > LOCK_STALE_MS };
   }
 }
 
 function releaseLock(lock) {
-  if (lock?.acquired && fs.existsSync(lock.lockPath)) fs.unlinkSync(lock.lockPath);
+  if (!lock?.acquired) return false;
+  const ownerPath = path.join(lock.lockPath, 'owner.json');
+  try {
+    const owner = JSON.parse(fs.readFileSync(ownerPath, 'utf8'));
+    if (owner.token !== lock.token) return false;
+    fs.unlinkSync(ownerPath);
+    fs.rmdirSync(lock.lockPath);
+    return true;
+  } catch { return false; }
 }
 ```
+
+Treat a false `releaseLock` result as compromised ownership: preserve the directory and
+emit the stable `storage_error`/lock event in the `finally` path. It must not be retried,
+deleted, or repaired automatically; `startServer` still catches this capture failure and
+listens normally.
 
 `summarizeWeather` counts missing configured metadata, lifts, and required arrays before
 row construction. Implement it and the orchestrator as follows:
@@ -579,11 +674,13 @@ function captureForecastSnapshot({
     const issueTime = issueTimeFromWeather(weather);
     const filePath = path.join(snapshotDir, `${issueTime.slice(0, 7)}.jsonl`);
     stage = 'lock';
-    lock = acquireLock(snapshotDir, { nowMs, pid });
+    lock = acquireLock(snapshotDir, { nowMs, pid, sourceCommit });
     if (!lock.acquired) {
       const report = { event: 'lock_skipped', issueTime, filePath, lockAgeMs: lock.ageMs,
-        sourceCommit, durationMs: Math.round(performance.now() - started) };
+        lockStale: lock.lockStale, sourceCommit, durationMs: Math.round(performance.now() - started) };
       logger.info(JSON.stringify(report));
+      if (lock.lockStale) logger.warn(JSON.stringify({ event: 'lock_stale_operator_action_required',
+        lockPath: lock.lockPath, lockAgeMs: lock.ageMs }));
       return report;
     }
     stage = 'build_rows';
@@ -600,7 +697,6 @@ function captureForecastSnapshot({
       missingMetadata: summary.missingMetadata.length,
       missingLifts: summary.missingLifts,
       missingVariables: summary.missingVariables,
-      staleLockReplaced: Boolean(lock.staleReplaced),
       sourceCommit,
       durationMs: Math.round(performance.now() - started),
     };
@@ -614,7 +710,11 @@ function captureForecastSnapshot({
       sourceCommit, durationMs: Math.round(performance.now() - started) }));
     throw error;
   } finally {
-    releaseLock(lock);
+    if (lock?.acquired && !releaseLock(lock)) {
+      logger.error(JSON.stringify({ event: 'storage_error', stage: 'release_lock',
+        message: 'compromised snapshot lock ownership', sourceCommit }));
+      throw new Error('compromised snapshot lock ownership');
+    }
   }
 }
 ```
@@ -627,7 +727,9 @@ Do not log payload rows, secrets, stacks, or entire exception objects.
 node --test test/snapshot.test.js test/snapshotCapture.test.js
 ```
 
-Expected: PASS including duplicate, partial, lock, malformed, and injected failure cases.
+Expected: PASS including duplicate, partial, atomic lock mutual exclusion, active/stale
+lock skips, compromised ownership, matching-token release, no concurrent append, malformed,
+UTC offset routing, and injected failure cases.
 
 - [ ] **Step 5: Commit the capture service.**
 
@@ -971,6 +1073,14 @@ Application rollback selects the prior Coolify image and leaves the volume mount
 Never delete, truncate, rewrite, or roll back snapshot rows. If capture reports
 `invalid_existing_snapshot`, keep the forecast serving, collect the file/hash/error line,
 and request a separate recovery review.
+
+## Manual compromised-lock recovery (operator action only)
+
+Do not perform this procedure during startup and do not automate it. When a stale or
+compromised `.capture.lock` requires separately authorized recovery: stop all replicas;
+inspect exactly `/app/data/forecast_snapshots/.capture.lock` and its `owner.json`; remove
+only that exact lock directory; restart one replica; then verify one capture and that no
+duplicate rows were appended. Do not delete any other storage path or snapshot data.
 ```
 
 Do not include secrets, tokens, or a guessed public URL.
@@ -1068,7 +1178,9 @@ authorization to:
 - [ ] Forecast output is atomically validated/replaced and dependency installation is outside the script.
 - [ ] Snapshot coordinates are complete and numeric.
 - [ ] Monthly JSONL append creates parent directories, validates first, flushes, and preserves malformed bytes on error.
-- [ ] Capture enforces one issue time, locking, stale-lock recovery, duplicate handling, counts, and redacted structured logs.
+- [ ] Capture normalizes one timezone-qualified issue instant to canonical UTC; enforces
+  atomic directory locking without stale takeover; reports compromised locks fail-open;
+  preserves duplicate handling, counts, and redacted structured logs.
 - [ ] Capture failure never blocks Express and app import has no startup side effect.
 - [ ] Runtime fetch code and `axios`/`node-cron` are removed together.
 - [ ] Final image is Node 24 and contains no Python.

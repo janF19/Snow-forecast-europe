@@ -112,11 +112,17 @@ checks. A writable ephemeral directory is not sufficient.
 
 ## Concurrency and append safety
 
-- Capture obtains an exclusive lock file inside `DATA_DIR/forecast_snapshots` before
-  reading duplicate keys or appending.
-- A second container that sees a valid lock skips capture, logs lock ownership/status,
-  and continues startup.
-- A lock older than ten minutes is stale; it is replaced with a warning carrying its age.
+- Capture atomically creates the directory `DATA_DIR/forecast_snapshots/.capture.lock`
+  before reading duplicate keys or appending. It never uses a lock file.
+- The lock directory contains `owner.json` with a cryptographically random token, pid,
+  hostname or container identity, `acquiredAt` in canonical UTC, and source commit.
+- A second container always skips capture when the lock directory exists. Both active and
+  stale locks report `lock_skipped`, the lock age, and a `lockStale` boolean. A stale lock
+  additionally emits an operator-action warning; there is no automatic stale takeover.
+- Missing, malformed, or token-mismatched `owner.json` is a compromised lock: do not
+  delete anything, report a stable storage/lock failure, and fail open so Express starts.
+- Only the holder with the matching token may release the lock, by removing `owner.json`
+  and then the lock directory. No lock dependency is added.
 - All new rows are built and validated before the monthly file is opened for append.
 - Successful append is newline-terminated and flushed before success is logged.
 - The lock is released in a `finally` path.
@@ -157,6 +163,11 @@ Each attempt emits one structured completion or failure event containing:
 Logs distinguish `captured`, `duplicate`, `lock_skipped`, `storage_error`,
 `invalid_forecast`, and `invalid_existing_snapshot`.
 
+Manual Coolify lock recovery is deliberately operational, never automatic: stop all
+replicas, inspect the exact `.capture.lock` directory and `owner.json`, remove only that
+exact path when authorized, then restart one replica and verify one capture and no
+duplicate append. Do not perform this recovery procedure during normal startup.
+
 ## Test contract
 
 Automated tests cover:
@@ -164,12 +175,15 @@ Automated tests cover:
 1. Full fixture capture and exact schema fields.
 2. All current 294 weather names resolving to metadata.
 3. One issue time shared across all rows.
-4. UTC monthly routing and month rollover.
+4. UTC monthly routing and month rollover, including equivalent and different numeric
+   offsets, rejection of offset-free/invalid timestamps, and canonical persisted UTC.
 5. Exact duplicate rerun producing `written=0`.
 6. Partial lift/variable data with explicit counts.
 7. Missing metadata as a reported error/degraded capture, never silent null coordinates.
 8. Directory creation and unwritable storage.
-9. Valid lock contention and stale-lock replacement.
+9. Atomic lock mutual exclusion; active and stale `lock_skipped`; malformed, mismatched,
+   and compromised ownership; own-token release; fail-open behavior; and proof that two
+   captures cannot append concurrently.
 10. Malformed forecast JSON and malformed existing JSONL.
 11. Writer failure leaving the forecast untouched.
 12. Capture failure still allowing the Express server to listen.

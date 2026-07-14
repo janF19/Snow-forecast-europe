@@ -33,7 +33,7 @@ after(async () => {
 });
 
 test('all public GET routes render successfully with deterministic fixtures', async () => {
-  for (const pathname of ['/', '/powder-quality', '/freeride', '/allResortsCombined', '/allResortsByCountry', '/14dayForecastCombined', '/past14daysnow', '/allHistory']) {
+  for (const pathname of ['/', '/powder-quality', '/freeride', '/allResortsCombined', '/allResortsByCountry', '/14dayForecastCombined', '/past14daysnow', '/allHistory', '/decision']) {
     const { response, body } = await get(pathname);
     assert.equal(response.statusCode, 200, `${pathname} should return 200`);
     assert.match(response.headers['content-type'], /text\/html/);
@@ -58,6 +58,11 @@ test('all public GET routes render successfully with deterministic fixtures', as
       assert.match(body, /historical reliability/i);
       assert.match(body, /modelled snowfall/);
       assert.doesNotMatch(body, /average historical snowfall in last 30 years/);
+    }
+    if (pathname === '/decision') {
+      assert.match(body, /Compare resorts/i);
+      assert.match(body, /Go soon/i);
+      assert.match(body, /not avalanche/i);
     }
   }
   const indexHtml = require('node:fs').readFileSync(path.join(__dirname, '..', 'views', 'index.ejs'), 'utf8');

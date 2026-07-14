@@ -49,6 +49,19 @@ Visit the live platform: [powderforecasteurope.onrender.com](https://powderforec
   - Historical Data
   - Powder Quality (EPCI, experimental)
 
+## Compare resorts (combined decision view)
+
+`/decision` compares resorts without blending evidence into a single score.
+
+- **Go soon** ranks resorts by accumulated fresh snowfall over a date range inside the
+  7-day forecast horizon. Temperature, rain, wind, terrain, and historical reliability are
+  shown as separate columns. The EPCI badge is a secondary, experimental interpretation.
+- **Plan future dates** ranks by historical reliability for a recurring calendar window and
+  shows no forecast or EPCI. Historical reliability is not a forecast for the selected year.
+
+Missing evidence is always shown as `unavailable` (never zero). Filters that remove resorts
+report an exclusion count. Terrain ranking is not avalanche guidance.
+
 ## Key Insights
 
 ### Historical Trip Reliability

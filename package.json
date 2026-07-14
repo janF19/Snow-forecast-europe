@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node app.js",
     "build": "pip install -r requirements.txt && python -m history.build_records",
-    "test": "node --test test/epci.test.js test/forecastDate.test.js test/freerideScore.test.js test/epciView.test.js test/snapshot.test.js test/feasibilityDoc.test.js test/routes.test.js && python -m unittest discover -s tests -v"
+    "test": "node --test test/epci.test.js test/forecastDate.test.js test/freerideScore.test.js test/epciView.test.js test/snapshot.test.js test/feasibilityDoc.test.js test/routes.test.js test/resortIdentity.test.js test/combinedDecision.test.js test/decisionView.test.js && python -m unittest discover -s tests -v"
   },
   "keywords": [],
   "author": "",

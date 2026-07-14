@@ -106,11 +106,32 @@ checks. A writable ephemeral directory is not sufficient.
 
 ## Concurrency and append safety
 
-- Capture obtains an exclusive lock file inside `DATA_DIR/forecast_snapshots` before
-  reading duplicate keys or appending.
-- A second container that sees a valid lock skips capture, logs lock ownership/status,
-  and continues startup.
-- A lock older than ten minutes is stale; it is replaced with a warning carrying its age.
+- Capture obtains exclusive ownership by creating the lock **directory** inside
+  `DATA_DIR/forecast_snapshots` before reading duplicate keys or appending. `mkdir` is
+  the exclusive acquisition primitive; a pre-existing directory is never removed or
+  replaced automatically.
+- `LOCK_INIT_GRACE_MS` is exactly `5000`. The creator has this bounded interval to
+  publish its ownership record. It writes complete owner metadata to a token-specific
+  temporary file inside the lock directory, flushes and closes that file, then atomically
+  renames it to `owner.json`. The token makes cleanup unambiguous: a creator may clean up
+  only its own token-specific temporary file.
+- If the lock directory exists and `owner.json` is absent at an age no greater than the
+  grace interval, another container returns `lock_skipped` with `initializing: true`,
+  `stale: false`, the directory age, and no owner. It must not mutate the directory or
+  append snapshots.
+- If `owner.json` is still absent after the grace interval, the lock is compromised. It
+  remains untouched and requires manual recovery; capture does not append.
+- Malformed `owner.json` is compromised at every age, including during the grace
+  interval. It remains untouched and capture does not append.
+- Publication failure by the creating process may clean up only that creator's
+  token-specific temporary file. If that process still exclusively owns the unpublished
+  lock directory, it may remove that directory; otherwise it leaves the directory in
+  place and propagates the original publication error.
+- There is no automatic stale-lock takeover, waiting/retry loop, or dependency on a
+  separate lock service. Existing valid-owner and stale-owner classification/reporting
+  rules otherwise remain in force, but no path mutates a lock it does not own.
+- Release likewise verifies the published owner token before removing its own lock
+  directory; it leaves every non-owned or compromised directory untouched.
 - All new rows are built and validated before the monthly file is opened for append.
 - Successful append is newline-terminated and flushed before success is logged.
 - The lock is released in a `finally` path.
@@ -163,11 +184,18 @@ Automated tests cover:
 6. Partial lift/variable data with explicit counts.
 7. Missing metadata as a reported error/degraded capture, never silent null coordinates.
 8. Directory creation and unwritable storage.
-9. Valid lock contention and stale-lock replacement.
-10. Malformed forecast JSON and malformed existing JSONL.
-11. Writer failure leaving the forecast untouched.
-12. Capture failure still allowing the Express server to listen.
-13. End-of-month-scale duplicate scanning within the documented startup budget.
+9. Deterministic lock initialization: exclusive directory creation; successful
+   token-temp flush/close/rename publication; absent owner within the 5,000 ms grace
+   returning `lock_skipped`/`initializing:true`/`stale:false` without mutation or append;
+   absent owner after grace remaining compromised and untouched; malformed owner being
+   compromised both within and after grace; and creator publication failure cleaning only
+   its own temp file (and removing the unpublished directory only while exclusive).
+10. Valid-owner contention and all existing stale-owner classifications, with no automatic
+   takeover, wait, retry loop, or external lock dependency.
+11. Malformed forecast JSON and malformed existing JSONL.
+12. Writer failure leaving the forecast untouched.
+13. Capture failure still allowing the Express server to listen.
+14. End-of-month-scale duplicate scanning within the documented startup budget.
 
 No test contacts Open-Meteo except an explicitly separate manual/integration weather job.
 

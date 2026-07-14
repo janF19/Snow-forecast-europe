@@ -45,8 +45,8 @@ Preserve these invariants:
 | `test/snapshot.test.js` | Modify | Strict coordinates, append flushing/directory/error contracts |
 | `snapshots/buildSnapshot.js` | Modify | Reject missing/non-finite resort coordinates |
 | `snapshots/snapshotSchema.js` | Modify | Create parent, append through file descriptor, flush before success |
-| `snapshots/captureSnapshot.js` | Create | Metadata loading, issue-time derivation, monthly path, lock, counts, orchestration/logging |
-| `test/snapshotCapture.test.js` | Create | Monthly, duplicate, partial, lock, malformed, and writer-failure behavior |
+| `snapshots/captureSnapshot.js` | Create | Metadata loading, issue-time derivation, monthly path, bounded directory-lock initialization, counts, orchestration/logging |
+| `test/snapshotCapture.test.js` | Create | Monthly, duplicate, partial, deterministic lock initialization, malformed, and writer-failure behavior |
 | `app.js` | Modify | Fail-open capture then listen; remove weather/Python runtime path |
 | `test/startup.test.js` | Create | Import side-effect and fail-open listening proof |
 | `package.json` | Modify mechanically | Remove unused `axios` and `node-cron` |
@@ -353,6 +353,31 @@ git commit -m "fix: flush append-only snapshot batches"
 
 ### Task 4: Build the monthly capture service and volume lock
 
+#### Bounded lock-initialization contract (authorized scope)
+
+Use a lock directory, not a lock file. `mkdir(lockDir)` remains the only exclusive
+acquisition operation. Set `LOCK_INIT_GRACE_MS = 5000`; do not make it configurable.
+The creator serializes complete owner metadata to a token-specific temporary name inside
+that directory, flushes and closes it, and atomically renames it to `owner.json`.
+
+For an existing lock directory with no `owner.json`, calculate its directory age from the
+injected deterministic clock:
+
+- At age `<= LOCK_INIT_GRACE_MS`, return a non-throwing `lock_skipped` result with
+  `initializing: true`, `stale: false`, `ageMs`, and no owner. Do not mutate the directory
+  and do not append.
+- At age `> LOCK_INIT_GRACE_MS`, classify it as compromised, leave it untouched, do not
+  append, and require manual recovery.
+- A malformed `owner.json` is compromised at every age, including inside the grace
+  interval; leave it untouched and do not append.
+
+On owner publication failure, the creator may delete only its own token-specific temp
+file. It may delete the unpublished directory only after proving it still exclusively owns
+that directory; otherwise it leaves it untouched. Always propagate the original
+publication error. There is no automatic stale takeover, wait/retry loop, or external lock
+dependency. Existing valid-owner and stale-owner classification/reporting requirements
+otherwise persist, but no code may mutate a lock it does not own.
+
 **Files:**
 
 - Create: `snapshots/captureSnapshot.js`
@@ -406,17 +431,18 @@ test('different provenance issue times reject the batch', () => {
   assert.throws(() => captureForecastSnapshot({ ...p, dataDir: p.root }), /one issue time/);
 });
 
-test('active lock skips capture and stale lock is replaceable', () => {
+test('an absent owner inside the initialization grace skips without mutation', () => {
   const p = fixturePaths();
-  const dir = path.join(p.root, 'forecast_snapshots');
-  const active = acquireLock(dir, { nowMs: 1_000_000, pid: 10 });
-  assert.equal(active.acquired, true);
-  const blocked = acquireLock(dir, { nowMs: 1_001_000, pid: 11 });
-  assert.equal(blocked.acquired, false);
-  fs.utimesSync(active.lockPath, new Date(0), new Date(0));
-  const stale = acquireLock(dir, { nowMs: 700_000, pid: 12 });
-  assert.equal(stale.acquired, true);
-  fs.unlinkSync(stale.lockPath);
+  const dir = path.join(p.root, 'forecast_snapshots', '.capture.lock');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.utimesSync(dir, new Date(995_000), new Date(995_000));
+  const result = captureForecastSnapshot({ ...p, dataDir: p.root, nowMs: 1_000_000 });
+  assert.equal(result.event, 'lock_skipped');
+  assert.equal(result.initializing, true);
+  assert.equal(result.stale, false);
+  assert.equal(result.owner, undefined);
+  assert.equal(fs.existsSync(dir), true);
+  assert.equal(fs.readdirSync(dir).length, 0);
 });
 
 test('injected writer failure is reported and leaves weather bytes unchanged', () => {
@@ -430,6 +456,16 @@ test('injected writer failure is reported and leaves weather bytes unchanged', (
 
 Also add cases for missing metadata, missing lift/variable counts, malformed weather JSON,
 and malformed existing monthly JSONL. Each must assert a stable error/event category.
+
+Add deterministic initialization cases using fixed `nowMs`, injected token generation, and
+filesystem spies/failure injection. They must prove: `mkdir` is exclusive; the owner temp
+is fully written, flushed, closed, then renamed to `owner.json`; no-owner at exactly 5,000
+ms is `lock_skipped`/initializing/non-stale with no mutation or append; no-owner at 5,001
+ms is compromised and untouched; malformed `owner.json` is compromised both at 0 ms and
+after 5,000 ms; publication failure removes only the creator token temp and propagates the
+same error; and directory removal is allowed only when the failing creator still proves
+exclusive ownership. Assert that none of these cases waits, retries, takes over a stale
+lock, invokes an external dependency, or appends rows.
 
 - [ ] **Step 2: Run and verify RED.**
 
@@ -445,7 +481,7 @@ Create `snapshots/captureSnapshot.js` exporting:
 
 ```javascript
 module.exports = {
-  LOCK_STALE_MS,
+  LOCK_INIT_GRACE_MS,
   acquireLock,
   releaseLock,
   issueTimeFromWeather,
@@ -465,7 +501,7 @@ const { performance } = require('node:perf_hooks');
 const { buildSnapshotRows } = require('./buildSnapshot');
 const { appendSnapshots } = require('./snapshotSchema');
 
-const LOCK_STALE_MS = 10 * 60 * 1000;
+const LOCK_INIT_GRACE_MS = 5000;
 const LIFTS = ['Top Lift', 'Mid Lift', 'Bottom Lift'];
 const VARIABLES = ['snowfall_sum', 'temperature_2m_max', 'rain_sum', 'wind_speed_10m_max'];
 
@@ -492,27 +528,26 @@ function loadResortMeta(records) {
   return map;
 }
 
-function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid } = {}) {
+function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid, token } = {}) {
   fs.mkdirSync(snapshotDir, { recursive: true });
   const lockPath = path.join(snapshotDir, '.capture.lock');
   try {
-    const fd = fs.openSync(lockPath, 'wx');
-    fs.writeFileSync(fd, JSON.stringify({ pid, acquiredAt: new Date(nowMs).toISOString() }));
-    fs.closeSync(fd);
-    return { acquired: true, lockPath, staleReplaced: false };
+    fs.mkdirSync(lockPath); // Exclusive acquisition; never replace an existing directory.
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
-    const ageMs = nowMs - fs.statSync(lockPath).mtimeMs;
-    if (ageMs <= LOCK_STALE_MS) return { acquired: false, lockPath, ageMs };
-    fs.unlinkSync(lockPath);
-    const retried = acquireLock(snapshotDir, { nowMs, pid });
-    return { ...retried, staleReplaced: retried.acquired };
+    return inspectExistingLock(lockPath, nowMs); // Never mutate, wait, or retry here.
   }
+  return publishOwnerAtomically(lockPath, { nowMs, pid, token });
 }
 
-function releaseLock(lock) {
-  if (lock?.acquired && fs.existsSync(lock.lockPath)) fs.unlinkSync(lock.lockPath);
-}
+// `publishOwnerAtomically` writes complete JSON to `.owner.<token>.tmp`, fsyncs and closes
+// it, then renames it to `owner.json`. On failure it may clean only that temp and may
+// remove `lockPath` only while its exclusive ownership of the unpublished directory is
+// still proven. `inspectExistingLock` returns initializing/non-stale within 5,000 ms,
+// otherwise compromised; malformed owner JSON is always compromised. Neither function
+// performs stale takeover, unlink/rmdir of another owner's lock, or retry/wait.
+// `releaseLock` may remove a published lock directory only after verifying that its
+// `owner.json` token is the caller's token; it must leave every other directory untouched.
 ```
 
 `summarizeWeather` counts missing configured metadata, lifts, and required arrays before
@@ -565,8 +600,10 @@ function captureForecastSnapshot({
     stage = 'lock';
     lock = acquireLock(snapshotDir, { nowMs, pid });
     if (!lock.acquired) {
-      const report = { event: 'lock_skipped', issueTime, filePath, lockAgeMs: lock.ageMs,
-        sourceCommit, durationMs: Math.round(performance.now() - started) };
+      const report = { event: 'lock_skipped', issueTime, filePath, ageMs: lock.ageMs,
+        initializing: Boolean(lock.initializing), stale: Boolean(lock.stale),
+        owner: lock.owner, compromised: Boolean(lock.compromised), sourceCommit,
+        durationMs: Math.round(performance.now() - started) };
       logger.info(JSON.stringify(report));
       return report;
     }
@@ -584,7 +621,7 @@ function captureForecastSnapshot({
       missingMetadata: summary.missingMetadata.length,
       missingLifts: summary.missingLifts,
       missingVariables: summary.missingVariables,
-      staleLockReplaced: Boolean(lock.staleReplaced),
+      lockOwner: lock.owner,
       sourceCommit,
       durationMs: Math.round(performance.now() - started),
     };
@@ -1052,7 +1089,8 @@ authorization to:
 - [ ] Forecast output is atomically validated/replaced and dependency installation is outside the script.
 - [ ] Snapshot coordinates are complete and numeric.
 - [ ] Monthly JSONL append creates parent directories, validates first, flushes, and preserves malformed bytes on error.
-- [ ] Capture enforces one issue time, locking, stale-lock recovery, duplicate handling, counts, and redacted structured logs.
+- [ ] Capture enforces one issue time, bounded directory-lock initialization without
+  takeover, duplicate handling, counts, and redacted structured logs.
 - [ ] Capture failure never blocks Express and app import has no startup side effect.
 - [ ] Runtime fetch code and `axios`/`node-cron` are removed together.
 - [ ] Final image is Node 24 and contains no Python.

@@ -9,6 +9,7 @@ const { buildSnapshotRows } = require('./buildSnapshot');
 const { appendSnapshots } = require('./snapshotSchema');
 
 const LOCK_STALE_MS = 10 * 60 * 1000;
+const LOCK_INIT_GRACE_MS = 5 * 1000;
 const LIFTS = ['Top Lift', 'Mid Lift', 'Bottom Lift'];
 const VARIABLES = ['snowfall_sum', 'temperature_2m_max', 'rain_sum', 'wind_speed_10m_max'];
 
@@ -18,23 +19,70 @@ function acquireLock(snapshotDir, options = {}) {
   const lockPath = path.join(snapshotDir, '.capture.lock');
   const token = options.token || (typeof options.randomToken === 'function'
     ? options.randomToken() : crypto.randomBytes(32).toString('hex'));
-  try {
-    fs.mkdirSync(lockPath);
-    const owner = { token, pid, hostname: hostname(), acquiredAt: normalizeIssueTime(new Date(nowMs).toISOString()), sourceCommit };
-    fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify(owner), 'utf8');
-    return { acquired: true, lockPath, token, lockAgeMs: 0, lockStale: false, owner: redactOwner(owner) };
-  } catch (error) {
+  try { fs.mkdirSync(lockPath); } catch (error) {
     if (error.code !== 'EEXIST') throw error;
+    return inspectExistingLock(lockPath, nowMs);
   }
+  const owner = { token, pid, hostname: hostname(), acquiredAt: normalizeIssueTime(new Date(nowMs).toISOString()), sourceCommit };
+  const tempPath = ownerTempPath(lockPath, token);
+  try {
+    publishOwner(lockPath, tempPath, owner, options.ownerWriter);
+  } catch (error) {
+    cleanupUnpublishedLock(lockPath, tempPath, options.removeTemp);
+    throw error;
+  }
+  return { acquired: true, lockPath, token, lockAgeMs: 0, lockStale: false, owner: redactOwner(owner) };
+}
+
+function inspectExistingLock(lockPath, nowMs) {
   const stat = fs.statSync(lockPath);
   if (!stat.isDirectory()) throw compromisedLockError();
-  const owner = readOwner(lockPath);
   const lockAgeMs = Math.max(0, nowMs - stat.mtimeMs);
+  const ownerPath = path.join(lockPath, 'owner.json');
+  if (!fs.existsSync(ownerPath)) {
+    if (lockAgeMs <= LOCK_INIT_GRACE_MS) {
+      return { acquired: false, lockPath, lockAgeMs, lockInitializing: true, lockStale: false };
+    }
+    throw compromisedLockError();
+  }
+  const owner = readOwner(lockPath);
   const lockStale = lockAgeMs > LOCK_STALE_MS;
   return {
-    acquired: false, lockPath, lockAgeMs, lockStale, owner: redactOwner(owner),
+    acquired: false, lockPath, lockAgeMs, lockInitializing: false, lockStale, owner: redactOwner(owner),
     ...(lockStale ? { warning: 'stale capture lock requires operator action' } : {}),
   };
+}
+
+function ownerTempPath(lockPath, token) {
+  const suffix = crypto.createHash('sha256').update(token).digest('hex');
+  return path.join(lockPath, `.owner-${suffix}.tmp`);
+}
+
+function publishOwner(lockPath, tempPath, owner, ownerWriter) {
+  const ownerPath = path.join(lockPath, 'owner.json');
+  const content = JSON.stringify(owner);
+  const fd = fs.openSync(tempPath, 'wx');
+  try {
+    if (typeof ownerWriter === 'function') ownerWriter({ fd, tempPath, ownerPath, content });
+    else fs.writeFileSync(fd, content, 'utf8');
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+  fs.renameSync(tempPath, ownerPath);
+}
+
+function cleanupUnpublishedLock(lockPath, tempPath, removeTemp = fs.unlinkSync) {
+  try {
+    removeTemp(tempPath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') return;
+  }
+  try {
+    if (!fs.existsSync(path.join(lockPath, 'owner.json'))) fs.rmdirSync(lockPath);
+  } catch (_) {
+    // Preserve any uncertain state for manual recovery.
+  }
 }
 
 function releaseLock(lock) {
@@ -166,7 +214,8 @@ function captureForecastSnapshot(options) {
     if (!lock.acquired) {
       const event = eventFor('lock_skipped', {
         issueTime, filePath, lockAgeMs: lock.lockAgeMs, lockStale: lock.lockStale,
-        owner: lock.owner, warning: lock.warning || null, sourceCommit, durationMs: duration(started),
+        lockInitializing: lock.lockInitializing || false, owner: lock.owner,
+        warning: lock.warning || null, sourceCommit, durationMs: duration(started),
       });
       info(logger, event);
       return event;
@@ -218,6 +267,6 @@ function errorLog(logger, event) {
 }
 
 module.exports = {
-  LOCK_STALE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather,
+  LOCK_STALE_MS, LOCK_INIT_GRACE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather,
   loadResortMeta, summarizeWeather, captureForecastSnapshot,
 };

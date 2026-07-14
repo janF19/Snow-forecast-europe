@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const fixture = require('./fixtures/epciSnapshotInput.json');
 const {
-  LOCK_STALE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather, captureForecastSnapshot,
+  LOCK_STALE_MS, LOCK_INIT_GRACE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather, captureForecastSnapshot,
 } = require('../snapshots/captureSnapshot');
 
 const ISSUE_TIME = '2026-01-05T06:00:00Z';
@@ -99,6 +99,53 @@ test('malformed owner lock is never deleted', () => {
   assert.equal(fs.existsSync(lockPath), true);
 });
 
+test('recent unpublished lock initializes without deletion and the creator can publish afterward', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  const lockPath = path.join(dir, '.capture.lock');
+  fs.mkdirSync(lockPath);
+  fs.utimesSync(lockPath, new Date(1000), new Date(1000));
+  const observed = acquireLock(dir, { nowMs: 1000 + LOCK_INIT_GRACE_MS, token: 'contender' });
+  assert.equal(observed.acquired, false);
+  assert.equal(observed.lockInitializing, true);
+  assert.equal(observed.lockStale, false);
+  assert.equal(observed.owner, undefined);
+  assert.equal(fs.existsSync(lockPath), true);
+  fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ token: 'creator', pid: 1, acquiredAt: '2026-01-05T06:00:00Z' }));
+  const active = acquireLock(dir, { nowMs: 1001 + LOCK_INIT_GRACE_MS });
+  assert.equal(active.acquired, false);
+  assert.equal(active.lockInitializing, false);
+});
+
+test('old missing owner is compromised and malformed owner is compromised during grace', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  const lockPath = path.join(dir, '.capture.lock');
+  fs.mkdirSync(lockPath);
+  fs.utimesSync(lockPath, new Date(1), new Date(1));
+  assert.throws(() => acquireLock(dir, { nowMs: LOCK_INIT_GRACE_MS + 2 }), /compromised/i);
+  fs.writeFileSync(path.join(lockPath, 'owner.json'), '{bad json}');
+  assert.throws(() => acquireLock(dir, { nowMs: 2 }), /compromised/i);
+  assert.equal(fs.existsSync(lockPath), true);
+});
+
+test('owner publication failure leaves no partial owner and cleans only its unpublished lock', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  assert.throws(() => acquireLock(dir, {
+    token: 'creator', ownerWriter: () => { throw new Error('disk full'); },
+  }), /disk full/);
+  assert.equal(fs.existsSync(path.join(dir, '.capture.lock')), false);
+});
+
+test('failed unpublished cleanup preserves the lock for manual recovery', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  assert.throws(() => acquireLock(dir, {
+    token: 'creator', ownerWriter: () => { throw new Error('disk full'); },
+    removeTemp: () => { throw new Error('cleanup denied'); },
+  }), /disk full/);
+  const lockPath = path.join(dir, '.capture.lock');
+  assert.equal(fs.existsSync(lockPath), true);
+  assert.equal(fs.existsSync(path.join(lockPath, 'owner.json')), false);
+});
+
 test('capture reports and propagates compromised release ownership without deleting locks', () => {
   for (const replacement of ['wrong-token', '{bad json}', null]) {
     const env = setup();
@@ -179,6 +226,19 @@ test('lock skip is an info event with its stable contract fields', () => {
   assert.equal(env.events[0].sourceCommit, null);
   assert.equal(env.events[0].lockStale, false);
   assert.equal(JSON.stringify(env.events[0]).includes('held-token'), false);
+});
+
+test('capture skips a recent lock initialization without appending', () => {
+  const env = setup();
+  const lockPath = path.join(env.dir, 'forecast_snapshots', '.capture.lock');
+  fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+  fs.mkdirSync(lockPath);
+  let appends = 0;
+  const result = captureForecastSnapshot({ ...env, nowMs: Date.now(), appendSnapshotsFn: () => { appends += 1; return { written: 7, skipped: 0 }; } });
+  assert.equal(result.event, 'lock_skipped');
+  assert.equal(result.lockInitializing, true);
+  assert.equal(appends, 0);
+  assert.equal(fs.existsSync(lockPath), true);
 });
 
 test('capture fails open-safe without appending for stale and compromised locks', () => {

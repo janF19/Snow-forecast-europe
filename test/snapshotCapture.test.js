@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const fixture = require('./fixtures/epciSnapshotInput.json');
 const {
-  LOCK_STALE_MS, acquireLock, releaseLock, captureForecastSnapshot,
+  LOCK_STALE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather, captureForecastSnapshot,
 } = require('../snapshots/captureSnapshot');
 
 const ISSUE_TIME = '2026-01-05T06:00:00Z';
@@ -62,18 +62,41 @@ test('capture rejects lift provenance with more than one issue time', () => {
   assert.equal(env.events[0].stage, 'forecast');
 });
 
-test('lock skips active lock and replaces a stale lock', () => {
+test('lock acquisition is exclusive and matching owner alone releases it', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-'));
   const lockPath = path.join(dir, '.capture.lock');
-  fs.writeFileSync(lockPath, JSON.stringify({ pid: 99, acquiredAt: 1 }));
-  const active = acquireLock(dir, { nowMs: 1000, pid: 99 });
-  assert.equal(active.acquired, false);
-  fs.utimesSync(lockPath, new Date(1), new Date(1));
-  const stale = acquireLock(dir, { nowMs: LOCK_STALE_MS + 2, pid: 100 });
-  assert.equal(stale.acquired, true);
-  assert.equal(stale.staleReplaced, true);
-  releaseLock(stale);
+  const first = acquireLock(dir, { nowMs: 1000, pid: 99, token: 'first-token' });
+  const second = acquireLock(dir, { nowMs: 1001, pid: 100, token: 'second-token' });
+  assert.equal(first.acquired, true);
+  assert.equal(second.acquired, false);
+  assert.equal(second.owner.token, undefined);
+  releaseLock({ ...first, token: 'wrong-token' });
+  assert.equal(fs.existsSync(lockPath), true);
+  releaseLock(first);
   assert.equal(fs.existsSync(lockPath), false);
+});
+
+test('stale directory lock is reported but never removed or replaced', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-'));
+  const first = acquireLock(dir, { nowMs: 1, token: 'owner-token' });
+  const lockPath = first.lockPath;
+  fs.utimesSync(lockPath, new Date(1), new Date(1));
+  const stale = acquireLock(dir, { nowMs: LOCK_STALE_MS + 2, token: 'new-token' });
+  assert.equal(stale.acquired, false);
+  assert.equal(stale.lockStale, true);
+  assert.ok(stale.warning);
+  assert.equal(fs.existsSync(lockPath), true);
+  releaseLock(first);
+});
+
+test('malformed owner lock is never deleted', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-'));
+  const lockPath = path.join(dir, '.capture.lock');
+  fs.mkdirSync(lockPath);
+  fs.writeFileSync(path.join(lockPath, 'owner.json'), '{bad json}', 'utf8');
+  assert.throws(() => acquireLock(dir, { nowMs: 1 }), /compromised/i);
+  releaseLock({ acquired: true, lockPath, token: 'anything' });
+  assert.equal(fs.existsSync(lockPath), true);
 });
 
 test('append storage failure is redacted and leaves weather unchanged', () => {
@@ -125,11 +148,73 @@ test('malformed monthly JSONL is invalid_existing_snapshot', () => {
 test('lock skip is an info event with its stable contract fields', () => {
   const env = setup();
   const snapshotDir = path.join(env.dir, 'forecast_snapshots');
-  fs.mkdirSync(snapshotDir);
-  fs.writeFileSync(path.join(snapshotDir, '.capture.lock'), '{}');
+  acquireLock(snapshotDir, { token: 'held-token' });
   const result = captureForecastSnapshot({ ...env, nowMs: Date.now() });
   assert.equal(result.event, 'lock_skipped');
   assert.equal(env.events[0].event, 'lock_skipped');
   assert.equal(typeof env.events[0].lockAgeMs, 'number');
   assert.equal(env.events[0].sourceCommit, null);
+  assert.equal(env.events[0].lockStale, false);
+  assert.equal(JSON.stringify(env.events[0]).includes('held-token'), false);
 });
+
+test('capture fails open-safe without appending for stale and compromised locks', () => {
+  const staleEnv = setup();
+  const snapshotDir = path.join(staleEnv.dir, 'forecast_snapshots');
+  const held = acquireLock(snapshotDir, { nowMs: 1, token: 'held-token' });
+  fs.utimesSync(held.lockPath, new Date(1), new Date(1));
+  let appends = 0;
+  const stale = captureForecastSnapshot({ ...staleEnv, nowMs: LOCK_STALE_MS + 2, appendSnapshotsFn: () => { appends += 1; return { written: 0, skipped: 0 }; } });
+  assert.equal(stale.event, 'lock_skipped');
+  assert.equal(stale.lockStale, true);
+  assert.equal(appends, 0);
+  releaseLock(held);
+
+  const badEnv = setup();
+  const badDir = path.join(badEnv.dir, 'forecast_snapshots', '.capture.lock');
+  fs.mkdirSync(path.dirname(badDir), { recursive: true });
+  fs.mkdirSync(badDir);
+  fs.writeFileSync(path.join(badDir, 'owner.json'), '{}');
+  assert.throws(() => captureForecastSnapshot({ ...badEnv, appendSnapshotsFn: () => { appends += 1; } }), /compromised/i);
+  assert.equal(appends, 0);
+  assert.equal(badEnv.events[0].event, 'storage_error');
+  assert.equal(badEnv.events[0].stage, 'lock');
+  assert.equal(badEnv.events[0].issueTime, ISSUE_TIME);
+  assert.match(badEnv.events[0].filePath, /2026-01\.jsonl$/);
+});
+
+test('sequential lock contention permits only one append at a time', () => {
+  const env = setup();
+  const held = acquireLock(path.join(env.dir, 'forecast_snapshots'), { token: 'holder' });
+  let appends = 0;
+  captureForecastSnapshot({ ...env, appendSnapshotsFn: () => { appends += 1; return { written: 7, skipped: 0 }; } });
+  assert.equal(appends, 0);
+  releaseLock(held);
+  captureForecastSnapshot({ ...env, appendSnapshotsFn: () => { appends += 1; return { written: 7, skipped: 0 }; } });
+  assert.equal(appends, 1);
+});
+
+test('normalizes offset issue times for routing and persisted rows', () => {
+  const env = setup();
+  env.weatherPath && fs.writeFileSync(env.weatherPath, JSON.stringify(weatherWithIssue('2026-02-01T00:30:00+02:00')));
+  const result = captureForecastSnapshot(env);
+  assert.equal(result.issueTime, '2026-01-31T22:30:00Z');
+  const file = path.join(env.dir, 'forecast_snapshots', '2026-01.jsonl');
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8').trim().split('\n')[0]).issue_time_utc, '2026-01-31T22:30:00Z');
+});
+
+test('issue times compare normalized instants and reject invalid timezone forms', () => {
+  const weather = weatherWithIssue('2026-01-05T06:00:00Z');
+  weather['Fixture Alpha'].elevations['Mid Lift'] = clone(weather['Fixture Alpha'].elevations['Top Lift']);
+  weather['Fixture Alpha'].elevations['Mid Lift'].provenance.issue_time_utc = '2026-01-05T07:00:00+01:00';
+  assert.equal(issueTimeFromWeather(weather), '2026-01-05T06:00:00Z');
+  weather['Fixture Alpha'].elevations['Mid Lift'].provenance.issue_time_utc = '2026-01-05T07:01:00+01:00';
+  assert.throws(() => issueTimeFromWeather(weather), /one issue time/i);
+  for (const value of ['2026-01-05T06:00:00', 'not-a-time']) assert.throws(() => normalizeIssueTime(value), /issue time/i);
+});
+
+function weatherWithIssue(issueTime) {
+  const weather = weatherWithLifts();
+  for (const lift of Object.values(weather['Fixture Alpha'].elevations)) lift.provenance.issue_time_utc = issueTime;
+  return weather;
+}

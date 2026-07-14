@@ -29,8 +29,11 @@ app.use('/', resortRoutes);
 const scriptPath = path.join(__dirname, 'getForecastFull_all_resorts.py');
 const dataDir = process.env.DATA_DIR || __dirname;
 const jsonPath = path.join(__dirname, 'weather_dataFull_7.json');
-const venvPythonPath = path.join(__dirname, 'venv', 'bin', 'python3');
-const pythonPath = process.env.PYTHON_PATH || (fs.existsSync(venvPythonPath) ? venvPythonPath : 'python3');
+const venvPythonPath = process.platform === 'win32'
+    ? path.join(__dirname, 'venv', 'Scripts', 'python.exe')
+    : path.join(__dirname, 'venv', 'bin', 'python3');
+const systemPython = process.platform === 'win32' ? 'python' : 'python3';
+const pythonPath = process.env.PYTHON_PATH || (fs.existsSync(venvPythonPath) ? venvPythonPath : systemPython);
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });

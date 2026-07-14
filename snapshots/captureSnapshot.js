@@ -107,7 +107,9 @@ function readOwner(lockPath) {
   try {
     const owner = JSON.parse(fs.readFileSync(path.join(lockPath, 'owner.json'), 'utf8'));
     if (!owner || typeof owner.token !== 'string' || !owner.token || !Number.isInteger(owner.pid)
-      || typeof owner.acquiredAt !== 'string' || normalizeIssueTime(owner.acquiredAt) !== owner.acquiredAt) {
+      || typeof owner.acquiredAt !== 'string' || normalizeIssueTime(owner.acquiredAt) !== owner.acquiredAt
+      || (typeof owner.hostname !== 'string' && owner.hostname !== null)
+      || (typeof owner.sourceCommit !== 'string' && owner.sourceCommit !== null)) {
       throw new Error('invalid owner');
     }
     return owner;

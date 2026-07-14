@@ -100,6 +100,41 @@ test('malformed owner lock is never deleted', () => {
   assert.equal(fs.existsSync(lockPath), true);
 });
 
+test('nested or non-string redacted owner metadata is compromised and untouched', () => {
+  for (const patch of [
+    { hostname: { arbitrary: 'nested-host' } },
+    { hostname: 42 },
+    { sourceCommit: { arbitrary: 'nested-source' } },
+    { sourceCommit: 42 },
+  ]) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-meta-'));
+    const lockPath = path.join(dir, '.capture.lock');
+    fs.mkdirSync(lockPath);
+    fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({
+      token: 'secret-token', pid: 1, acquiredAt: ISSUE_TIME, hostname: null, sourceCommit: null, ...patch,
+    }));
+    assert.throws(() => acquireLock(dir, { nowMs: 1 }), /compromised/i);
+    assert.equal(fs.existsSync(lockPath), true);
+  }
+});
+
+test('compromised owner metadata is never exposed in capture error logs', () => {
+  const env = setup();
+  const lockPath = path.join(env.dir, 'forecast_snapshots', '.capture.lock');
+  fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+  fs.mkdirSync(lockPath);
+  fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({
+    token: 'secret-token', pid: 1, acquiredAt: ISSUE_TIME,
+    hostname: { arbitrary: 'nested-host' }, sourceCommit: { arbitrary: 'nested-source' },
+  }));
+  assert.throws(() => captureForecastSnapshot(env), /compromised/i);
+  const logged = JSON.stringify(env.events[0]);
+  assert.equal(logged.includes('secret-token'), false);
+  assert.equal(logged.includes('nested-host'), false);
+  assert.equal(logged.includes('nested-source'), false);
+  assert.equal(env.events[0].event, 'storage_error');
+});
+
 test('recent unpublished lock initializes without deletion and the creator can publish afterward', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
   const lockPath = path.join(dir, '.capture.lock');
@@ -111,7 +146,7 @@ test('recent unpublished lock initializes without deletion and the creator can p
   assert.equal(observed.lockStale, false);
   assert.equal(observed.owner, undefined);
   assert.equal(fs.existsSync(lockPath), true);
-  fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ token: 'creator', pid: 1, acquiredAt: '2026-01-05T06:00:00Z' }));
+  fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ token: 'creator', pid: 1, acquiredAt: '2026-01-05T06:00:00Z', hostname: null, sourceCommit: null }));
   const active = acquireLock(dir, { nowMs: 1001 + LOCK_INIT_GRACE_MS });
   assert.equal(active.acquired, false);
   assert.equal(active.lockInitializing, false);

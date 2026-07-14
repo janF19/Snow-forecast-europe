@@ -119,6 +119,15 @@ test('regression: sort + filter query params combined still render successfully'
   const { res, body } = await get('/decision?mode=go-soon&sort=terrain&country=Italy');
   assert.equal(res.statusCode, 200);
   assert.match(body, /Compare resorts/i);
+  // Sorting must actually re-rank results, not just render without error: within the
+  // Italy filter, "Ice Bump" (measured terrain score 65) must outrank "Small Dump"
+  // (terrain unavailable), which sorts last.
+  const iceBumpIndex = body.indexOf('Ice Bump');
+  const smallDumpIndex = body.indexOf('Small Dump');
+  assert.notEqual(iceBumpIndex, -1);
+  assert.notEqual(smallDumpIndex, -1);
+  assert.ok(iceBumpIndex < smallDumpIndex,
+    'expected sort=terrain to rank the higher-scoring resort before the unavailable one');
 });
 
 test('an inverted start/end range does not silently report zero accumulation', async () => {
@@ -127,4 +136,14 @@ test('an inverted start/end range does not silently report zero accumulation', a
   // so a real forecast table (not the horizon guard) should render.
   assert.doesNotMatch(body, /beyond the .*forecast horizon/i);
   assert.match(body, /Fresh snow/i);
+});
+
+test('an inverted start/end range redisplays the corrected (swapped) dates in the form', async () => {
+  const { body } = await get('/decision?mode=go-soon&today=2026-01-15&start=2026-01-20&end=2026-01-16');
+  // The submitted range was start=2026-01-20, end=2026-01-16 (inverted). The controller
+  // swaps the offsets so the table iterates chronologically, and the redisplayed form
+  // inputs must reflect that correction, not the raw submitted (inverted) values.
+  assert.match(body, /name="start"[^>]*value="2026-01-16"/);
+  assert.match(body, /name="end"[^>]*value="2026-01-20"/);
+  assert.doesNotMatch(body, /name="start"[^>]*value="2026-01-20"/);
 });

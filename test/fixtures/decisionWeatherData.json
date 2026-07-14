@@ -13,5 +13,6 @@
       "temperature_2m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0, -3,-3,-3,-3,-3,-3,-3, 0,0,0,0,0,0,0],
       "rain_sum": [0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0, 0,0,0,0,0,0,0],
       "wind_speed_10m_max": [0,0,0,0,0,0,0,0,0,0,0,0,0,0, 5,5,5,5,5,5,5, 0,0,0,0,0,0,0] } } },
-  "No Forecast": { "country": "France", "url": "#", "elevations": {} }
+  "No Forecast": { "country": "France", "url": "#", "elevations": {} },
+  "Ice Bump": { "country": "Italy", "url": "#", "elevations": {} }
 }

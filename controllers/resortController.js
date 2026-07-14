@@ -88,8 +88,12 @@ exports.getDecisionView = (req, res) => {
             }
             model = buildGoSoon({ weatherData, terrainData, historyRecords, startOffset, endOffset, now,
                 sort: q.sort || 'snowfall', filters, weatherFreshness });
-            startParam = q.start || toISODate(now);
-            endParam = q.end || startParam;
+            // Derive the redisplayed form dates from the POST-swap offsets (not the raw
+            // q.start/q.end), so an inverted range the guard corrected above doesn't get
+            // echoed back to the user unchanged. Mirrors the local-day arithmetic in
+            // utils/forecastDate.js's windowFromOffsets/offsetForDate.
+            startParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + startOffset));
+            endParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + endOffset));
         }
         res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam });
     } catch (error) {

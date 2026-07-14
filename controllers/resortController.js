@@ -5,6 +5,7 @@ const { buildResortEPCI, epciBand, EPCI_VERSION } = require('../utils/epci');
 const { forecastDayLabel, offsetForDate } = require('../utils/forecastDate');
 const { buildHistoricalReliability } = require('../utils/historicalReliability');
 const { buildGoSoon, buildPlanFuture, SORTS } = require('../utils/combinedDecision');
+const { paginateDecisionRows } = require('../utils/decisionPagination');
 
 
 
@@ -92,7 +93,9 @@ exports.getDecisionView = (req, res) => {
             startParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + startOffset));
             endParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + endOffset));
         }
-        res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam });
+        const pagination = paginateDecisionRows(model.rows, q.page, q);
+        model = { ...model, rows: pagination.rows };
+        res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam, pagination });
     } catch (error) {
         console.error('Error building decision view:', error);
         res.status(500).render('error', { error: 'Failed to load decision view' });

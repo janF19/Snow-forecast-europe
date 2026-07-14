@@ -53,9 +53,15 @@ test('a range beyond the horizon renders the guard prompt, not a partial total',
   assert.doesNotMatch(body, /accumulated/i);
 });
 
-test('comparison table is semantic and expansion is keyboard-accessible', async () => {
+test('comparison explanation is full-width content associated with the table', async () => {
   const { body } = await get('/decision?mode=go-soon');
-  assert.match(body, /<caption[^>]*>/i);
+  assert.match(body, /<p[^>]*id="decision-comparison-description"[^>]*class="decision-caption"/i);
+  assert.match(body, /<table[^>]*class="decision-table"[^>]*aria-describedby="decision-comparison-description"/i);
+  assert.doesNotMatch(body, /<caption/i);
+});
+
+test('comparison table remains semantic and expansion is keyboard-accessible', async () => {
+  const { body } = await get('/decision?mode=go-soon');
   assert.match(body, /scope="col"/);
   assert.match(body, /aria-expanded="false"/);
   assert.match(body, /aria-controls="/);
@@ -146,4 +152,10 @@ test('an inverted start/end range redisplays the corrected (swapped) dates in th
   assert.match(body, /name="start"[^>]*value="2026-01-16"/);
   assert.match(body, /name="end"[^>]*value="2026-01-20"/);
   assert.doesNotMatch(body, /name="start"[^>]*value="2026-01-20"/);
+});
+
+test('result summary renders and unknown query state is not echoed', async () => {
+  const { body } = await get('/decision?mode=go-soon&page=99&country=Italy&injected=bad');
+  assert.doesNotMatch(body, /injected=/);
+  assert.match(body, /Showing \d+-\d+ of \d+/);
 });

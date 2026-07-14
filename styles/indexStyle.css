@@ -1379,6 +1379,11 @@ nav ul li a:hover {
 .decision-guard, .decision-excluded { padding: 0.5rem; background: #fff3cd; border-radius: 6px; }
 .decision-safety { margin-top: 1.5rem; font-size: 0.9rem; color: #444; }
 .decision-timeline th, .decision-timeline td { padding: 0.3rem 0.6rem; }
+.decision-caption { width: 100%; margin: 1rem 0 0.5rem; line-height: 1.45; }
+.decision-result-count { margin: 0 0 0.75rem; color: #4b5563; }
+.decision-pagination { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: center; margin: -2rem 0 3rem; }
+.decision-pagination a { min-width: 2.25rem; min-height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem 0.6rem; border: 1px solid #9ca3af; border-radius: 0.375rem; text-decoration: none; }
+.decision-pagination a[aria-current="page"] { background: #166534; border-color: #166534; color: #fff; font-weight: 700; }
 @media (max-width: 640px) {
   /* Preserve the same hierarchy: snow stays the largest element; provenance and warnings stay visible. */
   .decision-table, .decision-table tbody, .decision-table tr, .decision-table td, .decision-table th { display: block; width: 100%; }
@@ -1386,4 +1391,6 @@ nav ul li a:hover {
   .decision-row { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 0.75rem; padding: 0.5rem; }
   .decision-snow strong { font-size: 1.8rem; }
   .decision-safety { display: block; }
+  .decision-caption { display: block; max-width: none; }
+  .decision-table-container { overflow-x: visible; padding: 0.5rem; }
 }

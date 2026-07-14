@@ -107,9 +107,15 @@
       <% if (!model.guard && model.rows.length === 0) { %>
         <p class="decision-empty">No resorts match. Try widening your filters.</p>
       <% } else if (!model.guard) { %>
+      <p id="decision-comparison-description" class="decision-caption">
+        Resort comparison - <%= mode === 'go-soon' ? 'Go soon (forecast horizon)' : 'Plan future dates (historical)' %>.
+        Each evidence column keeps its own source and freshness; no combined score is used.
+      </p>
+      <p class="decision-result-count" aria-live="polite">
+        Showing <%= pagination.firstVisible %>-<%= pagination.lastVisible %> of <%= pagination.totalRows %> resorts.
+      </p>
       <div class="decision-table-container">
-        <table class="decision-table">
-          <caption>Resort comparison — <%= mode === 'go-soon' ? 'Go soon (forecast horizon)' : 'Plan future dates (historical)' %>. Each evidence column keeps its own source and freshness; no combined score is used.</caption>
+        <table class="decision-table" aria-describedby="decision-comparison-description">
           <thead>
             <tr>
               <th scope="col">Rank</th>
@@ -125,9 +131,9 @@
             </tr>
           </thead>
           <tbody>
-            <% model.rows.forEach(function(r, index) { var detailId = 'detail-' + r.id; %>
+            <% model.rows.forEach(function(r) { var detailId = 'detail-' + r.id; %>
               <tr class="decision-row">
-                <td><%= index + 1 %></td>
+                <td><%= r.globalRank %></td>
                 <th scope="row"><% if (r.url && r.url !== '#') { %><a href="<%= r.url %>" target="_blank" rel="noopener noreferrer"><%= r.resort %></a><% } else { %><%= r.resort %><% } %><br><span class="decision-country"><%= r.country || 'Unknown' %></span></th>
 
                 <% if (mode === 'go-soon') { %>
@@ -189,6 +195,15 @@
           </tbody>
         </table>
       </div>
+      <% if (pagination.totalPages > 1) { %>
+      <nav class="decision-pagination" aria-label="Decision result pages">
+        <% if (pagination.hasPrevious) { %><a rel="prev" href="<%= pagination.previousHref %>">Previous</a><% } %>
+        <% pagination.pages.forEach(function(page) { %>
+          <a href="<%= page.href %>" <%- page.current ? 'aria-current="page"' : '' %>><%= page.number %></a>
+        <% }); %>
+        <% if (pagination.hasNext) { %><a rel="next" href="<%= pagination.nextHref %>">Next</a><% } %>
+      </nav>
+      <% } %>
       <% } %>
 
       <div class="decision-safety">

@@ -12,3 +12,11 @@ test('weather workflow uses the supported dependency and deploy contract', () =>
   assert.match(text, /steps\.publish\.outputs\.changed == 'true'/);
   assert.match(text, /curl --fail-with-body/);
 });
+
+test('application CI pins Node 24 and Python 3.12 and runs the full gate', () => {
+  const text = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
+  assert.match(text, /node-version:\s*['"]24['"]/);
+  assert.match(text, /python-version:\s*['"]3\.12['"]/);
+  for (const command of ['npm ci', 'npm run build', 'npm test']) assert.match(text, new RegExp(command.replaceAll(' ', '\\s+')));
+  assert.match(text, /paths-ignore:[\s\S]*weather_dataFull_7\.json/);
+});

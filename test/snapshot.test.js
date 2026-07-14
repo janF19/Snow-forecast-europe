@@ -36,6 +36,23 @@ test('append is duplicate-safe and immutable', () => {
   assert.equal(lines.length, 1);
 });
 
+test('append creates the snapshot directory and terminates the batch with a newline', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snap-'));
+  const file = path.join(dir, 'forecast_snapshots', '2026-01.jsonl');
+  const result = appendSnapshots(file, [row()]);
+  assert.deepEqual(result, { written: 1, skipped: 0 });
+  assert.ok(fs.readFileSync(file, 'utf8').endsWith('\n'));
+});
+
+test('append leaves an invalid existing snapshot file unchanged', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snap-'));
+  const file = path.join(dir, '2026-01.jsonl');
+  fs.writeFileSync(file, '{bad json}\n', 'utf8');
+  const before = fs.readFileSync(file);
+  assert.throws(() => appendSnapshots(file, [row()]), /JSON/);
+  assert.deepEqual(fs.readFileSync(file), before);
+});
+
 const { leadHours, buildSnapshotRows } = require('../snapshots/buildSnapshot');
 
 test('leadHours counts whole hours to target midnight Europe/Berlin', () => {
@@ -59,4 +76,47 @@ test('builder emits one row per forecast day, frozen version, and flags degraded
   assert.equal(degraded.epci_score, null);
   assert.deepEqual(degraded.missing_variables, ['temperature']);
   rows.forEach((r) => validateSnapshot(r));
+});
+
+test('builder rejects weather without resort coordinates', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  assert.throws(() => buildSnapshotRows(wx, {}, '2026-01-05T06:00:00Z'), /coordinates.*Fixture Alpha/i);
+});
+
+test('builder injects numeric resort coordinates into every row', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  const issueTime = '2026-01-05T06:00:00Z';
+  const meta = { 'Fixture Alpha': { latitude: '47.1', longitude: '13.2' } };
+  const rows = buildSnapshotRows(wx, meta, issueTime);
+  assert.ok(rows.every((r) => r.issue_time_utc === issueTime));
+  assert.ok(rows.every((r) => r.latitude === 47.1 && r.longitude === 13.2));
+});
+
+test('builder rejects absent coordinate values', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  for (const meta of [
+    { latitude: null, longitude: 13.2 },
+    { longitude: 13.2 },
+    { latitude: '', longitude: 13.2 },
+    { latitude: 47.1, longitude: null },
+    { latitude: 47.1, longitude: '' },
+  ]) {
+    assert.throws(
+      () => buildSnapshotRows(wx, { 'Fixture Alpha': meta }, '2026-01-05T06:00:00Z'),
+      /coordinates.*Fixture Alpha/i,
+    );
+  }
+});
+
+test('builder rejects invalid or nonfinite coordinate values', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  for (const meta of [
+    { latitude: 'not-a-number', longitude: 13.2 },
+    { latitude: Infinity, longitude: 13.2 },
+  ]) {
+    assert.throws(
+      () => buildSnapshotRows(wx, { 'Fixture Alpha': meta }, '2026-01-05T06:00:00Z'),
+      /coordinates.*Fixture Alpha/i,
+    );
+  }
 });

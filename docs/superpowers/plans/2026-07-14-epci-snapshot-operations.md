@@ -358,25 +358,27 @@ git commit -m "fix: flush append-only snapshot batches"
 Use a lock directory, not a lock file. `mkdir(lockDir)` remains the only exclusive
 acquisition operation. Set `LOCK_INIT_GRACE_MS = 5000`; do not make it configurable.
 The creator serializes complete owner metadata to a token-specific temporary name inside
-that directory, flushes and closes it, and atomically renames it to `owner.json`.
+that directory, writes it completely, `fsync`s and closes it, and atomically renames it to
+`owner.json`.
 
 For an existing lock directory with no `owner.json`, calculate its directory age from the
 injected deterministic clock:
 
 - At age `<= LOCK_INIT_GRACE_MS`, return a non-throwing `lock_skipped` result with
-  `initializing: true`, `stale: false`, `ageMs`, and no owner. Do not mutate the directory
-  and do not append.
+  `lockInitializing: true`, `lockStale: false`, `lockAgeMs`, and no owner. Do not mutate
+  the directory and do not append.
 - At age `> LOCK_INIT_GRACE_MS`, classify it as compromised, leave it untouched, do not
   append, and require manual recovery.
 - A malformed `owner.json` is compromised at every age, including inside the grace
   interval; leave it untouched and do not append.
 
 On owner publication failure, the creator may delete only its own token-specific temp
-file. It may delete the unpublished directory only after proving it still exclusively owns
-that directory; otherwise it leaves it untouched. Always propagate the original
-publication error. There is no automatic stale takeover, wait/retry loop, or external lock
-dependency. Existing valid-owner and stale-owner classification/reporting requirements
-otherwise persist, but no code may mutate a lock it does not own.
+file. It may remove the unpublished directory only after re-verifying its ownership token,
+that `owner.json` is absent, and that no foreign entry was introduced; otherwise it leaves
+the directory untouched. Always propagate the original publication error. There is no
+automatic stale takeover, wait/retry loop, or external lock dependency. Existing
+valid-owner and stale-owner classification/reporting requirements otherwise persist, but
+no code may mutate a lock it does not own.
 
 **Files:**
 
@@ -438,8 +440,9 @@ test('an absent owner inside the initialization grace skips without mutation', (
   fs.utimesSync(dir, new Date(995_000), new Date(995_000));
   const result = captureForecastSnapshot({ ...p, dataDir: p.root, nowMs: 1_000_000 });
   assert.equal(result.event, 'lock_skipped');
-  assert.equal(result.initializing, true);
-  assert.equal(result.stale, false);
+  assert.equal(result.lockInitializing, true);
+  assert.equal(result.lockStale, false);
+  assert.equal(result.lockAgeMs, 5_000);
   assert.equal(result.owner, undefined);
   assert.equal(fs.existsSync(dir), true);
   assert.equal(fs.readdirSync(dir).length, 0);
@@ -459,8 +462,9 @@ and malformed existing monthly JSONL. Each must assert a stable error/event cate
 
 Add deterministic initialization cases using fixed `nowMs`, injected token generation, and
 filesystem spies/failure injection. They must prove: `mkdir` is exclusive; the owner temp
-is fully written, flushed, closed, then renamed to `owner.json`; no-owner at exactly 5,000
-ms is `lock_skipped`/initializing/non-stale with no mutation or append; no-owner at 5,001
+is fully written, fsynced, closed, then renamed to `owner.json`; no-owner at exactly 5,000
+ms is `lock_skipped`/`lockInitializing:true`/`lockStale:false`/`lockAgeMs:5000` with no
+mutation or append; no-owner at 5,001
 ms is compromised and untouched; malformed `owner.json` is compromised both at 0 ms and
 after 5,000 ms; publication failure removes only the creator token temp and propagates the
 same error; and directory removal is allowed only when the failing creator still proves
@@ -543,7 +547,8 @@ function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid, token
 // `publishOwnerAtomically` writes complete JSON to `.owner.<token>.tmp`, fsyncs and closes
 // it, then renames it to `owner.json`. On failure it may clean only that temp and may
 // remove `lockPath` only while its exclusive ownership of the unpublished directory is
-// still proven. `inspectExistingLock` returns initializing/non-stale within 5,000 ms,
+// still proven. `inspectExistingLock` returns lockInitializing/lockStale/lockAgeMs within
+// 5,000 ms,
 // otherwise compromised; malformed owner JSON is always compromised. Neither function
 // performs stale takeover, unlink/rmdir of another owner's lock, or retry/wait.
 // `releaseLock` may remove a published lock directory only after verifying that its
@@ -600,8 +605,8 @@ function captureForecastSnapshot({
     stage = 'lock';
     lock = acquireLock(snapshotDir, { nowMs, pid });
     if (!lock.acquired) {
-      const report = { event: 'lock_skipped', issueTime, filePath, ageMs: lock.ageMs,
-        initializing: Boolean(lock.initializing), stale: Boolean(lock.stale),
+      const report = { event: 'lock_skipped', issueTime, filePath, lockAgeMs: lock.lockAgeMs,
+        lockInitializing: Boolean(lock.lockInitializing), lockStale: Boolean(lock.lockStale),
         owner: lock.owner, compromised: Boolean(lock.compromised), sourceCommit,
         durationMs: Math.round(performance.now() - started) };
       logger.info(JSON.stringify(report));

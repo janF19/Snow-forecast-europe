@@ -112,13 +112,13 @@ checks. A writable ephemeral directory is not sufficient.
   replaced automatically.
 - `LOCK_INIT_GRACE_MS` is exactly `5000`. The creator has this bounded interval to
   publish its ownership record. It writes complete owner metadata to a token-specific
-  temporary file inside the lock directory, flushes and closes that file, then atomically
-  renames it to `owner.json`. The token makes cleanup unambiguous: a creator may clean up
-  only its own token-specific temporary file.
+  temporary file inside the lock directory, writes the complete metadata, `fsync`s and
+  closes that file, then atomically renames it to `owner.json`. The token makes cleanup
+  unambiguous: a creator may clean up only its own token-specific temporary file.
 - If the lock directory exists and `owner.json` is absent at an age no greater than the
-  grace interval, another container returns `lock_skipped` with `initializing: true`,
-  `stale: false`, the directory age, and no owner. It must not mutate the directory or
-  append snapshots.
+  grace interval, another container returns `lock_skipped` with
+  `lockInitializing: true`, `lockStale: false`, `lockAgeMs`, and no owner. It must not
+  mutate the directory or append snapshots.
 - If `owner.json` is still absent after the grace interval, the lock is compromised. It
   remains untouched and requires manual recovery; capture does not append.
 - Malformed `owner.json` is compromised at every age, including during the grace
@@ -185,8 +185,9 @@ Automated tests cover:
 7. Missing metadata as a reported error/degraded capture, never silent null coordinates.
 8. Directory creation and unwritable storage.
 9. Deterministic lock initialization: exclusive directory creation; successful
-   token-temp flush/close/rename publication; absent owner within the 5,000 ms grace
-   returning `lock_skipped`/`initializing:true`/`stale:false` without mutation or append;
+   token-temp write/fsync/close/rename publication; absent owner within the 5,000 ms grace
+   returning `lock_skipped`/`lockInitializing:true`/`lockStale:false`/`lockAgeMs` without
+   mutation or append;
    absent owner after grace remaining compromised and untouched; malformed owner being
    compromised both within and after grace; and creator publication failure cleaning only
    its own temp file (and removing the unpublished directory only while exclusive).

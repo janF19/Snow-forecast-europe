@@ -129,10 +129,70 @@ test('old missing owner is compromised and malformed owner is compromised during
 
 test('owner publication failure leaves no partial owner and cleans only its unpublished lock', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  const expected = Object.assign(new Error('disk full'), { marker: 'original' });
   assert.throws(() => acquireLock(dir, {
-    token: 'creator', ownerWriter: () => { throw new Error('disk full'); },
-  }), /disk full/);
+    token: 'creator', ownerWriter: () => { throw expected; },
+  }), (error) => error === expected);
   assert.equal(fs.existsSync(path.join(dir, '.capture.lock')), false);
+});
+
+test('creator pauses after mkdir, contender observes initialization, then owner publishes atomically', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  let contender;
+  const creator = acquireLock(dir, {
+    nowMs: 1000, token: 'creator',
+    beforePublish: () => { contender = acquireLock(dir, { nowMs: 1001, token: 'contender' }); },
+  });
+  assert.equal(contender.acquired, false);
+  assert.equal(contender.lockInitializing, true);
+  assert.equal(creator.acquired, true);
+  const active = acquireLock(dir, { nowMs: 1002, token: 'later' });
+  assert.equal(active.lockInitializing, false);
+  assert.equal(active.owner.pid, process.pid);
+  releaseLock(creator);
+});
+
+test('owner publishing orders mkdir, full temp write, fsync, close, then atomic rename', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  const order = [];
+  const ops = {
+    mkdirSync: (...args) => { order.push('mkdir'); return fs.mkdirSync(...args); },
+    openSync: (...args) => { order.push('open'); return fs.openSync(...args); },
+    writeFileSync: (...args) => { order.push('write'); return fs.writeFileSync(...args); },
+    fsyncSync: (...args) => { order.push('fsync'); return fs.fsyncSync(...args); },
+    closeSync: (...args) => { order.push('close'); return fs.closeSync(...args); },
+    renameSync: (...args) => { order.push('rename'); return fs.renameSync(...args); },
+  };
+  const lock = acquireLock(dir, { token: 'creator', fileOps: ops });
+  assert.deepEqual(order, ['mkdir', 'open', 'write', 'fsync', 'close', 'rename']);
+  assert.equal(fs.existsSync(path.join(lock.lockPath, 'owner.json')), true);
+  releaseLock(lock);
+});
+
+test('cleanup preserves foreign or published entries while removing only creator temp', () => {
+  for (const foreign of ['foreign-temp', 'owner']) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+    let rmdirCalls = 0;
+    const fileOps = {
+      mkdirSync: fs.mkdirSync, openSync: fs.openSync, writeFileSync: fs.writeFileSync,
+      fsyncSync: fs.fsyncSync, closeSync: fs.closeSync, renameSync: fs.renameSync,
+      readdirSync: fs.readdirSync,
+      rmdirSync: (...args) => { rmdirCalls += 1; return fs.rmdirSync(...args); },
+    };
+    assert.throws(() => acquireLock(dir, {
+      token: 'creator',
+      fileOps,
+      ownerWriter: ({ ownerPath }) => {
+        if (foreign === 'foreign-temp') fs.writeFileSync(path.join(path.dirname(ownerPath), '.foreign.tmp'), 'foreign');
+        else fs.writeFileSync(ownerPath, JSON.stringify({ token: 'foreign', pid: 1, acquiredAt: ISSUE_TIME }));
+        throw new Error('publish failed');
+      },
+    }), /publish failed/);
+    const lockPath = path.join(dir, '.capture.lock');
+    assert.equal(fs.existsSync(lockPath), true);
+    assert.equal(fs.readdirSync(lockPath).some((name) => name.startsWith('.owner-')), false);
+    assert.equal(rmdirCalls, 0);
+  }
 });
 
 test('failed unpublished cleanup preserves the lock for manual recovery', () => {
@@ -225,6 +285,7 @@ test('lock skip is an info event with its stable contract fields', () => {
   assert.equal(typeof env.events[0].lockAgeMs, 'number');
   assert.equal(env.events[0].sourceCommit, null);
   assert.equal(env.events[0].lockStale, false);
+  assert.equal(env.events[0].lockInitializing, false);
   assert.equal(JSON.stringify(env.events[0]).includes('held-token'), false);
 });
 
@@ -237,6 +298,8 @@ test('capture skips a recent lock initialization without appending', () => {
   const result = captureForecastSnapshot({ ...env, nowMs: Date.now(), appendSnapshotsFn: () => { appends += 1; return { written: 7, skipped: 0 }; } });
   assert.equal(result.event, 'lock_skipped');
   assert.equal(result.lockInitializing, true);
+  assert.equal(result.lockStale, false);
+  assert.equal(typeof result.lockAgeMs, 'number');
   assert.equal(appends, 0);
   assert.equal(fs.existsSync(lockPath), true);
 });

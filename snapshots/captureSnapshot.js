@@ -15,20 +15,22 @@ const VARIABLES = ['snowfall_sum', 'temperature_2m_max', 'rain_sum', 'wind_speed
 
 function acquireLock(snapshotDir, options = {}) {
   const { nowMs = Date.now(), pid = process.pid, sourceCommit = null } = options;
+  const fileOps = options.fileOps || fs;
   fs.mkdirSync(snapshotDir, { recursive: true });
   const lockPath = path.join(snapshotDir, '.capture.lock');
   const token = options.token || (typeof options.randomToken === 'function'
     ? options.randomToken() : crypto.randomBytes(32).toString('hex'));
-  try { fs.mkdirSync(lockPath); } catch (error) {
+  try { fileOps.mkdirSync(lockPath); } catch (error) {
     if (error.code !== 'EEXIST') throw error;
     return inspectExistingLock(lockPath, nowMs);
   }
   const owner = { token, pid, hostname: hostname(), acquiredAt: normalizeIssueTime(new Date(nowMs).toISOString()), sourceCommit };
   const tempPath = ownerTempPath(lockPath, token);
   try {
-    publishOwner(lockPath, tempPath, owner, options.ownerWriter);
+    if (typeof options.beforePublish === 'function') options.beforePublish({ lockPath, tempPath, owner });
+    publishOwner(lockPath, tempPath, owner, options.ownerWriter, fileOps);
   } catch (error) {
-    cleanupUnpublishedLock(lockPath, tempPath, options.removeTemp);
+    cleanupUnpublishedLock(lockPath, tempPath, options.removeTemp, fileOps);
     throw error;
   }
   return { acquired: true, lockPath, token, lockAgeMs: 0, lockStale: false, owner: redactOwner(owner) };
@@ -58,28 +60,29 @@ function ownerTempPath(lockPath, token) {
   return path.join(lockPath, `.owner-${suffix}.tmp`);
 }
 
-function publishOwner(lockPath, tempPath, owner, ownerWriter) {
+function publishOwner(lockPath, tempPath, owner, ownerWriter, fileOps) {
   const ownerPath = path.join(lockPath, 'owner.json');
   const content = JSON.stringify(owner);
-  const fd = fs.openSync(tempPath, 'wx');
+  const fd = fileOps.openSync(tempPath, 'wx');
   try {
     if (typeof ownerWriter === 'function') ownerWriter({ fd, tempPath, ownerPath, content });
-    else fs.writeFileSync(fd, content, 'utf8');
-    fs.fsyncSync(fd);
+    else fileOps.writeFileSync(fd, content, 'utf8');
+    fileOps.fsyncSync(fd);
   } finally {
-    fs.closeSync(fd);
+    fileOps.closeSync(fd);
   }
-  fs.renameSync(tempPath, ownerPath);
+  fileOps.renameSync(tempPath, ownerPath);
 }
 
-function cleanupUnpublishedLock(lockPath, tempPath, removeTemp = fs.unlinkSync) {
+function cleanupUnpublishedLock(lockPath, tempPath, removeTemp = fs.unlinkSync, fileOps = fs) {
   try {
     removeTemp(tempPath);
   } catch (error) {
     if (error.code !== 'ENOENT') return;
   }
   try {
-    if (!fs.existsSync(path.join(lockPath, 'owner.json'))) fs.rmdirSync(lockPath);
+    const entries = fileOps.readdirSync(lockPath);
+    if (!entries.includes('owner.json') && entries.length === 0) fileOps.rmdirSync(lockPath);
   } catch (_) {
     // Preserve any uncertain state for manual recovery.
   }

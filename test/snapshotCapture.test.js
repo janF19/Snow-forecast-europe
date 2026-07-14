@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const fixture = require('./fixtures/epciSnapshotInput.json');
 const {
   LOCK_STALE_MS, LOCK_INIT_GRACE_MS, acquireLock, releaseLock, normalizeIssueTime, issueTimeFromWeather, captureForecastSnapshot,
@@ -131,9 +132,21 @@ test('owner publication failure leaves no partial owner and cleans only its unpu
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
   const expected = Object.assign(new Error('disk full'), { marker: 'original' });
   assert.throws(() => acquireLock(dir, {
-    token: 'creator', ownerWriter: () => { throw expected; },
+    token: 'creator', ownerWriter: ({ fd, content }) => { fs.writeFileSync(fd, content); throw expected; },
   }), (error) => error === expected);
   assert.equal(fs.existsSync(path.join(dir, '.capture.lock')), false);
+});
+
+test('missing creator temp preserves an otherwise empty unpublished lock directory', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
+  const expected = new Error('writer lost temp');
+  assert.throws(() => acquireLock(dir, {
+    token: 'creator',
+    ownerWriter: ({ tempPath }) => { fs.unlinkSync(tempPath); throw expected; },
+  }), (error) => error === expected);
+  const lockPath = path.join(dir, '.capture.lock');
+  assert.equal(fs.existsSync(lockPath), true);
+  assert.deepEqual(fs.readdirSync(lockPath), []);
 });
 
 test('creator pauses after mkdir, contender observes initialization, then owner publishes atomically', () => {
@@ -155,16 +168,24 @@ test('creator pauses after mkdir, contender observes initialization, then owner 
 test('owner publishing orders mkdir, full temp write, fsync, close, then atomic rename', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-init-'));
   const order = [];
+  const fdPaths = new Map();
+  let writtenPath;
+  let writtenContent;
   const ops = {
     mkdirSync: (...args) => { order.push('mkdir'); return fs.mkdirSync(...args); },
-    openSync: (...args) => { order.push('open'); return fs.openSync(...args); },
-    writeFileSync: (...args) => { order.push('write'); return fs.writeFileSync(...args); },
+    openSync: (...args) => { order.push('open'); const fd = fs.openSync(...args); fdPaths.set(fd, args[0]); return fd; },
+    writeFileSync: (...args) => { order.push('write'); writtenPath = fdPaths.get(args[0]); writtenContent = args[1]; return fs.writeFileSync(...args); },
     fsyncSync: (...args) => { order.push('fsync'); return fs.fsyncSync(...args); },
     closeSync: (...args) => { order.push('close'); return fs.closeSync(...args); },
     renameSync: (...args) => { order.push('rename'); return fs.renameSync(...args); },
   };
-  const lock = acquireLock(dir, { token: 'creator', fileOps: ops });
+  const lock = acquireLock(dir, { nowMs: 0, token: 'creator', pid: 123, sourceCommit: 'abc123', fileOps: ops });
   assert.deepEqual(order, ['mkdir', 'open', 'write', 'fsync', 'close', 'rename']);
+  const expectedTemp = `.owner-${crypto.createHash('sha256').update('creator').digest('hex')}.tmp`;
+  assert.equal(path.basename(writtenPath), expectedTemp);
+  assert.deepEqual(JSON.parse(writtenContent), {
+    token: 'creator', pid: 123, hostname: os.hostname(), acquiredAt: '1970-01-01T00:00:00Z', sourceCommit: 'abc123',
+  });
   assert.equal(fs.existsSync(path.join(lock.lockPath, 'owner.json')), true);
   releaseLock(lock);
 });
@@ -182,7 +203,8 @@ test('cleanup preserves foreign or published entries while removing only creator
     assert.throws(() => acquireLock(dir, {
       token: 'creator',
       fileOps,
-      ownerWriter: ({ ownerPath }) => {
+      ownerWriter: ({ fd, content, ownerPath }) => {
+        fs.writeFileSync(fd, content);
         if (foreign === 'foreign-temp') fs.writeFileSync(path.join(path.dirname(ownerPath), '.foreign.tmp'), 'foreign');
         else fs.writeFileSync(ownerPath, JSON.stringify({ token: 'foreign', pid: 1, acquiredAt: ISSUE_TIME }));
         throw new Error('publish failed');
@@ -301,6 +323,21 @@ test('capture skips a recent lock initialization without appending', () => {
   assert.equal(result.lockStale, false);
   assert.equal(typeof result.lockAgeMs, 'number');
   assert.equal(appends, 0);
+  assert.equal(fs.existsSync(lockPath), true);
+});
+
+test('capture treats exactly the initialization grace boundary as initializing', () => {
+  const env = setup();
+  const lockPath = path.join(env.dir, 'forecast_snapshots', '.capture.lock');
+  fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+  fs.mkdirSync(lockPath);
+  fs.utimesSync(lockPath, new Date(1000), new Date(1000));
+  let appends = 0;
+  const result = captureForecastSnapshot({ ...env, nowMs: 6000, appendSnapshotsFn: () => { appends += 1; return { written: 7, skipped: 0 }; } });
+  assert.equal(appends, 0);
+  assert.equal(result.lockInitializing, true);
+  assert.equal(result.lockStale, false);
+  assert.equal(result.lockAgeMs, 5000);
   assert.equal(fs.existsSync(lockPath), true);
 });
 

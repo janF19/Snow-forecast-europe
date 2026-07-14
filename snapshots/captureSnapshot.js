@@ -30,7 +30,7 @@ function acquireLock(snapshotDir, options = {}) {
     if (typeof options.beforePublish === 'function') options.beforePublish({ lockPath, tempPath, owner });
     publishOwner(lockPath, tempPath, owner, options.ownerWriter, fileOps);
   } catch (error) {
-    cleanupUnpublishedLock(lockPath, tempPath, options.removeTemp, fileOps);
+    cleanupUnpublishedLock(lockPath, tempPath, owner, options.removeTemp, fileOps);
     throw error;
   }
   return { acquired: true, lockPath, token, lockAgeMs: 0, lockStale: false, owner: redactOwner(owner) };
@@ -74,7 +74,13 @@ function publishOwner(lockPath, tempPath, owner, ownerWriter, fileOps) {
   fileOps.renameSync(tempPath, ownerPath);
 }
 
-function cleanupUnpublishedLock(lockPath, tempPath, removeTemp = fs.unlinkSync, fileOps = fs) {
+function cleanupUnpublishedLock(lockPath, tempPath, owner, removeTemp = fs.unlinkSync, fileOps = fs) {
+  const readFileSync = fileOps.readFileSync || fs.readFileSync;
+  try {
+    if (readFileSync(tempPath, 'utf8') !== JSON.stringify(owner)) return;
+  } catch (_) {
+    return;
+  }
   try {
     removeTemp(tempPath);
   } catch (error) {

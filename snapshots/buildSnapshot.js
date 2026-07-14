@@ -30,7 +30,12 @@ function slice7(arr) {
 function buildSnapshotRows(weatherData, resortMeta, issueTimeUtc) {
   const rows = [];
   for (const [resort, rd] of Object.entries(weatherData)) {
-    const meta = resortMeta[resort] || {};
+    const meta = resortMeta[resort];
+    const latitude = Number(meta && meta.latitude);
+    const longitude = Number(meta && meta.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      throw new Error(`snapshot coordinates unavailable for ${resort}`);
+    }
     for (const lift of ['Top Lift', 'Mid Lift', 'Bottom Lift']) {
       const ed = rd.elevations && rd.elevations[lift];
       if (!ed || !Array.isArray(ed.snowfall_sum)) continue;
@@ -43,7 +48,7 @@ function buildSnapshotRows(weatherData, resortMeta, issueTimeUtc) {
         const lead = leadHours(issueTimeUtc, target);
         rows.push(validateSnapshot({
           epci_version: EPCI_VERSION, resort, country: rd.country,
-          latitude: meta.latitude ?? null, longitude: meta.longitude ?? null,
+          latitude, longitude,
           forecast_elevation_m: ed.elevation_m ?? null, lift,
           provider: prov.provider ?? null, weather_model: prov.weather_model ?? null,
           issue_time_utc: issueTimeUtc, target_date: target, lead_hours: lead,

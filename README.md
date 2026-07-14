@@ -3,7 +3,10 @@
 ## About
 A comprehensive web platform for tracking and predicting powder conditions across European ski resorts, with a special focus on the Alps. The site combines real-time forecasts with historical analysis to help skiers find the best powder opportunities.
 
-Visit the live platform: [powderforecasteurope.onrender.com](https://powderforecasteurope.onrender.com/)
+**Deployment:** Production is built from the `main` branch of
+[`janF19/Snow-forecast-europe`](https://github.com/janF19/Snow-forecast-europe)
+and deployed through Coolify. Pushes and deployments are performed only after an explicit
+release-authorization gate.
 
 **Project Inspiration**: This project was inspired by [wepowder.com](https://wepowder.com/en/forecast#snow-cumulative:168). However, after noticing potential snowfall data inflation issues (possibly due to different weather models), I decided to create a more accurate alternative.
 

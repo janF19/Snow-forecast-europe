@@ -53,6 +53,9 @@ test('all public GET routes render successfully with deterministic fixtures', as
     if (pathname === '/freeride') {
       assert.match(body, /Lift-served freeride terrain/);
       assert.match(body, /No mapped route data/);
+      assert.match(body, /<th scope="col">Terrain metrics<\/th>/);
+      assert.match(body, /not complete terrain coverage/i);
+      assert.match(body, /not avalanche or safety guidance/i);
     }
     if (pathname === '/allHistory') {
       assert.match(body, /historical reliability/i);

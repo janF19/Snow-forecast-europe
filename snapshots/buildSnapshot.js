@@ -31,8 +31,8 @@ function buildSnapshotRows(weatherData, resortMeta, issueTimeUtc) {
   const rows = [];
   for (const [resort, rd] of Object.entries(weatherData)) {
     const meta = resortMeta[resort];
-    const latitude = Number(meta && meta.latitude);
-    const longitude = Number(meta && meta.longitude);
+    const latitude = parseCoordinate(meta && meta.latitude);
+    const longitude = parseCoordinate(meta && meta.longitude);
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       throw new Error(`snapshot coordinates unavailable for ${resort}`);
     }
@@ -67,5 +67,10 @@ function buildSnapshotRows(weatherData, resortMeta, issueTimeUtc) {
 }
 
 function numOrNull(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+
+function parseCoordinate(value) {
+  if (typeof value !== 'number' && (typeof value !== 'string' || value.trim() === '')) return NaN;
+  return Number(value);
+}
 
 module.exports = { leadHours, buildSnapshotRows };

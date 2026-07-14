@@ -74,3 +74,32 @@ test('builder injects numeric resort coordinates into every row', () => {
   assert.ok(rows.every((r) => r.issue_time_utc === issueTime));
   assert.ok(rows.every((r) => r.latitude === 47.1 && r.longitude === 13.2));
 });
+
+test('builder rejects absent coordinate values', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  for (const meta of [
+    { latitude: null, longitude: 13.2 },
+    { longitude: 13.2 },
+    { latitude: '', longitude: 13.2 },
+    { latitude: 47.1, longitude: null },
+    { latitude: 47.1, longitude: '' },
+  ]) {
+    assert.throws(
+      () => buildSnapshotRows(wx, { 'Fixture Alpha': meta }, '2026-01-05T06:00:00Z'),
+      /coordinates.*Fixture Alpha/i,
+    );
+  }
+});
+
+test('builder rejects invalid or nonfinite coordinate values', () => {
+  const wx = require('./fixtures/epciSnapshotInput.json');
+  for (const meta of [
+    { latitude: 'not-a-number', longitude: 13.2 },
+    { latitude: Infinity, longitude: 13.2 },
+  ]) {
+    assert.throws(
+      () => buildSnapshotRows(wx, { 'Fixture Alpha': meta }, '2026-01-05T06:00:00Z'),
+      /coordinates.*Fixture Alpha/i,
+    );
+  }
+});

@@ -58,7 +58,8 @@ function validateWeatherData(weather, resortMeta, {
       const elevation = elevations[lift];
       if (!elevation) { missingLifts += 1; continue; }
       if (candidate && !validLift(elevation, issueTime)) {
-        throw new Error(`invalid lift data for ${name} ${lift}`);
+        missingLifts += 1;
+        continue;
       }
       if (candidate) { validLifts += 1; validForResort += 1; }
       for (const variable of VARIABLES) {

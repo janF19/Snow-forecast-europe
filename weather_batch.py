@@ -96,7 +96,7 @@ def validate_weather_candidate(output, resorts, issue_time, expected_resorts=EXP
                 valid_lifts += 1
                 valid_for_resort += 1
             else:
-                raise ValueError(f"invalid lift data for {name} {lift_name}")
+                invalid_lifts += 1
         if valid_for_resort == 0:
             raise ValueError(f"resort {name} has no valid lifts")
     if invalid_lifts > 8:

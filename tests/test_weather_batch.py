@@ -107,10 +107,28 @@ class WeatherBatchTests(unittest.TestCase):
         self.assertEqual(summary["missing_or_invalid_lifts"], 8)
         self.assertEqual(summary["valid_lifts"], 874)
 
+    def test_candidate_validator_allows_eight_present_but_invalid_lifts(self):
+        candidate = valid_candidate()
+        for index in range(8):
+            candidate[f"Resort {index}"]["elevations"]["Top Lift"]["snowfall_sum"] = [0.0] * 27
+
+        summary = validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
+
+        self.assertEqual(summary["missing_or_invalid_lifts"], 8)
+        self.assertEqual(summary["valid_lifts"], 874)
+
     def test_candidate_validator_rejects_nine_missing_lifts(self):
         candidate = valid_candidate()
         for index in range(9):
             del candidate[f"Resort {index}"]["elevations"]["Top Lift"]
+
+        with self.assertRaisesRegex(ValueError, "missing or invalid lifts"):
+            validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
+
+    def test_candidate_validator_rejects_nine_present_but_invalid_lifts(self):
+        candidate = valid_candidate()
+        for index in range(9):
+            candidate[f"Resort {index}"]["elevations"]["Top Lift"]["provenance"]["generated_at"] = "wrong"
 
         with self.assertRaisesRegex(ValueError, "missing or invalid lifts"):
             validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
@@ -122,20 +140,24 @@ class WeatherBatchTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no valid lifts"):
             validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
 
-    def test_candidate_validator_rejects_missing_or_short_required_arrays(self):
+    def test_candidate_validator_rejects_nine_short_required_arrays(self):
         candidate = valid_candidate()
-        del candidate["Resort 0"]["elevations"]["Top Lift"]["rain_sum"]
-        candidate["Resort 0"]["elevations"]["Mid Lift"]["snowfall_sum"] = [0.0] * 27
+        for index in range(9):
+            candidate[f"Resort {index}"]["elevations"]["Top Lift"]["rain_sum"] = [0.0] * 27
 
-        with self.assertRaisesRegex(ValueError, "invalid lift data"):
+        with self.assertRaisesRegex(ValueError, "missing or invalid lifts"):
             validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
 
-    def test_candidate_validator_rejects_wrong_provenance_and_nonfinite_data(self):
+    def test_candidate_validator_rejects_nine_wrong_provenance_or_nonfinite_lifts(self):
         candidate = valid_candidate()
-        candidate["Resort 0"]["elevations"]["Top Lift"]["provenance"]["generated_at"] = "2026-01-05T06:00:01Z"
-        candidate["Resort 0"]["elevations"]["Mid Lift"]["snowfall_sum"][0] = float("nan")
+        for index in range(9):
+            lift = candidate[f"Resort {index}"]["elevations"]["Top Lift"]
+            if index % 2:
+                lift["snowfall_sum"][0] = float("nan")
+            else:
+                lift["provenance"]["generated_at"] = "2026-01-05T06:00:01Z"
 
-        with self.assertRaisesRegex(ValueError, "invalid lift data"):
+        with self.assertRaisesRegex(ValueError, "missing or invalid lifts"):
             validate_weather_candidate(candidate, configured_resorts(), "2026-01-05T06:00:00Z")
 
     def test_run_batch_does_not_write_or_replace_existing_artifact_when_validation_fails(self):

@@ -78,9 +78,38 @@ test('generated candidate mode permits eight missing lifts', () => {
   assert.equal(summary.validLifts, 874);
 });
 
+test('generated candidate mode permits eight present but invalid lifts', () => {
+  const weather = generatedCandidate();
+  for (let index = 0; index < 8; index += 1) {
+    weather[`Resort ${index}`].elevations['Top Lift'].snowfall_sum = Array(27).fill(0);
+  }
+
+  const summary = validateWeatherData(weather, candidateResorts, {
+    expectedCount: 294,
+    candidate: true,
+    candidateIssueTime,
+  });
+
+  assert.equal(summary.missingLifts, 8);
+  assert.equal(summary.validLifts, 874);
+});
+
 test('generated candidate mode rejects nine missing lifts', () => {
   const weather = generatedCandidate();
   for (let index = 0; index < 9; index += 1) delete weather[`Resort ${index}`].elevations['Top Lift'];
+
+  assert.throws(() => validateWeatherData(weather, candidateResorts, {
+    expectedCount: 294,
+    candidate: true,
+    candidateIssueTime,
+  }), /missing or invalid lifts/);
+});
+
+test('generated candidate mode rejects nine present but invalid lifts', () => {
+  const weather = generatedCandidate();
+  for (let index = 0; index < 9; index += 1) {
+    weather[`Resort ${index}`].elevations['Top Lift'].provenance.generated_at = 'wrong';
+  }
 
   assert.throws(() => validateWeatherData(weather, candidateResorts, {
     expectedCount: 294,
@@ -100,14 +129,17 @@ test('generated candidate mode rejects a resort without valid lifts', () => {
   }), /no valid lifts/);
 });
 
-test('generated candidate mode rejects malformed arrays and provenance', () => {
+test('generated candidate mode rejects nine malformed arrays or provenance entries', () => {
   const weather = generatedCandidate();
-  weather['Resort 0'].elevations['Top Lift'].rain_sum = Array(27).fill(0);
-  weather['Resort 0'].elevations['Mid Lift'].provenance.generated_at = '2026-01-05T06:00:01Z';
+  for (let index = 0; index < 9; index += 1) {
+    const lift = weather[`Resort ${index}`].elevations['Top Lift'];
+    if (index % 2) lift.rain_sum = Array(27).fill(0);
+    else lift.provenance.generated_at = '2026-01-05T06:00:01Z';
+  }
 
   assert.throws(() => validateWeatherData(weather, candidateResorts, {
     expectedCount: 294,
     candidate: true,
     candidateIssueTime,
-  }), /invalid lift data/);
+  }), /missing or invalid lifts/);
 });

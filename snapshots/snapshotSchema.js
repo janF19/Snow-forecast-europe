@@ -1,5 +1,6 @@
 'use strict';
 const fs = require('node:fs');
+const path = require('node:path');
 
 const SNAPSHOT_FIELDS = [
   'epci_version', 'resort', 'country', 'latitude', 'longitude', 'forecast_elevation_m',
@@ -40,7 +41,16 @@ function appendSnapshots(filePath, rows) {
     if (seen.has(k)) { skipped += 1; continue; }
     seen.add(k); out.push(JSON.stringify(row)); written += 1;
   }
-  if (out.length) fs.appendFileSync(filePath, out.join('\n') + '\n', 'utf8');
+  if (out.length) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    const fd = fs.openSync(filePath, 'a');
+    try {
+      fs.writeFileSync(fd, `${out.join('\n')}\n`, 'utf8');
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
   return { written, skipped };
 }
 

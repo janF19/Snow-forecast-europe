@@ -36,6 +36,23 @@ test('append is duplicate-safe and immutable', () => {
   assert.equal(lines.length, 1);
 });
 
+test('append creates the snapshot directory and terminates the batch with a newline', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snap-'));
+  const file = path.join(dir, 'forecast_snapshots', '2026-01.jsonl');
+  const result = appendSnapshots(file, [row()]);
+  assert.deepEqual(result, { written: 1, skipped: 0 });
+  assert.ok(fs.readFileSync(file, 'utf8').endsWith('\n'));
+});
+
+test('append leaves an invalid existing snapshot file unchanged', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snap-'));
+  const file = path.join(dir, '2026-01.jsonl');
+  fs.writeFileSync(file, '{bad json}\n', 'utf8');
+  const before = fs.readFileSync(file);
+  assert.throws(() => appendSnapshots(file, [row()]), /JSON/);
+  assert.deepEqual(fs.readFileSync(file), before);
+});
+
 const { leadHours, buildSnapshotRows } = require('../snapshots/buildSnapshot');
 
 test('leadHours counts whole hours to target midnight Europe/Berlin', () => {

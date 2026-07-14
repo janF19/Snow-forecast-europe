@@ -10,9 +10,9 @@ const LOCK_STALE_MS = 10 * 60 * 1000;
 const LIFTS = ['Top Lift', 'Mid Lift', 'Bottom Lift'];
 const VARIABLES = ['snowfall_sum', 'temperature_2m_max', 'rain_sum', 'wind_speed_10m_max'];
 
-function acquireLock(directory, nowMs = Date.now(), pid = process.pid) {
-  fs.mkdirSync(directory, { recursive: true });
-  const lockPath = path.join(directory, '.capture.lock');
+function acquireLock(snapshotDir, { nowMs = Date.now(), pid = process.pid } = {}) {
+  fs.mkdirSync(snapshotDir, { recursive: true });
+  const lockPath = path.join(snapshotDir, '.capture.lock');
   try {
     writeLock(lockPath, nowMs, pid);
     return { acquired: true, lockPath, staleReplaced: false, lockAgeMs: 0 };
@@ -21,9 +21,13 @@ function acquireLock(directory, nowMs = Date.now(), pid = process.pid) {
   }
   const lockAgeMs = Math.max(0, nowMs - fs.statSync(lockPath).mtimeMs);
   if (lockAgeMs <= LOCK_STALE_MS) return { acquired: false, lockPath, staleReplaced: false, lockAgeMs };
-  fs.unlinkSync(lockPath);
-  writeLock(lockPath, nowMs, pid);
-  return { acquired: true, lockPath, staleReplaced: true, lockAgeMs };
+  try {
+    fs.unlinkSync(lockPath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const replacement = acquireLock(snapshotDir, { nowMs, pid });
+  return replacement.acquired ? { ...replacement, staleReplaced: true } : replacement;
 }
 
 function writeLock(lockPath, acquiredAt, pid) {
@@ -35,10 +39,10 @@ function writeLock(lockPath, acquiredAt, pid) {
   }
 }
 
-function releaseLock(lockPath) {
-  if (!lockPath) return;
+function releaseLock(lock) {
+  if (!lock || !lock.acquired || !lock.lockPath) return;
   try {
-    fs.unlinkSync(lockPath);
+    fs.unlinkSync(lock.lockPath);
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
@@ -119,10 +123,10 @@ function captureForecastSnapshot(options) {
     issueTime = issueTimeFromWeather(weather);
     filePath = path.join(dataDir, 'forecast_snapshots', `${issueTime.slice(0, 7)}.jsonl`);
     phase = 'lock';
-    lock = acquireLock(path.dirname(filePath), nowMs, pid);
+    lock = acquireLock(path.dirname(filePath), { nowMs, pid });
     if (!lock.acquired) {
       const event = eventFor('lock_skipped', { issueTime, filePath, lockAgeMs: lock.lockAgeMs, sourceCommit, durationMs: duration(started) });
-      log(logger, event);
+      info(logger, event);
       return event;
     }
     phase = 'forecast';
@@ -132,28 +136,33 @@ function captureForecastSnapshot(options) {
     const eventName = result.written ? 'captured' : 'duplicate';
     const event = eventFor(eventName, {
       issueTime, filePath, generated: rows.length, written: result.written, skipped: result.skipped,
-      missingLifts: summary.missingLifts, missingVariables: summary.missingVariables,
+      missingMetadata: summary.missingMetadata.length, missingLifts: summary.missingLifts, missingVariables: summary.missingVariables,
       staleLockReplaced: lock.staleReplaced, sourceCommit, durationMs: duration(started),
     });
-    log(logger, event);
+    info(logger, event);
     return event;
   } catch (error) {
     const category = error instanceof SyntaxError && phase === 'append'
       ? 'invalid_existing_snapshot'
       : (phase === 'append' || phase === 'lock') ? 'storage_error' : 'invalid_forecast';
-    log(logger, eventFor('error', { category, issueTime: issueTime || null, filePath: filePath || null, message: error.message, durationMs: duration(started) }));
+    errorLog(logger, eventFor(category, {
+      stage: phase, message: error.message, sourceCommit, durationMs: duration(started),
+    }));
     throw error;
   } finally {
-    if (lock && lock.acquired) releaseLock(lock.lockPath);
+    releaseLock(lock);
   }
 }
 
 function eventFor(event, fields) { return { event, ...fields }; }
 function duration(started) { return Math.round((performance.now() - started) * 1000) / 1000; }
-function log(logger, event) {
+function info(logger, event) {
   const line = JSON.stringify(event);
-  if (typeof logger.error === 'function' && event.event === 'error') logger.error(line);
-  else if (typeof logger.log === 'function') logger.log(line);
+  if (typeof logger.info === 'function') logger.info(line);
+}
+function errorLog(logger, event) {
+  const line = JSON.stringify(event);
+  if (typeof logger.error === 'function') logger.error(line);
 }
 
 module.exports = {

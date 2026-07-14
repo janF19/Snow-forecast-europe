@@ -29,7 +29,13 @@ function setup(weather = weatherWithLifts(), meta = [{ resort: 'Fixture Alpha', 
   fs.writeFileSync(weatherPath, JSON.stringify(weather), 'utf8');
   fs.writeFileSync(resortMetaPath, JSON.stringify(meta), 'utf8');
   const events = [];
-  return { dir, dataDir: dir, weatherPath, resortMetaPath, events, logger: { log: (event) => events.push(JSON.parse(event)) } };
+  return {
+    dir, dataDir: dir, weatherPath, resortMetaPath, events,
+    logger: {
+      info: (event) => events.push(JSON.parse(event)),
+      error: (event) => events.push(JSON.parse(event)),
+    },
+  };
 }
 
 test('capture writes seven rows and immediately deduplicates the rerun', () => {
@@ -42,6 +48,8 @@ test('capture writes seven rows and immediately deduplicates the rerun', () => {
   assert.equal(second.written, 0);
   assert.equal(second.skipped, 7);
   assert.equal(env.events.at(-1).event, 'duplicate');
+  assert.equal(env.events.at(-1).missingMetadata, 0);
+  assert.equal(env.events.at(-1).sourceCommit, null);
 });
 
 test('capture rejects lift provenance with more than one issue time', () => {
@@ -50,20 +58,22 @@ test('capture rejects lift provenance with more than one issue time', () => {
   weather['Fixture Alpha'].elevations['Mid Lift'].provenance.issue_time_utc = '2026-01-05T07:00:00Z';
   const env = setup(weather);
   assert.throws(() => captureForecastSnapshot(env), /one issue time/i);
-  assert.equal(env.events[0].category, 'invalid_forecast');
+  assert.equal(env.events[0].event, 'invalid_forecast');
+  assert.equal(env.events[0].stage, 'forecast');
 });
 
 test('lock skips active lock and replaces a stale lock', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-'));
   const lockPath = path.join(dir, '.capture.lock');
   fs.writeFileSync(lockPath, JSON.stringify({ pid: 99, acquiredAt: 1 }));
-  const active = acquireLock(dir, 1000, 99);
+  const active = acquireLock(dir, { nowMs: 1000, pid: 99 });
   assert.equal(active.acquired, false);
   fs.utimesSync(lockPath, new Date(1), new Date(1));
-  const stale = acquireLock(dir, LOCK_STALE_MS + 2, 100);
+  const stale = acquireLock(dir, { nowMs: LOCK_STALE_MS + 2, pid: 100 });
   assert.equal(stale.acquired, true);
   assert.equal(stale.staleReplaced, true);
-  releaseLock(stale.lockPath);
+  releaseLock(stale);
+  assert.equal(fs.existsSync(lockPath), false);
 });
 
 test('append storage failure is redacted and leaves weather unchanged', () => {
@@ -71,14 +81,15 @@ test('append storage failure is redacted and leaves weather unchanged', () => {
   const before = fs.readFileSync(env.weatherPath, 'utf8');
   assert.throws(() => captureForecastSnapshot({ ...env, appendSnapshotsFn: () => { throw new Error('disk full'); } }), /disk full/);
   assert.equal(fs.readFileSync(env.weatherPath, 'utf8'), before);
-  assert.equal(env.events[0].category, 'storage_error');
+  assert.equal(env.events[0].event, 'storage_error');
+  assert.equal(env.events[0].stage, 'append');
   assert.equal(JSON.stringify(env.events[0]).includes(before), false);
 });
 
 test('missing resort metadata is invalid_forecast', () => {
   const env = setup(weatherWithLifts(), []);
   assert.throws(() => captureForecastSnapshot(env), /metadata/i);
-  assert.equal(env.events[0].category, 'invalid_forecast');
+  assert.equal(env.events[0].event, 'invalid_forecast');
 });
 
 test('missing lift and variables are reported in captured event', () => {
@@ -91,13 +102,14 @@ test('missing lift and variables are reported in captured event', () => {
   assert.equal(result.missingVariables, 1);
   assert.equal(env.events[0].missingLifts, 1);
   assert.equal(env.events[0].missingVariables, 1);
+  assert.equal(env.events[0].missingMetadata, 0);
 });
 
 test('malformed weather JSON is invalid_forecast', () => {
   const env = setup();
   fs.writeFileSync(env.weatherPath, '{bad json}', 'utf8');
   assert.throws(() => captureForecastSnapshot(env), /JSON/);
-  assert.equal(env.events[0].category, 'invalid_forecast');
+  assert.equal(env.events[0].event, 'invalid_forecast');
 });
 
 test('malformed monthly JSONL is invalid_existing_snapshot', () => {
@@ -106,5 +118,18 @@ test('malformed monthly JSONL is invalid_existing_snapshot', () => {
   fs.mkdirSync(path.dirname(file));
   fs.writeFileSync(file, '{bad json}\n', 'utf8');
   assert.throws(() => captureForecastSnapshot(env), /JSON/);
-  assert.equal(env.events[0].category, 'invalid_existing_snapshot');
+  assert.equal(env.events[0].event, 'invalid_existing_snapshot');
+  assert.equal(env.events[0].stage, 'append');
+});
+
+test('lock skip is an info event with its stable contract fields', () => {
+  const env = setup();
+  const snapshotDir = path.join(env.dir, 'forecast_snapshots');
+  fs.mkdirSync(snapshotDir);
+  fs.writeFileSync(path.join(snapshotDir, '.capture.lock'), '{}');
+  const result = captureForecastSnapshot({ ...env, nowMs: Date.now() });
+  assert.equal(result.event, 'lock_skipped');
+  assert.equal(env.events[0].event, 'lock_skipped');
+  assert.equal(typeof env.events[0].lockAgeMs, 'number');
+  assert.equal(env.events[0].sourceCommit, null);
 });

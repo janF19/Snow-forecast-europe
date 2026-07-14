@@ -64,10 +64,16 @@ Tests import the Express app without performing capture or opening a listening s
   expected lift elevations per resort.
 - A complete batch can produce 6,174 snapshot rows: 294 resorts x 3 lifts x 7 forecast
   days.
-- Partial provider failures may reduce the row count. Missing resorts, lifts, provenance,
-  or variables are counted and logged; they are never silently presented as complete.
+- Per-lift provider failures may be caught, counted, and logged. A newly generated batch
+  is publishable only when it exactly matches all 294 configured weather identities, every
+  resort has at least one valid lift, and at least 874 of the 882 expected lifts are valid.
+  It may therefore contain at most eight missing or invalid lifts. A valid lift has all
+  required daily-variable arrays with exactly 28 values, and its provenance uses the one
+  injected batch issue time. Missing resorts, lifts, provenance, or variables are never
+  silently presented as complete.
 - The forecast JSON is written to a same-directory temporary file, flushed, parsed and
-  structurally validated, then atomically replaces the live JSON.
+  structurally validated (including rejection of NaN and other invalid JSON values), then
+  atomically replaces the live JSON.
 - Fetch or validation failure leaves the prior valid forecast untouched and prevents the
   workflow from committing or deploying.
 

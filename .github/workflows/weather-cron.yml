@@ -38,7 +38,7 @@ jobs:
           TZ: UTC
 
       - name: Validate weather artifact
-        run: node scripts/validateWeatherData.js
+        run: node scripts/validateWeatherData.js --candidate
 
       - name: Commit and push validated weather data
         id: publish

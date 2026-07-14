@@ -58,6 +58,22 @@ Preserve these invariants:
 
 ### Task 1: Make weather generation one stable atomic batch
 
+**Approved correction (2026-07-14):** Before `write_json_atomic` replaces
+`weather_dataFull_7.json`, validate the newly generated candidate against the configured
+294 resorts. Identities must match exactly; each resort must have at least one valid lift;
+and at least 874 of the 882 expected lifts must be valid (at most eight missing or invalid).
+A valid lift contains each required daily-variable array with exactly 28 values and
+provenance carrying the one injected batch issue time. JSON serialization rejects NaN and
+other invalid JSON. Per-lift failures may be caught, counted, and logged, but a candidate
+that misses these gates must never call the writer or replace the existing artifact. Keep
+legacy-artifact provenance coverage-only until it is regenerated with one batch issue time.
+
+Add a pure pre-write batch validator and tests proving: writer is not called on validation
+failure; an existing artifact remains byte-identical after fetch or validation failure;
+eight missing lifts pass while nine fail; a resort with zero valid lifts fails; missing or
+short arrays and wrong batch provenance fail. Update the Node weather validator to apply
+the same completeness gate before the workflow can publish a generated artifact.
+
 **Files:**
 
 - Create: `weather_batch.py`

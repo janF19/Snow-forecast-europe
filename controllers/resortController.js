@@ -1,8 +1,5 @@
-const { error } = require('console');
 const fs = require('fs');
 const path = require('path');
-const { stdout, stderr } = require('process');
-const { exec } = require('child_process');
 const { rankedTerrain, loadFreerideTerrain } = require('../utils/freerideScore');
 const { buildResortEPCI, epciBand, EPCI_VERSION } = require('../utils/epci');
 const { forecastDayLabel, offsetForDate } = require('../utils/forecastDate');
@@ -429,44 +426,6 @@ exports.getHistoryData = async (req, res) => {
 exports.getShortForecast = (req, res) => {
     res.render('shortForecast');
 };
-
-
-
-exports.calculateHistorySnow = (req, res) => {
-    const startDate = req.body.startDate;
-    const endDate = req.body.endDate;
-
-    console.log("Received startDate:", startDate);
-    console.log("Received endDate:", endDate);
-
-    exec(`python calculateHistory.py ${startDate} ${endDate}`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`);
-            return res.status(500).json({message: 'Error calculating snowfall'});
-        }
-        
-        // Parse the output from the Python script into a usable format
-        const results = stdout.split('\n')
-            .filter(line => line.startsWith('Location:')) // Filter only lines that start with 'Location:'
-            .map(line => {
-                const parts = line.split(', ');
-                return {
-                    location: parts[0].split(': ')[1], // Get the location name
-                    avg_snowfall: parseFloat(parts[1].split(': ')[1]), // Get the average snowfall
-                    total_snowfall: parseFloat(parts[2].split(': ')[1]) // Get the total snowfall
-                };
-            })
-            .filter(stat => stat.location); // Filter out any empty results
-
-            if (results.length > 0) {
-                res.json({ results });
-            } else {
-                res.json({ results: [], message: 'No data found for the specified dates.' });
-            }
-
-    });
-
-}
 
 
 

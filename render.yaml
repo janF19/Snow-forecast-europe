@@ -24,8 +24,6 @@ services:
 
       # Make Python script executable
       chmod +x getForecastFull_all_resorts.py
-      chmod +x calculateAllHistory.py
-      chmod +x calculateHistory.py
 
       # Debug information
       echo "Installed Python packages:"

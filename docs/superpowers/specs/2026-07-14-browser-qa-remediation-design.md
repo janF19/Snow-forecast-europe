@@ -1,7 +1,7 @@
 # Browser QA remediation
 
 **Date:** 2026-07-14
-**Status:** Design approved; written-specification review pending
+**Status:** Approved specification
 **Depends on:** Repository/build stabilization and EPCI operations merged into local
 `main`
 

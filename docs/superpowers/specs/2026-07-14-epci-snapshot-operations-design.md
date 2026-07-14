@@ -1,7 +1,7 @@
 # Daily EPCI snapshot operations on Coolify
 
 **Date:** 2026-07-14
-**Status:** Design approved; written-specification review pending
+**Status:** Approved specification
 **Depends on:** Approved repository/build stabilization merged into local `main`
 
 ## Goal

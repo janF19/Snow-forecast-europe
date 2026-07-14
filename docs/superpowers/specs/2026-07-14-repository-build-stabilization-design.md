@@ -1,7 +1,7 @@
 # Repository and build stabilization
 
 **Date:** 2026-07-14
-**Status:** Design approved; written-specification review pending
+**Status:** Approved specification
 **Depends on:** Current local `main` at or after `10a2819`
 
 ## Goal

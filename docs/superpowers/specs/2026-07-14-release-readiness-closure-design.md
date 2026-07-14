@@ -1,7 +1,7 @@
 # Powder Forecast release-readiness closure
 
 **Date:** 2026-07-14
-**Status:** Design approved; written-specification review pending
+**Status:** Approved specification
 **Canonical repository:** `git@github.com:janF19/Snow-forecast-europe.git`
 **Canonical production platform:** Coolify
 

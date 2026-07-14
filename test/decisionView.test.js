@@ -86,3 +86,45 @@ test('future mode keeps provenance and warnings (no forecast leak, reliability n
   assert.match(body, /of \d+ comparable seasons/i);  // numerator/denominator visible
   assert.doesNotMatch(body, /Fresh snow \(forecast\)/i);
 });
+
+test('decision view renders a real GET filter form', async () => {
+  const { body } = await get('/decision');
+  assert.match(body, /<form[^>]*method="get"[^>]*>/i);
+  assert.match(body, /action="\/decision"/i);
+});
+
+test('go-soon mode form exposes start/end date inputs', async () => {
+  const { body } = await get('/decision?mode=go-soon');
+  assert.match(body, /name="start"/);
+  assert.match(body, /name="end"/);
+  assert.match(body, /type="date"/);
+});
+
+test('plan-future mode form exposes a window input', async () => {
+  const { body } = await get('/decision?mode=plan-future&window=02-01..02-05');
+  assert.match(body, /name="window"/);
+});
+
+test('sort select is populated with mode-appropriate options', async () => {
+  const goSoon = await get('/decision?mode=go-soon');
+  assert.match(goSoon.body, /<select[^>]*name="sort"[^>]*>/i);
+  assert.match(goSoon.body, /<option value="snowfall"/);
+
+  const planFuture = await get('/decision?mode=plan-future&window=02-01..02-05');
+  assert.match(planFuture.body, /<option value="reliability"/);
+  assert.doesNotMatch(planFuture.body, /<option value="snowfall"/);
+});
+
+test('regression: sort + filter query params combined still render successfully', async () => {
+  const { res, body } = await get('/decision?mode=go-soon&sort=terrain&country=Italy');
+  assert.equal(res.statusCode, 200);
+  assert.match(body, /Compare resorts/i);
+});
+
+test('an inverted start/end range does not silently report zero accumulation', async () => {
+  const { body } = await get('/decision?mode=go-soon&today=2026-01-15&start=2026-01-20&end=2026-01-16');
+  // Implementation swaps the range chronologically rather than iterating zero days,
+  // so a real forecast table (not the horizon guard) should render.
+  assert.doesNotMatch(body, /beyond the .*forecast horizon/i);
+  assert.match(body, /Fresh snow/i);
+});

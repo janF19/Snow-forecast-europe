@@ -27,6 +27,75 @@
         <% } %>
       </div>
 
+      <form method="get" action="/decision" class="decision-filters">
+        <input type="hidden" name="mode" value="<%= mode %>">
+
+        <% if (mode === 'go-soon') { %>
+          <div class="decision-filter-field">
+            <label for="filter-start">Start date</label>
+            <input type="date" id="filter-start" name="start" value="<%= startParam %>">
+          </div>
+          <div class="decision-filter-field">
+            <label for="filter-end">End date</label>
+            <input type="date" id="filter-end" name="end" value="<%= endParam %>">
+          </div>
+        <% } else { %>
+          <div class="decision-filter-field">
+            <label for="filter-window">Calendar window (MM-DD..MM-DD)</label>
+            <input type="text" id="filter-window" name="window" pattern="\d{2}-\d{2}\.\.\d{2}-\d{2}"
+                   value="<%= model.window.startMMDD %>..<%= model.window.endMMDD %>">
+          </div>
+        <% } %>
+
+        <div class="decision-filter-field">
+          <label for="filter-sort">Sort by</label>
+          <select id="filter-sort" name="sort">
+            <% sortOptions.forEach(function(opt) { %>
+              <option value="<%= opt %>" <%= model.sort === opt ? 'selected' : '' %>><%= opt %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-country">Country</label>
+          <input type="text" id="filter-country" name="country" value="<%= model.filters.country || '' %>">
+        </div>
+
+        <% if (mode === 'go-soon') { %>
+          <div class="decision-filter-field">
+            <label for="filter-min-snow">Min. fresh snow (cm)</label>
+            <input type="number" id="filter-min-snow" name="minSnow" min="0"
+                   value="<%= model.filters.minSnow != null ? model.filters.minSnow : '' %>">
+          </div>
+        <% } %>
+
+        <div class="decision-filter-field">
+          <label for="filter-min-terrain">Min. terrain score</label>
+          <input type="number" id="filter-min-terrain" name="minTerrain" min="0"
+                 value="<%= model.filters.minTerrain != null ? model.filters.minTerrain : '' %>">
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-terrain-source">Terrain source</label>
+          <select id="filter-terrain-source" name="terrainSource">
+            <option value="" <%= !model.filters.terrainSource ? 'selected' : '' %>>Any</option>
+            <option value="measured" <%= model.filters.terrainSource === 'measured' ? 'selected' : '' %>>Measured</option>
+          </select>
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-min-confidence">Min. historical confidence</label>
+          <select id="filter-min-confidence" name="minConfidence">
+            <option value="" <%= !model.filters.minConfidence ? 'selected' : '' %>>Any</option>
+            <option value="Limited" <%= model.filters.minConfidence === 'Limited' ? 'selected' : '' %>>Limited</option>
+            <option value="Moderate" <%= model.filters.minConfidence === 'Moderate' ? 'selected' : '' %>>Moderate</option>
+            <option value="High" <%= model.filters.minConfidence === 'High' ? 'selected' : '' %>>High</option>
+          </select>
+        </div>
+
+        <button type="submit">Update</button>
+      </form>
+
       <% if (model.guard === 'range_exceeds_horizon') { %>
         <p class="decision-guard" role="alert"><%= model.warnings[0] %></p>
       <% } %>

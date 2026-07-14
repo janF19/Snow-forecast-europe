@@ -158,3 +158,28 @@ class WeatherBatchTests(unittest.TestCase):
 
             self.assertEqual(written, [])
             self.assertEqual(output_path.read_bytes(), original_bytes)
+
+    def test_run_batch_does_not_replace_existing_artifact_when_fetch_raises(self):
+        written = []
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "weather_dataFull_7.json"
+            original_bytes = b'{"previous":true}\n'
+            output_path.write_bytes(original_bytes)
+
+            def fetch_resort(resort, output, issue):
+                raise RuntimeError("lift fetch failed")
+
+            def write_output(output):
+                written.append(output)
+                write_json_atomic(output, output_path)
+
+            with self.assertRaisesRegex(RuntimeError, "lift fetch failed"):
+                run_batch(
+                    configured_resorts(),
+                    fetch_resort,
+                    write_output,
+                    now=datetime(2026, 1, 5, 6, tzinfo=timezone.utc),
+                )
+
+            self.assertEqual(written, [])
+            self.assertEqual(output_path.read_bytes(), original_bytes)

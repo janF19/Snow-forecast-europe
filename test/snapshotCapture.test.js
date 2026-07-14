@@ -70,7 +70,7 @@ test('lock acquisition is exclusive and matching owner alone releases it', () =>
   assert.equal(first.acquired, true);
   assert.equal(second.acquired, false);
   assert.equal(second.owner.token, undefined);
-  releaseLock({ ...first, token: 'wrong-token' });
+  assert.throws(() => releaseLock({ ...first, token: 'wrong-token' }), /compromised/i);
   assert.equal(fs.existsSync(lockPath), true);
   releaseLock(first);
   assert.equal(fs.existsSync(lockPath), false);
@@ -95,8 +95,31 @@ test('malformed owner lock is never deleted', () => {
   fs.mkdirSync(lockPath);
   fs.writeFileSync(path.join(lockPath, 'owner.json'), '{bad json}', 'utf8');
   assert.throws(() => acquireLock(dir, { nowMs: 1 }), /compromised/i);
-  releaseLock({ acquired: true, lockPath, token: 'anything' });
+  assert.throws(() => releaseLock({ acquired: true, lockPath, token: 'anything' }), /compromised/i);
   assert.equal(fs.existsSync(lockPath), true);
+});
+
+test('capture reports and propagates compromised release ownership without deleting locks', () => {
+  for (const replacement of ['wrong-token', '{bad json}', null]) {
+    const env = setup();
+    let lockPath;
+    assert.throws(() => captureForecastSnapshot({
+      ...env,
+      appendSnapshotsFn: () => {
+        lockPath = path.join(env.dir, 'forecast_snapshots', '.capture.lock');
+        const ownerPath = path.join(lockPath, 'owner.json');
+        if (replacement === null) fs.unlinkSync(ownerPath);
+        else if (replacement === '{bad json}') fs.writeFileSync(ownerPath, replacement, 'utf8');
+        else fs.writeFileSync(ownerPath, JSON.stringify({ token: replacement, pid: 1, acquiredAt: '2026-01-05T06:00:00Z' }), 'utf8');
+        return { written: 7, skipped: 0 };
+      },
+    }), /compromised/i);
+    assert.equal(fs.existsSync(lockPath), true);
+    const failure = env.events.at(-1);
+    assert.equal(failure.event, 'storage_error');
+    assert.equal(failure.stage, 'release_lock');
+    assert.equal(JSON.stringify(failure).includes('wrong-token'), false);
+  }
 });
 
 test('append storage failure is redacted and leaves weather unchanged', () => {
@@ -210,7 +233,10 @@ test('issue times compare normalized instants and reject invalid timezone forms'
   assert.equal(issueTimeFromWeather(weather), '2026-01-05T06:00:00Z');
   weather['Fixture Alpha'].elevations['Mid Lift'].provenance.issue_time_utc = '2026-01-05T07:01:00+01:00';
   assert.throws(() => issueTimeFromWeather(weather), /one issue time/i);
-  for (const value of ['2026-01-05T06:00:00', 'not-a-time']) assert.throws(() => normalizeIssueTime(value), /issue time/i);
+  for (const value of [
+    '2026-01-05T06:00:00', 'not-a-time', '2026-02-30T06:00:00Z',
+    '2026-01-05T24:00:00Z', '2026-01-05T06:00:00+24:00',
+  ]) assert.throws(() => normalizeIssueTime(value), /issue time/i);
 });
 
 function weatherWithIssue(issueTime) {

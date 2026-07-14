@@ -38,15 +38,12 @@ function acquireLock(snapshotDir, options = {}) {
 }
 
 function releaseLock(lock) {
-  if (!lock || !lock.acquired || !lock.lockPath) return;
-  try {
-    const owner = readOwner(lock.lockPath);
-    if (owner.token !== lock.token) return;
-    fs.unlinkSync(path.join(lock.lockPath, 'owner.json'));
-    fs.rmdirSync(lock.lockPath);
-  } catch (error) {
-    if (error.code !== 'ENOENT' && error.code !== 'LOCK_COMPROMISED') throw error;
-  }
+  if (!lock || !lock.acquired || !lock.lockPath) return false;
+  const owner = readOwner(lock.lockPath);
+  if (owner.token !== lock.token) throw compromisedLockError();
+  fs.unlinkSync(path.join(lock.lockPath, 'owner.json'));
+  fs.rmdirSync(lock.lockPath);
+  return true;
 }
 
 function readOwner(lockPath) {
@@ -77,9 +74,17 @@ function hostname() {
 }
 
 function normalizeIssueTime(value) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/i.test(value)) {
+  const parts = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/i.exec(value);
+  if (!parts) {
     throw new Error('forecast issue time is invalid');
   }
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, timezone] = parts;
+  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
+  const hour = Number(hourText), minute = Number(minuteText), second = Number(secondText);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const offset = timezone.toUpperCase() === 'Z' ? null : timezone.slice(1).split(':').map(Number);
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth || hour > 23 || minute > 59 || second > 59
+    || (offset && (offset[0] > 23 || offset[1] > 59))) throw new Error('forecast issue time is invalid');
   const millis = new Date(value).getTime();
   if (!Number.isFinite(millis)) throw new Error('forecast issue time is invalid');
   return new Date(millis).toISOString().replace('.000Z', 'Z');
@@ -146,6 +151,7 @@ function captureForecastSnapshot(options) {
   let filePath;
   let issueTime;
   let phase = 'forecast';
+  let captureError;
   try {
     const weather = JSON.parse(fs.readFileSync(weatherPath, 'utf8'));
     const resortMeta = loadResortMeta(resortMetaPath);
@@ -178,6 +184,7 @@ function captureForecastSnapshot(options) {
     info(logger, event);
     return event;
   } catch (error) {
+    captureError = error;
     const category = error instanceof SyntaxError && phase === 'append'
       ? 'invalid_existing_snapshot'
       : (phase === 'append' || phase === 'lock') ? 'storage_error' : 'invalid_forecast';
@@ -187,7 +194,15 @@ function captureForecastSnapshot(options) {
     }));
     throw error;
   } finally {
-    releaseLock(lock);
+    try {
+      releaseLock(lock);
+    } catch (releaseError) {
+      errorLog(logger, eventFor('storage_error', {
+        stage: 'release_lock', issueTime: issueTime || null, filePath: filePath || null,
+        message: releaseError.message, sourceCommit, durationMs: duration(started),
+      }));
+      if (!captureError) throw releaseError;
+    }
   }
 }
 

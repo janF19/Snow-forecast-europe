@@ -159,3 +159,18 @@ test('result summary renders and unknown query state is not echoed', async () =>
   assert.doesNotMatch(body, /injected=/);
   assert.match(body, /Showing \d+-\d+ of \d+/);
 });
+
+test('decision dates expose explicit names and descriptions', async () => {
+  const { body } = await get('/decision?mode=go-soon');
+  assert.match(body, /<label for="filter-start">Start date<\/label>/);
+  assert.match(body, /id="filter-start"[^>]*aria-label="Start date"[^>]*aria-describedby="decision-date-help"/);
+  assert.match(body, /<label for="filter-end">End date<\/label>/);
+  assert.match(body, /id="filter-end"[^>]*aria-label="End date"[^>]*aria-describedby="decision-date-help"/);
+});
+
+test('invalid decision date is marked and falls back without a 500', async () => {
+  const { res, body } = await get('/decision?mode=go-soon&start=bad&end=2026-01-16&today=2026-01-15');
+  assert.equal(res.statusCode, 200);
+  assert.match(body, /id="filter-start"[^>]*aria-invalid="true"/);
+  assert.match(body, /Enter a valid start date/);
+});

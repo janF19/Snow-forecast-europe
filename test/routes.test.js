@@ -58,6 +58,12 @@ test('all public GET routes render successfully with deterministic fixtures', as
       assert.match(body, /historical reliability/i);
       assert.match(body, /modelled snowfall/);
       assert.doesNotMatch(body, /average historical snowfall in last 30 years/);
+      assert.match(body, /<label for="startDate">From date<\/label>/);
+      assert.match(body, /id="startDate"[^>]*aria-label="From date"[^>]*aria-describedby="history-date-help history-date-error"/);
+      assert.match(body, /<label for="endDate">Until date<\/label>/);
+      assert.match(body, /id="endDate"[^>]*aria-label="Until date"[^>]*aria-describedby="history-date-help history-date-error"/);
+      assert.match(body, /addEventListener\('invalid'/);
+      assert.match(body, /id="history-date-error"[^>]*role="alert"/);
     }
     if (pathname === '/decision') {
       assert.match(body, /Compare resorts/i);

@@ -47,6 +47,12 @@ function toISODate(d) {
     return `${y}-${m}-${day}`;
 }
 
+function validISODate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+    const date = new Date(`${value}T12:00:00`);
+    return !Number.isNaN(date.getTime()) && toISODate(date) === value;
+}
+
 function collectFilters(q) {
     const filters = {};
     if (q.country) filters.country = q.country;
@@ -71,12 +77,17 @@ exports.getDecisionView = (req, res) => {
         let model;
         let startParam = null;
         let endParam = null;
+        const dateErrors = {};
         if (mode === 'plan-future') {
             model = buildPlanFuture({ terrainData, historyRecords, window: parseWindowParam(q.window), now,
                 sort: q.sort || 'reliability', filters });
         } else {
-            let startOffset = q.start ? offsetForDate(q.start, now) : 0;
-            let endOffset = q.end ? offsetForDate(q.end, now) : startOffset;
+            const startIsValid = !q.start || validISODate(q.start);
+            const endIsValid = !q.end || validISODate(q.end);
+            if (!startIsValid) dateErrors.start = 'Enter a valid start date.';
+            if (!endIsValid) dateErrors.end = 'Enter a valid end date.';
+            let startOffset = startIsValid && q.start ? offsetForDate(q.start, now) : 0;
+            let endOffset = endIsValid && q.end ? offsetForDate(q.end, now) : startOffset;
             // Guard against an inverted range (start after end): swapping keeps the
             // selected two dates but always iterates them in chronological order,
             // instead of silently producing a zero-iteration range that reports
@@ -95,7 +106,7 @@ exports.getDecisionView = (req, res) => {
         }
         const pagination = paginateDecisionRows(model.rows, q.page, q);
         model = { ...model, rows: pagination.rows };
-        res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam, pagination });
+        res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam, pagination, dateErrors });
     } catch (error) {
         console.error('Error building decision view:', error);
         res.status(500).render('error', { error: 'Failed to load decision view' });

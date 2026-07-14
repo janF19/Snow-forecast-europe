@@ -45,14 +45,18 @@
     <div class="history-form-container">
         <h2 class="date-range-title">Select Date Range (MM-DD):</h2>
         <form id="snowfall-form" onsubmit="handleFormSubmit(event)">
+            <p id="history-date-help" class="form-help">Choose any dates; historical comparison uses the month and day.</p>
+            <p id="history-date-error" class="field-error" role="alert" hidden></p>
             <div class="date-input-group">
-                <label for="startDate">From:</label>
-                <input type="date" id="startDate" name="startDate" required>
+                <label for="startDate">From date</label>
+                <input type="date" id="startDate" name="startDate" required aria-label="From date"
+                       aria-describedby="history-date-help history-date-error" aria-invalid="false">
             </div>
     
             <div class="date-input-group">
-                <label for="endDate">Until:</label>
-                <input type="date" id="endDate" name="endDate" required>
+                <label for="endDate">Until date</label>
+                <input type="date" id="endDate" name="endDate" required aria-label="Until date"
+                       aria-describedby="history-date-help history-date-error" aria-invalid="false">
             </div>
 
             <div class="filter-container">
@@ -76,6 +80,21 @@
     <div id="result"></div>
 
     <script>
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+        const dateError = document.getElementById('history-date-error');
+
+        [startInput, endInput].forEach((input) => {
+          input.addEventListener('invalid', () => {
+            input.setAttribute('aria-invalid', 'true');
+            dateError.textContent = `${input.getAttribute('aria-label')} is required.`;
+            dateError.hidden = false;
+          });
+          input.addEventListener('input', () => {
+            input.setAttribute('aria-invalid', 'false');
+          });
+        });
+
         function getCountryFlag(country) {
             const countryMap = {
                 'switzerland': 'ch',
@@ -143,6 +162,11 @@
 
         async function handleFormSubmit(event) {
             event.preventDefault();
+
+            dateError.hidden = true;
+            dateError.textContent = '';
+            startInput.setAttribute('aria-invalid', 'false');
+            endInput.setAttribute('aria-invalid', 'false');
         
             const form = event.target;
             const formData = new FormData(form);
@@ -174,6 +198,10 @@
                 displayResults(data);
             } catch (error) {
                 console.error('Error:', error);
+                dateError.textContent = error.message || 'Error calculating snowfall';
+                dateError.hidden = false;
+                startInput.setAttribute('aria-invalid', 'true');
+                endInput.setAttribute('aria-invalid', 'true');
                 document.getElementById('result').innerHTML = `<h2 class="error">Error: ${error.message || 'Error calculating snowfall'}</h2>`;
             }
         }

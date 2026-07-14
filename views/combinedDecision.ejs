@@ -31,13 +31,20 @@
         <input type="hidden" name="mode" value="<%= mode %>">
 
         <% if (mode === 'go-soon') { %>
+          <p id="decision-date-help" class="form-help">Choose the first and last local forecast date.</p>
           <div class="decision-filter-field">
             <label for="filter-start">Start date</label>
-            <input type="date" id="filter-start" name="start" value="<%= startParam %>">
+            <input type="date" id="filter-start" name="start" value="<%= startParam %>"
+                   aria-label="Start date" aria-describedby="decision-date-help<%= dateErrors.start ? ' filter-start-error' : '' %>"
+                   aria-invalid="<%= dateErrors.start ? 'true' : 'false' %>">
+            <% if (dateErrors.start) { %><span id="filter-start-error" class="field-error"><%= dateErrors.start %></span><% } %>
           </div>
           <div class="decision-filter-field">
             <label for="filter-end">End date</label>
-            <input type="date" id="filter-end" name="end" value="<%= endParam %>">
+            <input type="date" id="filter-end" name="end" value="<%= endParam %>"
+                   aria-label="End date" aria-describedby="decision-date-help<%= dateErrors.end ? ' filter-end-error' : '' %>"
+                   aria-invalid="<%= dateErrors.end ? 'true' : 'false' %>">
+            <% if (dateErrors.end) { %><span id="filter-end-error" class="field-error"><%= dateErrors.end %></span><% } %>
           </div>
         <% } else { %>
           <div class="decision-filter-field">

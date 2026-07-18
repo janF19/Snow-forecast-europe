@@ -1,13 +1,117 @@
-const { error } = require('console');
 const fs = require('fs');
 const path = require('path');
-const { stdout, stderr } = require('process');
-const { exec } = require('child_process');
-const os = require('os');
+const { rankedTerrain, loadFreerideTerrain } = require('../utils/freerideScore');
+const { buildResortEPCI, epciBand, EPCI_VERSION } = require('../utils/epci');
+const { forecastDayLabel, offsetForDate } = require('../utils/forecastDate');
+const { buildHistoricalReliability } = require('../utils/historicalReliability');
+const { buildGoSoon, buildPlanFuture, SORTS } = require('../utils/combinedDecision');
+const { paginateDecisionRows } = require('../utils/decisionPagination');
 
 
 
-const allResortsForecastPath = path.join(__dirname, '../weather_dataFull_7.json')
+const allResortsForecastPath = process.env.WEATHER_DATA_PATH ||
+    path.join(__dirname, '../weather_dataFull_7.json');
+
+const historyRecordsPath = process.env.HISTORY_RECORDS_PATH ||
+    path.join(__dirname, '..', 'history_season_records.json');
+
+let historyRecordsCache = null;
+function loadHistoryRecords() {
+    if (historyRecordsCache) return historyRecordsCache;
+    const raw = fs.readFileSync(historyRecordsPath, 'utf-8');
+    historyRecordsCache = JSON.parse(raw);
+    return historyRecordsCache;
+}
+
+// terrain records loaded once; mirrors loadHistoryRecords caching. Reuses
+// loadFreerideTerrain (utils/freerideScore.js) instead of re-parsing the file,
+// since that function already strips _metadata and shapes { _metadata, resorts }.
+const freerideTerrainPath = process.env.FREERIDE_TERRAIN_PATH ||
+    path.join(__dirname, '..', 'freeride_terrain.json');
+let terrainCache = null;
+function loadTerrain() {
+    if (terrainCache) return terrainCache;
+    terrainCache = loadFreerideTerrain(freerideTerrainPath);
+    return terrainCache;
+}
+
+function parseWindowParam(windowStr) {
+    const m = /^(\d{2}-\d{2})\.\.(\d{2}-\d{2})$/.exec(String(windowStr || ''));
+    return m ? { startMMDD: m[1], endMMDD: m[2] } : { startMMDD: '02-01', endMMDD: '02-05' };
+}
+
+function toISODate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function validISODate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+    const date = new Date(`${value}T12:00:00`);
+    return !Number.isNaN(date.getTime()) && toISODate(date) === value;
+}
+
+function collectFilters(q) {
+    const filters = {};
+    if (q.country) filters.country = q.country;
+    if (q.minSnow) filters.minSnow = Number(q.minSnow);
+    if (q.minTerrain) filters.minTerrain = Number(q.minTerrain);
+    if (q.terrainSource) filters.terrainSource = q.terrainSource;
+    if (q.minConfidence) filters.minConfidence = q.minConfidence;
+    return filters;
+}
+
+exports.getDecisionView = (req, res) => {
+    try {
+        const q = req.query || {};
+        const mode = q.mode === 'plan-future' ? 'plan-future' : 'go-soon';
+        const now = q.today ? new Date(`${q.today}T12:00:00`) : new Date();
+        const weatherData = JSON.parse(fs.readFileSync(allResortsForecastPath, 'utf-8'));
+        const terrainData = loadTerrain();
+        const historyRecords = loadHistoryRecords();
+        const filters = collectFilters(q);
+        const weatherFreshness = (() => { try { return fs.statSync(allResortsForecastPath).mtime.toISOString(); } catch { return null; } })();
+
+        let model;
+        let startParam = null;
+        let endParam = null;
+        const dateErrors = {};
+        if (mode === 'plan-future') {
+            model = buildPlanFuture({ terrainData, historyRecords, window: parseWindowParam(q.window), now,
+                sort: q.sort || 'reliability', filters });
+        } else {
+            const startIsValid = !q.start || validISODate(q.start);
+            const endIsValid = !q.end || validISODate(q.end);
+            if (!startIsValid) dateErrors.start = 'Enter a valid start date.';
+            if (!endIsValid) dateErrors.end = 'Enter a valid end date.';
+            let startOffset = startIsValid && q.start ? offsetForDate(q.start, now) : 0;
+            let endOffset = endIsValid && q.end ? offsetForDate(q.end, now) : startOffset;
+            // Guard against an inverted range (start after end): swapping keeps the
+            // selected two dates but always iterates them in chronological order,
+            // instead of silently producing a zero-iteration range that reports
+            // accumulatedSnowCm: 0 for every resort.
+            if (startOffset > endOffset) {
+                const tmp = startOffset; startOffset = endOffset; endOffset = tmp;
+            }
+            model = buildGoSoon({ weatherData, terrainData, historyRecords, startOffset, endOffset, now,
+                sort: q.sort || 'snowfall', filters, weatherFreshness });
+            // Derive the redisplayed form dates from the POST-swap offsets (not the raw
+            // q.start/q.end), so an inverted range the guard corrected above doesn't get
+            // echoed back to the user unchanged. Mirrors the local-day arithmetic in
+            // utils/forecastDate.js's windowFromOffsets/offsetForDate.
+            startParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + startOffset));
+            endParam = toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + endOffset));
+        }
+        const pagination = paginateDecisionRows(model.rows, q.page, q);
+        model = { ...model, rows: pagination.rows };
+        res.render('combinedDecision', { model, mode, sortOptions: SORTS[mode], startParam, endParam, pagination, dateErrors });
+    } catch (error) {
+        console.error('Error building decision view:', error);
+        res.status(500).render('error', { error: 'Failed to load decision view' });
+    }
+};
 
 const getLiftElevation = (resortData, liftName) => {
     return resortData?.elevations?.[liftName]?.elevation_m ?? 0;
@@ -15,6 +119,23 @@ const getLiftElevation = (resortData, liftName) => {
 
 const getLiftSnowSum = (resortData, sumName, liftName) => {
     return resortData?.[sumName]?.[liftName] ?? 0;
+};
+
+const FORECAST_START = 14;
+const seriesSnow = (rd, lift, i) =>
+    Math.round(Number(rd?.elevations?.[lift]?.snowfall_sum?.[FORECAST_START + i]) || 0);
+const seriesVar = (rd, lift, key, i) => {
+    const v = Number(rd?.elevations?.[lift]?.[key]?.[FORECAST_START + i]);
+    return Number.isFinite(v) ? Math.round(v) : null;
+};
+
+exports.getFreerideTerrain = (req, res) => {
+    try {
+        res.render('freerideLeaderboard', rankedTerrain());
+    } catch (error) {
+        console.error('Error reading freeride terrain:', error);
+        res.status(500).render('error', { error: 'Failed to load freeride terrain' });
+    }
 };
 
 
@@ -57,6 +178,25 @@ exports.getSnowfallForResorts = async (req, res) => {
             .sort((a, b) => b.history14daySum - a.history14daySum)
             .slice(0, 10);
 
+        const now = new Date();
+        const topPowder = Object.entries(weatherData)
+            .map(([resortName, resortData]) => {
+                const epci = buildResortEPCI(resortData);
+                const top = epci.perElevation['Top Lift'];
+                const bestSnowDayResult = top ? top.daily[epci.bestSnowDay.offset] : null;
+                return {
+                    resort: resortName, country: resortData.country,
+                    bestSnow: Math.round(epci.bestSnowDay.snow),
+                    peakDayLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
+                    peakScore: Math.round((bestSnowDayResult && bestSnowDayResult.score) || 0),
+                    band: epciBand(bestSnowDayResult),
+                    status: bestSnowDayResult ? bestSnowDayResult.status : 'unavailable',
+                };
+            })
+            .filter((r) => r.bestSnow > 0 || r.status === 'unavailable')
+            .sort((a, b) => b.bestSnow - a.bestSnow)
+            .slice(0, 5);
+
         // Log the sorted data to verify URLs are present
         //console.log('Sorted 7 Days Data:', sortedByUpcoming7Days);
         //console.log('Sorted 14 Days Data:', sortedByLast14Days);
@@ -65,7 +205,11 @@ exports.getSnowfallForResorts = async (req, res) => {
 
         res.render('index', {
             sortedByUpcoming7Days,
-            sortedByLast14Days
+            sortedByLast14Days,
+            freerideTop5: rankedTerrain().ranked.filter(item => item.source === 'measured').slice(0, 5),
+            topPowder,
+            epciVersion: EPCI_VERSION,
+            epciDisclaimer: EPCI_DISCLAIMER
         });
     } catch (error) {
         console.error('Error reading weather data:', error);
@@ -299,44 +443,6 @@ exports.getShortForecast = (req, res) => {
 
 
 
-exports.calculateHistorySnow = (req, res) => {
-    const startDate = req.body.startDate;
-    const endDate = req.body.endDate;
-
-    console.log("Received startDate:", startDate);
-    console.log("Received endDate:", endDate);
-
-    exec(`python calculateHistory.py ${startDate} ${endDate}`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`);
-            return res.status(500).json({message: 'Error calculating snowfall'});
-        }
-        
-        // Parse the output from the Python script into a usable format
-        const results = stdout.split('\n')
-            .filter(line => line.startsWith('Location:')) // Filter only lines that start with 'Location:'
-            .map(line => {
-                const parts = line.split(', ');
-                return {
-                    location: parts[0].split(': ')[1], // Get the location name
-                    avg_snowfall: parseFloat(parts[1].split(': ')[1]), // Get the average snowfall
-                    total_snowfall: parseFloat(parts[2].split(': ')[1]) // Get the total snowfall
-                };
-            })
-            .filter(stat => stat.location); // Filter out any empty results
-
-            if (results.length > 0) {
-                res.json({ results });
-            } else {
-                res.json({ results: [], message: 'No data found for the specified dates.' });
-            }
-
-    });
-
-}
-
-
-
 
 
 
@@ -346,122 +452,74 @@ exports.getAllHistoryData = (req, res) => {
     res.render('allHistory');
 };
 
+const EPCI_DISCLAIMER =
+    'Experimental estimate based on forecast weather—not an observed measurement of snow quality.';
+
+exports.getPowderQuality = async (req, res) => {
+    try {
+        const weatherData = JSON.parse(fs.readFileSync(allResortsForecastPath, 'utf-8'));
+        const now = new Date();
+        const dayLabels = Array.from({ length: 7 }, (_, i) => forecastDayLabel(i, now));
+
+        const resorts = Object.entries(weatherData)
+            .map(([resortName, resortData]) => {
+                const epci = buildResortEPCI(resortData);
+                const top = epci.perElevation['Top Lift'];
+                const elevations = {};
+                ['Top Lift', 'Mid Lift', 'Bottom Lift'].forEach((lift) => {
+                    const series = epci.perElevation[lift];
+                    elevations[lift] = series ? series.daily.map((d, i) => ({
+                        score: d.score === null ? null : Math.round(d.score),
+                        band: epciBand(d), status: d.status,
+                        snow: seriesSnow(resortData, lift, i),
+                        tmax: seriesVar(resortData, lift, 'temperature_2m_max', i),
+                        rain: seriesVar(resortData, lift, 'rain_sum', i),
+                        wind: seriesVar(resortData, lift, 'wind_speed_10m_max', i),
+                    })) : null;
+                });
+                const bestSnowDayResult = top ? top.daily[epci.bestSnowDay.offset] : null;
+                const status = bestSnowDayResult ? bestSnowDayResult.status : 'unavailable';
+                return {
+                    resort: resortName, country: resortData.country, url: resortData.url || '#',
+                    bestSnow: Math.round(epci.bestSnowDay.snow),
+                    bestSnowLabel: forecastDayLabel(epci.bestSnowDay.offset, now),
+                    peakScore: Math.round((bestSnowDayResult && bestSnowDayResult.score) || 0),
+                    band: epciBand(bestSnowDayResult), status,
+                    degradedDays: epci.degradedDays, unavailableDays: epci.unavailableDays,
+                    elevations,
+                };
+            })
+            .filter((r) => r.bestSnow > 0 || r.status === 'unavailable')
+            .sort((a, b) => b.bestSnow - a.bestSnow);
+
+        res.render('epci', { resorts, dayLabels, epciVersion: EPCI_VERSION, disclaimer: EPCI_DISCLAIMER });
+    } catch (error) {
+        console.error('Error computing EPCI:', error);
+        res.status(500).render('error', { error: 'Failed to load EPCI data' });
+    }
+};
+
 exports.calculateAllHistory = (req, res) => {
+    const dateFormatRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
     const startDate = req.body.startDate;
     const endDate = req.body.endDate;
     const country = req.body.country || 'all';
 
-    console.log('Received parameters:', { startDate, endDate, country });
-    console.log('Environment variables:', {
-        VIRTUAL_ENV: process.env.VIRTUAL_ENV,
-        PATH: process.env.PATH
-    });
-
-    // Input validation
     if (!startDate || !endDate) {
-        console.log('Missing date parameters');
         return res.status(400).json({ message: 'Start date and end date are required' });
     }
-
-    // Validate date format (MM-DD)
-    const dateFormatRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
     if (!dateFormatRegex.test(startDate) || !dateFormatRegex.test(endDate)) {
-        console.log('Invalid date format received:', { startDate, endDate });
         return res.status(400).json({ message: 'Invalid date format. Use MM-DD format.' });
     }
 
-    // Construct the absolute path to the Python script
-    const scriptPath = path.join(__dirname, '..', 'calculateAllHistory.py');
-    const csvPath = path.join(__dirname, '..', 'filtered_weather_data.csv');
-    
-    console.log('Executing Python script:', scriptPath);
-    console.log('CSV path:', csvPath);
-    console.log('Current working directory:', process.cwd());
-    
-    // Check if the CSV file exists
-    if (!fs.existsSync(csvPath)) {
-        console.error('CSV file not found at path:', csvPath);
-        return res.status(500).json({ message: 'Data file not found' });
+    try {
+        const records = loadHistoryRecords();
+        const result = buildHistoricalReliability(records, {
+            startMMDD: startDate, endMMDD: endDate, country,
+        });
+        return res.json(result);
+    } catch (error) {
+        console.error('Error computing historical reliability:', error);
+        return res.status(500).json({ message: 'Error computing historical reliability' });
     }
-
-    // Create a temporary directory for the virtual environment
-    const tempVenvDir = path.join(os.tmpdir(), 'temp_venv_' + Date.now());
-    console.log('Creating temporary virtual environment at:', tempVenvDir);
-
-    // Create a virtual environment and install pandas
-    const setupCommand = `python3 -m venv ${tempVenvDir} && 
-                         ${tempVenvDir}/bin/pip install pandas && 
-                         ${tempVenvDir}/bin/python "${scriptPath}" "${startDate}" "${endDate}" "${country}"`;
-    
-    console.log('Running setup command:', setupCommand);
-    
-    exec(setupCommand, { cwd: path.join(__dirname, '..') }, (error, stdout, stderr) => {
-        // Log all outputs for debugging
-        console.log('Python stdout:', stdout);
-        if (stderr) {
-            console.error('Python stderr:', stderr);
-        }
-        
-        // Clean up the temporary virtual environment
-        try {
-            exec(`rm -rf ${tempVenvDir}`);
-            console.log('Cleaned up temporary virtual environment');
-        } catch (cleanupError) {
-            console.error('Error cleaning up virtual environment:', cleanupError);
-        }
-        
-        if (error) {
-            console.error('Python script execution error:', error);
-            return res.status(500).json({ 
-                message: 'Error calculating snowfall', 
-                error: error.message,
-                stderr: stderr
-            });
-        }
-
-        try {
-            // Split output into lines and process only relevant lines
-            const lines = stdout.split('\n');
-            const results = [];
-
-            for (const line of lines) {
-                if (!line.startsWith('Location:')) continue;
-                
-                // Parse the line using more robust string manipulation
-                const parts = line.split(', ');
-                if (parts.length >= 4) {
-                    const location = parts[0].replace('Location:', '').trim();
-                    const avgSnowfall = parseFloat(parts[1].replace('Avg Snowfall:', '').trim());
-                    const totalSnowfall = parseFloat(parts[2].replace('Total Snowfall:', '').trim());
-                    const country = parts[3].replace('Country:', '').trim();
-
-                    if (location && !isNaN(avgSnowfall) && !isNaN(totalSnowfall)) {
-                        results.push({
-                            location,
-                            avg_snowfall: avgSnowfall,
-                            total_snowfall: totalSnowfall,
-                            country
-                        });
-                    }
-                }
-            }
-
-            if (results.length > 0) {
-                res.json({ results });
-            } else {
-                res.json({ 
-                    results: [], 
-                    message: country === 'all' 
-                        ? 'No data found for the specified dates.' 
-                        : `No data found for ${country} in the specified dates.`
-                });
-            }
-        } catch (parseError) {
-            console.error('Error parsing output:', parseError);
-            res.json({
-                results: [],
-                message: 'Error parsing snowfall data. Please try again.'
-            });
-        }
-    });
 };

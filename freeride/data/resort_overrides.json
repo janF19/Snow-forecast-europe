@@ -1,0 +1,350 @@
+{
+  "Aiguille du Midi-Chamonix-": {
+    "ski_area_id": "e034a9358cc3b25457397360d22741ff2efd4832",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Avoriaz (Les Portes du Soleil)": {
+    "ski_area_id": "8fac9ee8808596fcea9b53902cf68bba6e8cd835",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Bad Gastein": {
+    "ski_area_id": "8ebbe708c3f7b24aac9cd9d3293dc3b53d405f92",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Balme-​Les Autannes-Vallorcine-​Le Tour": {
+    "ski_area_id": "778cf1cb898c18902972765463f338721dac88b3",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Cervinia": {
+    "ski_area_id": "897905b0ef9ee21852d8c7866845ec12cf8513fb",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Cortina d'Ampezzo": {
+    "ski_area_id": "9d8bf95b98a3a3b0ee41d789301078c80ecf2832",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Courchevel (Les 3 Vallées)": {
+    "ski_area_id": "68b126bc3175516c9263aed7635d14e37ff360dc",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Crans-Montana": {
+    "ski_area_id": "7764d597cda909bb1bc7fd66a07bbfa6bb8ab695",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Ellmau (SkiWelt Wilder Kaiser-Brixental)": {
+    "ski_area_id": "37ee9c6ba5b44864ba844f804938a8b815f8b717",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Espace Dôle-La Dôle-​Les Tuffes": {
+    "ski_area_id": "5fbb25804661648ca18a3ca2536a145c6b21d53e",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Feldberg-Seebuck-​Grafenmatt-​Fahl": {
+    "ski_area_id": "ac6e8db707345e560695c24c1d0ec5bc069a797f",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Fellhorn-​Kanzelwand-Oberstdorf-​Riezlern": {
+    "ski_area_id": "8a5063e32476ab3ab529dd524a0debe563e08f28",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Flachau (Ski amedé)": {
+    "ski_area_id": "14b4ddb66d56cfb67e579c250c5931cb86a1f989",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Folgaria-​Fiorentini": {
+    "ski_area_id": "f847a8fcd14ae6f8f904d839cf6a2ac6b4ab5a0a",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Font-Romeu-​Bolquère Pyrénées 2000": {
+    "ski_area_id": "4a30e21219abb7c297eea39860578ad22572d0eb",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Garmisch-Classic-Garmisch-Partenkirchen": {
+    "ski_area_id": "fa473fa12ab6059b9e93af8498afa0efdea2cff6",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Gourette-Eaux Bonnes-": {
+    "ski_area_id": "504eff3fdb5510cb38a4f75324fa846fba9728f3",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Grand Tourmalet-​Pic du Midi-La Mongie-​Barèges": {
+    "ski_area_id": "4d9c0191491227da58bc418ee8633c62485f29c8",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Hochkonig": {
+    "ski_area_id": "8f1c9e1dd61d51f2e3b41daa18860b6cdbffc037",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Châtel (Les Portes du Soleil)": {
+    "ski_area_id": "8fac9ee8808596fcea9b53902cf68bba6e8cd835",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Jakobshorn (Davos Klosters)": {
+    "ski_area_id": "c880b001fe8a065af66fca1a93ea7ce3d62e546a",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Kanin-Sella Nevea-​Bovec": {
+    "ski_area_id": "17d77d2ed0efda5f8616b62119950b304af5aad6",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Kicking Horse": {
+    "ski_area_id": "e6c98a637d3cd005ff347ae39bf871e552d2f515",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Kitzsteinhorn - Kaprun": {
+    "ski_area_id": "bc0361849d0e6e33ef5d9cd035522200a3125df1",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Kleine Scheidegg / ​Männlichen-Grindelwald / ​Wengen": {
+    "ski_area_id": "1d111e0379650f6a9186eaa3d21dadf973340c88",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Kubínska hoľa": {
+    "ski_area_id": "574607216a9d502d9902634f019d15d9d4d110e5",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "La Norma": {
+    "ski_area_id": "1a0088907c983cf22ebde01fbc7d28fed495f34d",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Le Grand Bornand": {
+    "ski_area_id": "8af93a64c41b59fca4705d30c106ef29fb24e042",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Le Lys - Cauterets": {
+    "ski_area_id": "8a9e6fcb235049131ba0691e922882db19db12c0",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Les 7 Laux-Prapoutel-​Le Pleynet-​Pipay": {
+    "ski_area_id": "8902d1f9fe9945cf5b72b9a2c100b24c064e3abd",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Les Gets (Les Portes du Soleil)": {
+    "ski_area_id": "c55e820525ee1a069e4b6e5cc9164aa8c292ab77",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Les Houches-​Saint-Gervais-Prarion-​Bellevue-Chamonix-": {
+    "ski_area_id": "ea9dfe26da36c33e8cf007b22b628c153ac69ab4",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Mayrhofen": {
+    "ski_area_id": "9b725bdff1218e92fff54cc9b024b7f9fcd71910",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Meran 2000": {
+    "ski_area_id": "7a164e4c774d9a66c0d90f9c78b30c340c36ed0c",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Méribel (Les 3 Vallées)": {
+    "ski_area_id": "68b126bc3175516c9263aed7635d14e37ff360dc",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Oberjoch-Bad Hindelang-– Iseler": {
+    "ski_area_id": "521bd1397adb71be3ba89647d4622c7a973de899",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Parsenn (Davos Klosters)": {
+    "ski_area_id": "403c8d67ddd348bfa3f7d02c6c21163479964926",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Pitztal Glacier-Pitztaler Gletscher-": {
+    "ski_area_id": "f1ae030e9b17ac258bb0eb30a0f769106518dfcd",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Pizol-Bad Ragaz-​Wangs": {
+    "ski_area_id": "3c30eddac708122c98a1ad904d7a67fc8499b342",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Ponte di Legno-Passo ​Tonale-​Presena Glacier-​Temù-Pontedilegno-Tonale-": {
+    "ski_area_id": "8fa0c17d9d0002fc83e30363e42c43b874d21a8f",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Praz de Lys-​Sommand-Taninges-​Mieussy-": {
+    "ski_area_id": "17a2aed27cfa6b593c5df9770900555623db6adf",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Puigmal": {
+    "ski_area_id": "ce536a2445bc0a699f4c339cd58acd9d0162e03a",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Rinderberg-​Saanerslochgrat-​Horneggli-Zweisimmen-​Saanenmöser-​Schönried-​St. Stephan": {
+    "ski_area_id": "4c623c993b79a2c02ca2ec60de4bb18383242239",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Rossfeld - Berchtesgaden - Oberau": {
+    "ski_area_id": "8394e228c6499b01b1159b31d00a9347ead9499e",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Saint Martin de Belleville (Les 3 Vallées)": {
+    "ski_area_id": "68b126bc3175516c9263aed7635d14e37ff360dc",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "San Martino di Castrozza": {
+    "ski_area_id": "68097edf550d07d2fc63a0dd9d521a97210d59e9",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Serfaus-Fiss-Ladis": {
+    "ski_area_id": "e587928ea763f20b3232a5069c5d2438d09b6908",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Sestriere ski resort (Via Lattea)": {
+    "ski_area_id": "24ea25d80078f2f69f1ed3d653041100cae37c55",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Schladming (4-Berge-Skischauke)": {
+    "ski_area_id": "b505a62839bab0b4e188d8dae8503673d13ced8a",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Sudelfeld-Bayrischzell": {
+    "ski_area_id": "36d524d45f34c80c849eb87a36ee901f2fb2c542",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "SuperBesse-Puy de Sancy": {
+    "ski_area_id": "870daba91bf45e41f76102b45565876b61861a50",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Špičák": {
+    "ski_area_id": "586887b2ffa3dc3662103cbdbb15dadf5555f468",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Tarvisio-Monte Lussari": {
+    "ski_area_id": "7ac48fc0dbac27e15b38832f1f0df58bfe60e84e",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Three Peaks Dolomites-Helm-​Stiergarten": {
+    "ski_area_id": "7ccc8cd985b9ff18f6b26a5d75ede630eb3c85b2",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Val Senales Glacier": {
+    "ski_area_id": "5b4aba23e8c29f88cd0e89e51dea075af5bc649a",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Valfréjus": {
+    "ski_area_id": "3150d08706183824af7f70226eaa2222400b8a64",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Veysonnaz (4 Vallées)": {
+    "ski_area_id": "0ed72c1a44d748a815d1efcd54caacf169610f05",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Wasserngrat (Gstaad)": {
+    "ski_area_id": "bf17dce5ea10b00f4cc89cb480fe532b7900287d",
+    "rationale": "Carried from 2026-07-11 production-verification handoff review (docs/superpowers/handoffs/2026-07-12-freeride-production-verification-handoff.md).",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  }
+}

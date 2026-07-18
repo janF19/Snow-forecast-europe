@@ -1,0 +1,2680 @@
+{
+  "_metadata": {
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "beta": true,
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494,
+    "counts": {
+      "measured": 87,
+      "unavailable": 207
+    },
+    "total_resorts": 294
+  },
+  "Alpendorf (Ski amedé)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Oberau (Wildschönau)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Dachstein West": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "ambiguous",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kobla-Bohinj": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Aillons-Margériaz": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kaiseregg-​Riggisalp-Schwarzsee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "St. Pierre de Chartreuse-Le Planolet": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Buchenberg-Buching-Halblech-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Méribel (Les 3 Vallées)": {
+    "score": 100.0,
+    "source": "measured",
+    "freeride_vertical_m": 4574.9,
+    "freeride_length_km": 13.519208039512874,
+    "tierA_count": 12,
+    "tierB_count": 14,
+    "freeride_run_count": 26,
+    "ski_area_name": "Les Trois Vallées",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "​Les Menuires (Les 3 Vallées)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Sybelles-Le Corbier-​La Toussuire-​Les Bottières-​St Colomban des Villards-​St Sorlin-​St Jean d’Arves": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Le Grand Massif-Flaine-​Les Carroz-​Morillon-​Samoëns-​Sixt": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Megève-​Saint-Gervais": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Laax-​Flims-​Falera": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Vars-​Risoul-La Forêt Blanche": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kicking Horse": {
+    "score": 73.6,
+    "source": "measured",
+    "freeride_vertical_m": 1966.5,
+    "freeride_length_km": 6.171690321943921,
+    "tierA_count": 0,
+    "tierB_count": 19,
+    "freeride_run_count": 19,
+    "ski_area_name": "Kicking Horse Resort",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Le Grand Domaine-Valmorel-​Doucy-​Celliers-​St François Longchamp": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Galibier Thabor-Valmeinier-​Valloire": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Zillertal Arena-Zell am Ziller-​Gerlos-​Königsleiten-​Hochkrimml": {
+    "score": 10.2,
+    "source": "measured",
+    "freeride_vertical_m": 258.75,
+    "freeride_length_km": 0.952851076934736,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Zillertal Arena",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Auron-Saint-Etienne-de-Tinée-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Alta Badia": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "La Clusaz-​Manigod": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Espace Villard Corrençon-Villard-de-Lans-​Corrençon-en-Vercors": {
+    "score": 25.9,
+    "source": "measured",
+    "freeride_vertical_m": 675.55,
+    "freeride_length_km": 2.2915548936456203,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Villard de Lans - Corrençon",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Val Cenis-Lanslevillard-​Lanslebourg-​Termignon": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Isola 2000": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Obersaxen-​Mundaun-​Val Lumnezia": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les 7 Laux-Prapoutel-​Le Pleynet-​Pipay": {
+    "score": 6.3,
+    "source": "measured",
+    "freeride_vertical_m": 126.14999999999999,
+    "freeride_length_km": 0.8470121819532138,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Les 7 Laux",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Corvatsch-​Furtschellas": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Nassfeld-Hermagor": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Mondolè Ski-Artesina-​Frabosa Soprana-​Prato Nevoso": {
+    "score": 2.0,
+    "source": "measured",
+    "freeride_vertical_m": 48.95,
+    "freeride_length_km": 0.19876368840072717,
+    "tierA_count": 0,
+    "tierB_count": 1,
+    "freeride_run_count": 1,
+    "ski_area_name": "Prato Nevoso",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Aletsch Arena-Riederalp-​Bettmeralp-​Fiesch Eggishorn": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Bad Kleinkirchheim-​St. Oswald": {
+    "score": 4.5,
+    "source": "measured",
+    "freeride_vertical_m": 119.35,
+    "freeride_length_km": 0.37573110632507073,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Skigebiet Bad Kleinkirchheim",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Bardonecchia": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Saint-Lary-Soulan": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Orcières Merlette 1850": {
+    "score": 12.5,
+    "source": "measured",
+    "freeride_vertical_m": 350.2,
+    "freeride_length_km": 0.9366882953854117,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Orcières Merlette",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Dévoluy-Superdévoluy-​La Joue du Loup": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grand Tourmalet-​Pic du Midi-La Mongie-​Barèges": {
+    "score": 48.1,
+    "source": "measured",
+    "freeride_vertical_m": 1269.55,
+    "freeride_length_km": 4.15704269175061,
+    "tierA_count": 1,
+    "tierB_count": 4,
+    "freeride_run_count": 5,
+    "ski_area_name": "Grand Tourmalet",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Parsenn (Davos Klosters)": {
+    "score": 93.7,
+    "source": "measured",
+    "freeride_vertical_m": 2294.5,
+    "freeride_length_km": 9.394510269787338,
+    "tierA_count": 3,
+    "tierB_count": 9,
+    "freeride_run_count": 12,
+    "ski_area_name": "Parsenn",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Alto Sangro-Roccaraso-​Rivisondoli": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Chamrousse": {
+    "score": 11.8,
+    "source": "measured",
+    "freeride_vertical_m": 311.3,
+    "freeride_length_km": 1.009730897867626,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Domaine Skiable Chamrousse",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Valberg-​Beuil les Launes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Adelboden-​Lenk-Chuenisbärgli-​Silleren-​Hahnenmoos-​Metsch": {
+    "score": 2.0,
+    "source": "measured",
+    "freeride_vertical_m": 44.0,
+    "freeride_length_km": 0.23157104537231918,
+    "tierA_count": 1,
+    "tierB_count": 0,
+    "freeride_run_count": 1,
+    "ski_area_name": "Adelboden - TschentenAlp",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Rinderberg-​Saanerslochgrat-​Horneggli-Zweisimmen-​Saanenmöser-​Schönried-​St. Stephan": {
+    "score": 28.5,
+    "source": "measured",
+    "freeride_vertical_m": 735.6,
+    "freeride_length_km": 2.5659506491790056,
+    "tierA_count": 0,
+    "tierB_count": 7,
+    "freeride_run_count": 7,
+    "ski_area_name": "Gstaad - Saanen - Rougemont",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Le Grand Bornand": {
+    "score": 33.7,
+    "source": "measured",
+    "freeride_vertical_m": 917.55,
+    "freeride_length_km": 2.71586299281651,
+    "tierA_count": 0,
+    "tierB_count": 7,
+    "freeride_run_count": 7,
+    "ski_area_name": "Le Grand-Bornand",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Kaltenbach-Hochzillertal-​Hochfügen-SKi-optimal-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grimentz-​Zinal": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Civetta-Alleghe-​Selva di Cadore-​Palafavera-​Zoldo": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Ax les Thermes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Damüls Mellau": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Zell am See": {
+    "score": 45.9,
+    "source": "measured",
+    "freeride_vertical_m": 1212.8,
+    "freeride_length_km": 3.951785068307601,
+    "tierA_count": 0,
+    "tierB_count": 10,
+    "freeride_run_count": 10,
+    "ski_area_name": "Schmittenhöhe Zell am See",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Puy St. Vincent": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Folgaria-​Fiorentini": {
+    "score": 11.6,
+    "source": "measured",
+    "freeride_vertical_m": 309.4,
+    "freeride_length_km": 0.9882361865909125,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Folgaria, Area sciistica Folgaria",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Titlis-Engelberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Nauders am Reschenpass-Bergkastel": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grossarltal-​Dorfgastein": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Katschberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Valfréjus": {
+    "score": 54.1,
+    "source": "measured",
+    "freeride_vertical_m": 1441.9,
+    "freeride_length_km": 4.571124882929931,
+    "tierA_count": 3,
+    "tierB_count": 3,
+    "freeride_run_count": 6,
+    "ski_area_name": "Valfréjus",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Savognin": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Scuol-Motta Naluns": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Passo San Pellegrino-​Falcade": {
+    "score": 28.3,
+    "source": "measured",
+    "freeride_vertical_m": 714.8,
+    "freeride_length_km": 2.678102426119143,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Ski Area San Pellegrino - Falcade",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Piau Engaly": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Flumserberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Super Sauze": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "La Norma": {
+    "score": 15.6,
+    "source": "measured",
+    "freeride_vertical_m": 417.7,
+    "freeride_length_km": 1.29837921703129,
+    "tierA_count": 2,
+    "tierB_count": 0,
+    "freeride_run_count": 2,
+    "ski_area_name": "La Norma",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Arabba": {
+    "score": 20.0,
+    "source": "measured",
+    "freeride_vertical_m": 519.9,
+    "freeride_length_km": 1.788332613942753,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "Arabba",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Wildkogel-Neukirchen-​Bramberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hintertux Glacier": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Disentis 3000": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Belalp-Blatten": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "San Martino di Castrozza": {
+    "score": 8.4,
+    "source": "measured",
+    "freeride_vertical_m": 225.35,
+    "freeride_length_km": 0.705305928534606,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "San Martino di Castrozza - Passo Rolle",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Meiringen-Hasliberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Toggenburg-Wildhaus-​Unterwasser-​Alt St. Johann": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Alpe di Siusi-Seiser Alm-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Seiser Alm - Mont de Sëuc - Alpe di Siusi, Seiser Alm, Alpe di Siusi, Mont de Sëuc",
+    "match_method": "contains"
+  },
+  "Le Lioran": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Saint Luc-​Chandolin-Anniviers-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Karellis": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Peyragudes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Leysin": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Ponte di Legno-Passo ​Tonale-​Presena Glacier-​Temù-Pontedilegno-Tonale-": {
+    "score": 55.3,
+    "source": "measured",
+    "freeride_vertical_m": 1468.15,
+    "freeride_length_km": 4.719817179307959,
+    "tierA_count": 0,
+    "tierB_count": 8,
+    "freeride_run_count": 8,
+    "ski_area_name": "Ponte di Legno - Passo Tonale",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Eggli-​La Videmanette-Gstaad-​Saanen-​Rougemont": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Anzère": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Font-Romeu-​Bolquère Pyrénées 2000": {
+    "score": 32.9,
+    "source": "measured",
+    "freeride_vertical_m": 788.15,
+    "freeride_length_km": 3.4182876587958506,
+    "tierA_count": 0,
+    "tierB_count": 14,
+    "freeride_run_count": 14,
+    "ski_area_name": "Font-Romeu Pyrénées 2000, Font-Romeu",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Brévent-​Flégère-Chamonix-": {
+    "score": 17.6,
+    "source": "measured",
+    "freeride_vertical_m": 456.35,
+    "freeride_length_km": 1.5891257210565288,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Brévent/Flégère (Chamonix)",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Les Houches-​Saint-Gervais-Prarion-​Bellevue-Chamonix-": {
+    "score": 24.2,
+    "source": "measured",
+    "freeride_vertical_m": 611.8,
+    "freeride_length_km": 2.290859103210409,
+    "tierA_count": 0,
+    "tierB_count": 7,
+    "freeride_run_count": 7,
+    "ski_area_name": "Les Houches - Saint-Gervais",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Belvedere-​Col Rodella-​Ciampac-​Buffaure-Canazei-​Campitello-​Alba-​Pozza di Fassa": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lauchernalp-Lötschental": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grossglockner Heiligenblut": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Brandnertal-Brand-​Bürserberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Alpe du Grand-Serre-La Morte": {
+    "score": 8.5,
+    "source": "measured",
+    "freeride_vertical_m": 232.0,
+    "freeride_length_km": 0.6670015682340626,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "L'Alpe du Grand Serre",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Les Angles": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Aussois": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "First-Grindelwald": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Sörenberg-Rothorn-​Dorf": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Riserva Bianca-Limone Piemonte": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Gitschberg Jochtal": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Schilthorn-Mürren-​Lauterbrunnen": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Pila": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Brigels-​Waltensburg-​Andiast": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Aprica": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Aprica",
+    "match_method": "contains"
+  },
+  "Bormio-Cima Bianca": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Sedrun-Oberalp": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grosseck-​Speiereck-Mauterndorf-​St. Michael": {
+    "score": 5.3,
+    "source": "measured",
+    "freeride_vertical_m": 143.1,
+    "freeride_length_km": 0.4458868254308749,
+    "tierA_count": 0,
+    "tierB_count": 1,
+    "freeride_run_count": 1,
+    "ski_area_name": "Großeck-Speiereck",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Hirmentaz-​Les Habères-Bellevaux-​Habère-Poche": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Pragelato": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Porté Puymorens": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Mythenregion": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Zugspitze": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Jasná Nízke Tatry-Chopok": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Steinplatte-​Winklmoosalm-Waidring-​Reit im Winkl": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Rigi": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Métabief": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Latemar-Obereggen-​Pampeago-​Predazzo": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Mariborsko Pohorje-Maribor": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Praz de Lys-​Sommand-Taninges-​Mieussy-": {
+    "score": 12.8,
+    "source": "measured",
+    "freeride_vertical_m": 350.79999999999995,
+    "freeride_length_km": 1.0082369979664738,
+    "tierA_count": 1,
+    "tierB_count": 1,
+    "freeride_run_count": 2,
+    "ski_area_name": "Praz de Lys Sommand",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Espace Dôle-La Dôle-​Les Tuffes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Monts Jura",
+    "match_method": "override"
+  },
+  "Kreischberg": {
+    "score": 39.6,
+    "source": "measured",
+    "freeride_vertical_m": 982.55,
+    "freeride_length_km": 3.8658713111552654,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Kreischberg",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Garmisch-Classic-Garmisch-Partenkirchen": {
+    "score": 33.3,
+    "source": "measured",
+    "freeride_vertical_m": 855.4,
+    "freeride_length_km": 3.035264042992124,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Skigebiet Garmisch-Classic",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Aiguille du Midi-Chamonix-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Aiguille du Midi (Chamonix)",
+    "match_method": "override"
+  },
+  "Carezza Ski": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Pizol-Bad Ragaz-​Wangs": {
+    "score": 53.2,
+    "source": "measured",
+    "freeride_vertical_m": 1376.35,
+    "freeride_length_km": 4.804263776117305,
+    "tierA_count": 5,
+    "tierB_count": 3,
+    "freeride_run_count": 8,
+    "ski_area_name": "Pizol",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "SuperBesse-Puy de Sancy": {
+    "score": 32.9,
+    "source": "measured",
+    "freeride_vertical_m": 809.05,
+    "freeride_length_km": 3.2795139308455075,
+    "tierA_count": 0,
+    "tierB_count": 9,
+    "freeride_run_count": 9,
+    "ski_area_name": "Super Besse",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Fellhorn-​Kanzelwand-Oberstdorf-​Riezlern": {
+    "score": 10.0,
+    "source": "measured",
+    "freeride_vertical_m": 270.45,
+    "freeride_length_km": 0.8197522192553695,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "Skigebiet Fellhorn/Kanzelwand",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Großglockner Resort Kals-Matrei": {
+    "score": 43.0,
+    "source": "measured",
+    "freeride_vertical_m": 1157.35,
+    "freeride_length_km": 3.5317330583540025,
+    "tierA_count": 0,
+    "tierB_count": 10,
+    "freeride_run_count": 10,
+    "ski_area_name": "Kals-Matrei",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Abetone-​Val di Luce": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Gerlitzen": {
+    "score": 22.4,
+    "source": "measured",
+    "freeride_vertical_m": 524.4,
+    "freeride_length_km": 2.416044851066509,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Skigebiet Gerlitzen Alpe",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Paganella-Andalo": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Melchsee-Frutt-Kerns-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Arêches-Beaufort-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Špindlerův Mlýn": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Mosses-​La Lécherette": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Les Mosses",
+    "match_method": "contains"
+  },
+  "Cimone-Montecreto-​Sestola-​Le Polle": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Luchon Superbagnères": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lélex-​Crozet": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Monts Jura",
+    "match_method": "contains"
+  },
+  "Gourette-Eaux Bonnes-": {
+    "score": 14.7,
+    "source": "measured",
+    "freeride_vertical_m": 401.9,
+    "freeride_length_km": 1.1554762981463518,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "Gourette",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Rauriser Hochalmbahnen-Rauris": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hoch-Ybrig-Unteriberg-​Oberiberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Meran 2000": {
+    "score": 6.6,
+    "source": "measured",
+    "freeride_vertical_m": 169.55,
+    "freeride_length_km": 0.6101021341527675,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Meran 2000",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Nätschen-Andermatt": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Albiez-Montrond": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Tarvisio-Monte Lussari": {
+    "score": 28.3,
+    "source": "measured",
+    "freeride_vertical_m": 733.8000000000001,
+    "freeride_length_km": 2.52407570894197,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Tarvisio, Tarvis",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Moelltal Glacier-Mölltaler Gletscher-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Wendelstein-Brannenburg-​Osterhofen": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Sulden am Ortler-Solda all'Ortles-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hinterstoder-Höss": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "St. Jean Montclar": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Feldberg-Seebuck-​Grafenmatt-​Fahl": {
+    "score": 18.1,
+    "source": "measured",
+    "freeride_vertical_m": 454.9,
+    "freeride_length_km": 1.7372307672415883,
+    "tierA_count": 0,
+    "tierB_count": 6,
+    "freeride_run_count": 6,
+    "ski_area_name": "Feldberg",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Pitztal Glacier-Pitztaler Gletscher-": {
+    "score": 6.3,
+    "source": "measured",
+    "freeride_vertical_m": 179.55,
+    "freeride_length_km": 0.4565020781717182,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Pitztaler Gletscher",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Tauplitz-Bad Mitterndorf": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hochoetz-Oetz": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Rosshütte-Seefeld": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Seefeld - Rosshütte",
+    "match_method": "contains"
+  },
+  "Špičák": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Železná Ruda (Špičák, Nad Nádražím)",
+    "match_method": "override"
+  },
+  "Riesneralm-Donnersbachwald": {
+    "score": 10.6,
+    "source": "measured",
+    "freeride_vertical_m": 290.45,
+    "freeride_length_km": 0.8336196777412983,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Skigebiet Riesneralm - Donnersbachwald",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Berwang-​Bichlbach-​Rinnen": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Glungezer-Tulfes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Fanningberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Turracher Höhe": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Niedere-Andelsbuch-​Bezau": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Wurzeralm-Spital am Pyhrn": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Präbichl-Vordernberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Pfelders-Moos in Passeier-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lavarone": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Geißkopf-Bischofsmais": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Donovaly-Park Snow-": {
+    "score": 1.6,
+    "source": "measured",
+    "freeride_vertical_m": 44.6,
+    "freeride_length_km": 0.12492386238773114,
+    "tierA_count": 0,
+    "tierB_count": 1,
+    "freeride_run_count": 1,
+    "ski_area_name": "Donovaly",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Sudelfeld-Bayrischzell": {
+    "score": 22.6,
+    "source": "measured",
+    "freeride_vertical_m": 590.1,
+    "freeride_length_km": 1.9983175551671697,
+    "tierA_count": 0,
+    "tierB_count": 7,
+    "freeride_run_count": 7,
+    "ski_area_name": "Sudelfeld - Bayrischzell",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Grüntenlifte-Kranzegg-Rettenberg-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grebenzen-St. Lambrecht": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kirchdorf": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Nebelhorn-Oberstdorf": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lachtal": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Ramsau am Dachstein-Rittisberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Eibenstock": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Bürchen-​Törbel-Moosalp": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Guzet": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Fichtelberg-Oberwiesenthal": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Bellwald": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Klewenalp-​Stockhütte-Beckenried-​Emmetten": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Schöneck-Skiwelt-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Štrbské Pleso": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Gaissau-Hintersee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hochrindl-Sirnitz": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "La Bresse-Hohneck": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Silbersattel-Steinach": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lammeralm-Langenwang": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Loser-Altaussee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Christlum-Achenkirch": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grasgehren-Bolgengrat": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Götschen-Bischofswiesen": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Torrent-Leukerbad": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Monte Popolo-Eben im Pongau": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Monte Popolo - Eben im Pongau",
+    "match_method": "contains"
+  },
+  "Alpe Lusia-Moena-​Bellamonte": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Unternberg-Ruhpolding-": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Diavolezza-​Lagalb": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kubínska hoľa": {
+    "score": 5.5,
+    "source": "measured",
+    "freeride_vertical_m": 140.05,
+    "freeride_length_km": 0.4986376688301376,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Kubínská hola",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Molines-en-Queyras-​Saint-Véran": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Tatranská Lomnica": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kanin-Sella Nevea-​Bovec": {
+    "score": 10.2,
+    "source": "measured",
+    "freeride_vertical_m": 276.9,
+    "freeride_length_km": 0.8218625922796984,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Sella Nevea - Kanin, Sella Nevea - Canin, Kanin - Sella Nevea",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Oberjoch-Bad Hindelang-– Iseler": {
+    "score": 6.0,
+    "source": "measured",
+    "freeride_vertical_m": 164.7,
+    "freeride_length_km": 0.4815821451610512,
+    "tierA_count": 0,
+    "tierB_count": 1,
+    "freeride_run_count": 1,
+    "ski_area_name": "Hindelang Oberjoch",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Mönichkirchen-​Mariensee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Grächen": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Puigmal": {
+    "score": 9.1,
+    "source": "measured",
+    "freeride_vertical_m": 259.45,
+    "freeride_length_km": 0.6333477969949126,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Puigmal 2900",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Kranzberg-Mittenwald": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Wetterstein lifts-Wettersteinbahnen-– Ehrwald": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Stuhleck-Spital am Semmering": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Rossfeld - Berchtesgaden - Oberau": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Rossfeld",
+    "match_method": "override"
+  },
+  "Tignes - ​Val d'Isère": {
+    "score": 90.1,
+    "source": "measured",
+    "freeride_vertical_m": 2359.4,
+    "freeride_length_km": 8.390220886722489,
+    "tierA_count": 2,
+    "tierB_count": 17,
+    "freeride_run_count": 19,
+    "ski_area_name": "Tignes - Val d'Isère",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Courchevel (Les 3 Vallées)": {
+    "score": 100.0,
+    "source": "measured",
+    "freeride_vertical_m": 4574.9,
+    "freeride_length_km": 13.519208039512874,
+    "tierA_count": 12,
+    "tierB_count": 14,
+    "freeride_run_count": 26,
+    "ski_area_name": "Les Trois Vallées",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Les Gets (Les Portes du Soleil)": {
+    "score": 16.4,
+    "source": "measured",
+    "freeride_vertical_m": 450.8,
+    "freeride_length_km": 1.2949860667532833,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Les Gets-Morzine",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Avoriaz (Les Portes du Soleil)": {
+    "score": 34.6,
+    "source": "measured",
+    "freeride_vertical_m": 965.6,
+    "freeride_length_km": 2.6021680257587505,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Avoriaz",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Châtel (Les Portes du Soleil)": {
+    "score": 34.6,
+    "source": "measured",
+    "freeride_vertical_m": 965.6,
+    "freeride_length_km": 2.6021680257587505,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Avoriaz",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Obergurgl-Hochgurgl": {
+    "score": 7.1,
+    "source": "measured",
+    "freeride_vertical_m": 186.95,
+    "freeride_length_km": 0.6262774542223466,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Obergurgl-Hochgurgl",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Kaunertal Glacier (Kaunertaler Gletscher)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Ski Juwel Alpbachtal Wildschönau": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Reither Kogel-Reith im Alpbachtal": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Ellmau (SkiWelt Wilder Kaiser-Brixental)": {
+    "score": 100.0,
+    "source": "measured",
+    "freeride_vertical_m": 2430.0,
+    "freeride_length_km": 11.135302385029494,
+    "tierA_count": 8,
+    "tierB_count": 0,
+    "freeride_run_count": 8,
+    "ski_area_name": "SkiWelt Wilder Kaiser - Brixental",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Westendorf (SkiWelt Wilder Kaiser-Brixental)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kitzsteinhorn - Kaprun": {
+    "score": 97.6,
+    "source": "measured",
+    "freeride_vertical_m": 3032.8,
+    "freeride_length_km": 10.458015161002482,
+    "tierA_count": 6,
+    "tierB_count": 7,
+    "freeride_run_count": 13,
+    "ski_area_name": "Kaprun - Kitzsteinhorn/Maiskogel",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Saint Martin de Belleville (Les 3 Vallées)": {
+    "score": 100.0,
+    "source": "measured",
+    "freeride_vertical_m": 4574.9,
+    "freeride_length_km": 13.519208039512874,
+    "tierA_count": 12,
+    "tierB_count": 14,
+    "freeride_run_count": 26,
+    "ski_area_name": "Les Trois Vallées",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "La Plagne (Paradiski)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Schladming (4-Berge-Skischauke)": {
+    "score": 36.3,
+    "source": "measured",
+    "freeride_vertical_m": 953.85,
+    "freeride_length_km": 3.162038512138142,
+    "tierA_count": 0,
+    "tierB_count": 10,
+    "freeride_run_count": 10,
+    "ski_area_name": "Schladming Dachstein",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Alpe d'Huez": {
+    "score": 38.9,
+    "source": "measured",
+    "freeride_vertical_m": 984.75,
+    "freeride_length_km": 3.649545552066064,
+    "tierA_count": 0,
+    "tierB_count": 16,
+    "freeride_run_count": 16,
+    "ski_area_name": "Alpe d'Huez Grand Domaine",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Axamer Lizum": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Bonneval sur Arc": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Brauneck Lenggries ​Wegscheid": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Madonna di Campiglio-​Pinzolo-​Folgàrida-​Marilleva": {
+    "score": 30.4,
+    "source": "measured",
+    "freeride_vertical_m": 799.4,
+    "freeride_length_km": 2.6337885242976617,
+    "tierA_count": 0,
+    "tierB_count": 7,
+    "freeride_run_count": 7,
+    "ski_area_name": "Campiglio Dolomiti di Brenta",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Le Lys - Cauterets": {
+    "score": 13.4,
+    "source": "measured",
+    "freeride_vertical_m": 388.95,
+    "freeride_length_km": 0.897032877453875,
+    "tierA_count": 0,
+    "tierB_count": 4,
+    "freeride_run_count": 4,
+    "ski_area_name": "Cauterets Cirque du Lys",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Cervinia": {
+    "score": 60.8,
+    "source": "measured",
+    "freeride_vertical_m": 1597.3,
+    "freeride_length_km": 5.303375148229271,
+    "tierA_count": 0,
+    "tierB_count": 14,
+    "freeride_run_count": 14,
+    "ski_area_name": "Zermatt - Breuil-Cervinia, Breuil-Cervinia Ski Paradise",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Grands Montets-Argentière (Chamonix)": {
+    "score": 47.4,
+    "source": "measured",
+    "freeride_vertical_m": 1243.8,
+    "freeride_length_km": 4.134625999026218,
+    "tierA_count": 1,
+    "tierB_count": 8,
+    "freeride_run_count": 9,
+    "ski_area_name": "Les Grands Montets",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Balme-​Les Autannes-Vallorcine-​Le Tour": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Balme - Vallorcine",
+    "match_method": "override"
+  },
+  "Crans-Montana": {
+    "score": 67.7,
+    "source": "measured",
+    "freeride_vertical_m": 1663.55,
+    "freeride_length_km": 6.736075245611739,
+    "tierA_count": 5,
+    "tierB_count": 8,
+    "freeride_run_count": 13,
+    "ski_area_name": "Crans-Montana",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Jakobshorn (Davos Klosters)": {
+    "score": 97.2,
+    "source": "measured",
+    "freeride_vertical_m": 2659.65,
+    "freeride_length_km": 10.34509566899145,
+    "tierA_count": 5,
+    "tierB_count": 4,
+    "freeride_run_count": 9,
+    "ski_area_name": "Jakobshorn",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Madrisa (Davos Klosters)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Cortina d'Ampezzo": {
+    "score": 46.4,
+    "source": "measured",
+    "freeride_vertical_m": 1278.7,
+    "freeride_length_km": 3.6116279029902287,
+    "tierA_count": 0,
+    "tierB_count": 13,
+    "freeride_run_count": 13,
+    "ski_area_name": "Cortina d'Ampezzo",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "St. Moritz - Corviglia": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Galtür": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Golm": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Gresse en Vercors": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Wasserngrat (Gstaad)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Gstaad - Wasserngrat",
+    "match_method": "override"
+  },
+  "Arosa Lenzerheide": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Verbier (4 Vallées)": {
+    "score": 97.6,
+    "source": "measured",
+    "freeride_vertical_m": 2202.95,
+    "freeride_length_km": 16.01448945956698,
+    "tierA_count": 13,
+    "tierB_count": 11,
+    "freeride_run_count": 24,
+    "ski_area_name": "4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Nendaz (4 Vallées)": {
+    "score": 97.6,
+    "source": "measured",
+    "freeride_vertical_m": 2202.95,
+    "freeride_length_km": 16.01448945956698,
+    "tierA_count": 13,
+    "tierB_count": 11,
+    "freeride_run_count": 24,
+    "ski_area_name": "4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Thyon (4 Vallées)": {
+    "score": 97.6,
+    "source": "measured",
+    "freeride_vertical_m": 2202.95,
+    "freeride_length_km": 16.01448945956698,
+    "tierA_count": 13,
+    "tierB_count": 11,
+    "freeride_run_count": 24,
+    "ski_area_name": "4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Veysonnaz (4 Vallées)": {
+    "score": 97.6,
+    "source": "measured",
+    "freeride_vertical_m": 2202.95,
+    "freeride_length_km": 16.01448945956698,
+    "tierA_count": 13,
+    "tierB_count": 11,
+    "freeride_run_count": 24,
+    "ski_area_name": "4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Ischgl": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kranjska Gora": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Kuühtai": {
+    "score": 2.9,
+    "source": "measured",
+    "freeride_vertical_m": 78.6,
+    "freeride_length_km": 0.24530976591690848,
+    "tierA_count": 0,
+    "tierB_count": 2,
+    "freeride_run_count": 2,
+    "ski_area_name": "Kühtai",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "La Grave - La Meije": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Deux alpes": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Contamines-​Hauteluce": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Les Orres": {
+    "score": 25.0,
+    "source": "measured",
+    "freeride_vertical_m": 682.25,
+    "freeride_length_km": 2.006342449268996,
+    "tierA_count": 0,
+    "tierB_count": 6,
+    "freeride_run_count": 6,
+    "ski_area_name": "Les Orres",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Zermatt - Matterhorn": {
+    "score": 60.8,
+    "source": "measured",
+    "freeride_vertical_m": 1597.3,
+    "freeride_length_km": 5.303375148229271,
+    "tierA_count": 0,
+    "tierB_count": 14,
+    "freeride_run_count": 14,
+    "ski_area_name": "Zermatt - Breuil-Cervinia, Breuil-Cervinia Ski Paradise",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Obertauern": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Saalbach Hinterglemm Leogang Fieberbrunn (Skicircus)": {
+    "score": 43.7,
+    "source": "measured",
+    "freeride_vertical_m": 1210.0,
+    "freeride_length_km": 3.3451020393472013,
+    "tierA_count": 0,
+    "tierB_count": 13,
+    "freeride_run_count": 13,
+    "ski_area_name": "Skicircus Saalbach-Hinterglemm Leogang Fieberbrunn",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Saas-Fee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Sainte-Foy-Tarentaise": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Val Senales Glacier": {
+    "score": 39.0,
+    "source": "measured",
+    "freeride_vertical_m": 1002.75,
+    "freeride_length_km": 3.5558716068122185,
+    "tierA_count": 0,
+    "tierB_count": 10,
+    "freeride_run_count": 10,
+    "ski_area_name": "Val Senales-Schnalstal",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Serfaus-Fiss-Ladis": {
+    "score": 100.0,
+    "source": "measured",
+    "freeride_vertical_m": 9916.6,
+    "freeride_length_km": 30.906851564751463,
+    "tierA_count": 26,
+    "tierB_count": 16,
+    "freeride_run_count": 42,
+    "ski_area_name": "Serfaus Fiss Ladis",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Sestriere ski resort (Via Lattea)": {
+    "score": 44.7,
+    "source": "measured",
+    "freeride_vertical_m": 1169.75,
+    "freeride_length_km": 3.9324445771967147,
+    "tierA_count": 0,
+    "tierB_count": 15,
+    "freeride_run_count": 15,
+    "ski_area_name": "Sestriere",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Silvretta Montafon": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Wagrain (Ski amedé)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Flachau (Ski amedé)": {
+    "score": 8.8,
+    "source": "measured",
+    "freeride_vertical_m": 221.25,
+    "freeride_length_km": 0.8293307942030022,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "Flachau",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "St. Anton (Ski Arlberg)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Lech (Ski Arlberg)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "St. Christoph (Ski Arlberg)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "St. Johann in Tirol": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Bad Gastein": {
+    "score": 16.4,
+    "source": "measured",
+    "freeride_vertical_m": 364.90000000000003,
+    "freeride_length_km": 1.9121756260613698,
+    "tierA_count": 1,
+    "tierB_count": 2,
+    "freeride_run_count": 3,
+    "ski_area_name": "Ski Gastein - Schlossalm/Angertal/Stubnerkogel",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Kronplatz (Plan de Corones)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Gargellen": {
+    "score": 12.0,
+    "source": "measured",
+    "freeride_vertical_m": 311.65,
+    "freeride_length_km": 1.072571677912348,
+    "tierA_count": 0,
+    "tierB_count": 3,
+    "freeride_run_count": 3,
+    "ski_area_name": "Gargellen",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Hochschwarzeck": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Sölden": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Stubai Glacier": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Stubaier Gletscher",
+    "match_method": "contains"
+  },
+  "Elfer Neustift": {
+    "score": 66.8,
+    "source": "measured",
+    "freeride_vertical_m": 1350.1000000000001,
+    "freeride_length_km": 8.76048513080766,
+    "tierA_count": 45,
+    "tierB_count": 3,
+    "freeride_run_count": 48,
+    "ski_area_name": "Stubai",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Val Gardena": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Val Thorens (Les 3 Vallées)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Montgenèvre (Via Lattea)": {
+    "score": 30.4,
+    "source": "measured",
+    "freeride_vertical_m": 825.85,
+    "freeride_length_km": 2.456783154695175,
+    "tierA_count": 0,
+    "tierB_count": 9,
+    "freeride_run_count": 9,
+    "ski_area_name": "Montgenèvre",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Sauze d’Oulx (Via Lattea)": {
+    "score": 14.2,
+    "source": "measured",
+    "freeride_vertical_m": 369.35,
+    "freeride_length_km": 1.2678856706668253,
+    "tierA_count": 0,
+    "tierB_count": 5,
+    "freeride_run_count": 5,
+    "ski_area_name": "Sauze D'Oulx",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Gressoney - La-Trinite (Monterosa Ski)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Champoluc (Monterosa Ski)": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Zauchensee": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Three Peaks Dolomites-Helm-​Stiergarten": {
+    "score": 25.4,
+    "source": "measured",
+    "freeride_vertical_m": 705.05,
+    "freeride_length_km": 1.9395653320532165,
+    "tierA_count": 0,
+    "tierB_count": 8,
+    "freeride_run_count": 8,
+    "ski_area_name": "3 Zinnen Dolomites (Dobbiaco - San Candido - Braies - Sesto - Alta Pusteria)",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Mitterdorf-Almberg": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "ambiguous",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Jochgrimm-Passo Oclini": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Jochgrimm, Passo Oclini",
+    "match_method": "contains"
+  },
+  "Glacier 3000": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Glacier 3000",
+    "match_method": "contains"
+  },
+  "Les Arcs": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Livigno": {
+    "score": 53.7,
+    "source": "measured",
+    "freeride_vertical_m": 1442.7,
+    "freeride_length_km": 4.43571585895052,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Livigno",
+    "match_method": "contains",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Kitzbuhel": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Hochkonig": {
+    "score": 44.3,
+    "source": "measured",
+    "freeride_vertical_m": 1162.6,
+    "freeride_length_km": 3.8658169423608575,
+    "tierA_count": 0,
+    "tierB_count": 11,
+    "freeride_run_count": 11,
+    "ski_area_name": "Hochkönig",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Villars": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_mapped_routes",
+    "ski_area_name": "Villars/Gryon/Les Diablerets",
+    "match_method": "contains"
+  },
+  "Kleine Scheidegg / ​Männlichen-Grindelwald / ​Wengen": {
+    "score": 53.3,
+    "source": "measured",
+    "freeride_vertical_m": 1330.2,
+    "freeride_length_km": 5.164635358022256,
+    "tierA_count": 3,
+    "tierB_count": 6,
+    "freeride_run_count": 9,
+    "ski_area_name": "Grindelwald - Wengen (Kleine Scheidegg - Männlichen)",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "San Bernardo La Rosire": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "La Thuile": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Courmayeur": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Mayrhofen": {
+    "score": 64.4,
+    "source": "measured",
+    "freeride_vertical_m": 1614.2,
+    "freeride_length_km": 6.171766524697946,
+    "tierA_count": 0,
+    "tierB_count": 13,
+    "freeride_run_count": 13,
+    "ski_area_name": "Mayrhofen Hippach",
+    "match_method": "override",
+    "computed_at": "2026-07-12T21:36:37.700765+00:00",
+    "vertical_cap_m": 2294.5,
+    "length_cap_km": 11.135302385029494
+  },
+  "Serre Chevalier": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  },
+  "Madesimo": {
+    "score": null,
+    "source": "unavailable",
+    "reason": "no_match",
+    "ski_area_name": null,
+    "match_method": null
+  }
+}

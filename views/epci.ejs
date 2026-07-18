@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experimental Powder Conditions Index | European Powder Forecast</title>
+  <link rel="stylesheet" href="/styles/indexStyle.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="container">
+    <section class="forecast-section">
+      <div class="section-header">
+        <h3>Experimental Powder Conditions Index</h3>
+        <p>Resorts ranked by their best fresh-snow day in the next 7 days. Temperature, rain, and wind are shown separately. The EPCI badge is a secondary, experimental interpretation.</p>
+        <p class="epci-disclaimer"><%= disclaimer %></p>
+        <p class="epci-version">Formula version: <%= epciVersion %></p>
+      </div>
+      <% if (!resorts || resorts.length === 0) { %>
+        <p class="epci-empty">No fresh snow in the forecast right now. Check back when the next storm is on the way.</p>
+      <% } else { %>
+      <div class="table-container">
+        <table class="epci-table">
+          <thead><tr><th>Rank</th><th>Resort</th><th>Fresh snow</th><th>Best day</th><th>EPCI (experimental)</th></tr></thead>
+          <tbody>
+            <% resorts.forEach(function(r, index) { %>
+              <tr class="epci-row" onclick="toggleEpci(this)">
+                <td><%= index + 1 %></td>
+                <td><% if (r.url && r.url !== '#') { %><a href="<%= r.url %>" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()"><%= r.resort %></a><% } else { %><%= r.resort %><% } %></td>
+                <td><%= r.bestSnow %> cm</td>
+                <td><%= r.bestSnowLabel %></td>
+                <td>
+                  <% if (r.status === 'ok') { %><span class="epci-badge epci-<%= r.band %>"><%= r.peakScore %></span>
+                  <% } else if (r.status === 'degraded') { %><span class="epci-badge epci-degraded">degraded</span>
+                  <% } else { %><span class="epci-badge epci-unavailable">unavailable</span><% } %>
+                </td>
+              </tr>
+              <tr class="epci-detail" hidden><td colspan="5">
+                <table class="epci-timeline">
+                  <thead><tr><th>Elevation</th><th>Field</th><% dayLabels.forEach(function(l) { %><th><%= l %></th><% }); %></tr></thead>
+                  <tbody>
+                    <% ['Top Lift','Mid Lift','Bottom Lift'].forEach(function(lift) { var cells = r.elevations[lift]; %>
+                      <tr><td rowspan="5"><%= lift %></td><td>Fresh snow (cm)</td><% if (cells) { cells.forEach(function(c){ %><td><%= c.snow %></td><% }); } else { dayLabels.forEach(function(){ %><td>&ndash;</td><% }); } %></tr>
+                      <tr><td>Temp (&deg;C)</td><% if (cells) { cells.forEach(function(c){ %><td><%= c.tmax === null ? 'n/a' : c.tmax %></td><% }); } else { dayLabels.forEach(function(){ %><td>&ndash;</td><% }); } %></tr>
+                      <tr><td>Rain (mm)</td><% if (cells) { cells.forEach(function(c){ %><td><%= c.rain === null ? 'n/a' : c.rain %></td><% }); } else { dayLabels.forEach(function(){ %><td>&ndash;</td><% }); } %></tr>
+                      <tr><td>Wind (km/h)</td><% if (cells) { cells.forEach(function(c){ %><td><%= c.wind === null ? 'n/a' : c.wind %></td><% }); } else { dayLabels.forEach(function(){ %><td>&ndash;</td><% }); } %></tr>
+                      <tr><td>EPCI (<%= epciVersion %>)</td><% if (cells) { cells.forEach(function(c){ %><td class="epci-cell epci-<%= c.band %>"><%= c.status === 'ok' ? c.score : c.status %></td><% }); } else { dayLabels.forEach(function(){ %><td class="epci-cell epci-none">&ndash;</td><% }); } %></tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </td></tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </section>
+  </div>
+  <script>function toggleEpci(row){var d=row.nextElementSibling;if(d&&d.classList.contains('epci-detail')){d.hidden=!d.hidden;row.classList.toggle('epci-row-open');}}</script>
+</body>
+</html>

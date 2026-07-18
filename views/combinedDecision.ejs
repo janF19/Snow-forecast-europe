@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare resorts | European Powder Forecast</title>
+  <link rel="stylesheet" href="/styles/indexStyle.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="container decision-view">
+    <section class="forecast-section">
+      <div class="section-header">
+        <h3>Compare resorts</h3>
+        <div class="decision-modes" role="tablist" aria-label="Decision mode">
+          <a class="decision-mode <%= mode === 'go-soon' ? 'active' : '' %>" role="tab"
+             aria-selected="<%= mode === 'go-soon' %>" href="/decision?mode=go-soon">Go soon</a>
+          <a class="decision-mode <%= mode === 'plan-future' ? 'active' : '' %>" role="tab"
+             aria-selected="<%= mode === 'plan-future' %>" href="/decision?mode=plan-future&window=02-01..02-05">Plan future dates</a>
+        </div>
+        <% if (!model.guard) { %>
+          <% if (mode === 'go-soon') { %>
+            <p>Resorts ranked by <strong>accumulated fresh snowfall</strong> over your selected days. Temperature, rain, and wind are shown separately, never blended in. The EPCI badge is a secondary, <em>experimental</em> interpretation (version <%= model.meta.epciVersion %>).</p>
+          <% } else { %>
+            <p>Resorts ranked by <strong>historical reliability</strong> for this calendar window. <strong>Historical reliability is not a forecast for the selected year.</strong></p>
+          <% } %>
+        <% } %>
+      </div>
+
+      <form method="get" action="/decision" class="decision-filters">
+        <input type="hidden" name="mode" value="<%= mode %>">
+
+        <% if (mode === 'go-soon') { %>
+          <p id="decision-date-help" class="form-help">Choose the first and last local forecast date.</p>
+          <div class="decision-filter-field">
+            <label for="filter-start">Start date</label>
+            <input type="date" id="filter-start" name="start" value="<%= startParam %>"
+                   aria-label="Start date" aria-describedby="decision-date-help<%= dateErrors.start ? ' filter-start-error' : '' %>"
+                   aria-invalid="<%= dateErrors.start ? 'true' : 'false' %>">
+            <% if (dateErrors.start) { %><span id="filter-start-error" class="field-error"><%= dateErrors.start %></span><% } %>
+          </div>
+          <div class="decision-filter-field">
+            <label for="filter-end">End date</label>
+            <input type="date" id="filter-end" name="end" value="<%= endParam %>"
+                   aria-label="End date" aria-describedby="decision-date-help<%= dateErrors.end ? ' filter-end-error' : '' %>"
+                   aria-invalid="<%= dateErrors.end ? 'true' : 'false' %>">
+            <% if (dateErrors.end) { %><span id="filter-end-error" class="field-error"><%= dateErrors.end %></span><% } %>
+          </div>
+        <% } else { %>
+          <div class="decision-filter-field">
+            <label for="filter-window">Calendar window (MM-DD..MM-DD)</label>
+            <input type="text" id="filter-window" name="window" pattern="\d{2}-\d{2}\.\.\d{2}-\d{2}"
+                   value="<%= model.window.startMMDD %>..<%= model.window.endMMDD %>">
+          </div>
+        <% } %>
+
+        <div class="decision-filter-field">
+          <label for="filter-sort">Sort by</label>
+          <select id="filter-sort" name="sort">
+            <% sortOptions.forEach(function(opt) { %>
+              <option value="<%= opt %>" <%= model.sort === opt ? 'selected' : '' %>><%= opt %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-country">Country</label>
+          <input type="text" id="filter-country" name="country" value="<%= model.filters.country || '' %>">
+        </div>
+
+        <% if (mode === 'go-soon') { %>
+          <div class="decision-filter-field">
+            <label for="filter-min-snow">Min. fresh snow (cm)</label>
+            <input type="number" id="filter-min-snow" name="minSnow" min="0"
+                   value="<%= model.filters.minSnow != null ? model.filters.minSnow : '' %>">
+          </div>
+        <% } %>
+
+        <div class="decision-filter-field">
+          <label for="filter-min-terrain">Min. terrain score</label>
+          <input type="number" id="filter-min-terrain" name="minTerrain" min="0"
+                 value="<%= model.filters.minTerrain != null ? model.filters.minTerrain : '' %>">
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-terrain-source">Terrain source</label>
+          <select id="filter-terrain-source" name="terrainSource">
+            <option value="" <%= !model.filters.terrainSource ? 'selected' : '' %>>Any</option>
+            <option value="measured" <%= model.filters.terrainSource === 'measured' ? 'selected' : '' %>>Measured</option>
+          </select>
+        </div>
+
+        <div class="decision-filter-field">
+          <label for="filter-min-confidence">Min. historical confidence</label>
+          <select id="filter-min-confidence" name="minConfidence">
+            <option value="" <%= !model.filters.minConfidence ? 'selected' : '' %>>Any</option>
+            <option value="Limited" <%= model.filters.minConfidence === 'Limited' ? 'selected' : '' %>>Limited</option>
+            <option value="Moderate" <%= model.filters.minConfidence === 'Moderate' ? 'selected' : '' %>>Moderate</option>
+            <option value="High" <%= model.filters.minConfidence === 'High' ? 'selected' : '' %>>High</option>
+          </select>
+        </div>
+
+        <button type="submit">Update</button>
+      </form>
+
+      <% if (model.guard === 'range_exceeds_horizon') { %>
+        <p class="decision-guard" role="alert"><%= model.warnings[0] %></p>
+      <% } %>
+
+      <% if (model.excludedCount > 0) { %>
+        <p class="decision-excluded"><%= model.excludedCount %> resort(s) excluded by your filters.</p>
+      <% } %>
+
+      <% if (!model.guard && model.rows.length === 0) { %>
+        <p class="decision-empty">No resorts match. Try widening your filters.</p>
+      <% } else if (!model.guard) { %>
+      <p id="decision-comparison-description" class="decision-caption">
+        Resort comparison - <%= mode === 'go-soon' ? 'Go soon (forecast horizon)' : 'Plan future dates (historical)' %>.
+        Each evidence column keeps its own source and freshness; no combined score is used.
+      </p>
+      <p class="decision-result-count" aria-live="polite">
+        Showing <%= pagination.firstVisible %>-<%= pagination.lastVisible %> of <%= pagination.totalRows %> resorts.
+      </p>
+      <div class="decision-table-container">
+        <table class="decision-table" aria-describedby="decision-comparison-description">
+          <thead>
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col">Resort</th>
+              <% if (mode === 'go-soon') { %>
+                <th scope="col">Fresh snow (forecast)</th>
+                <th scope="col">Temp / Rain / Wind</th>
+                <th scope="col">EPCI (experimental)</th>
+              <% } %>
+              <th scope="col">Terrain</th>
+              <th scope="col">Historical reliability</th>
+              <th scope="col">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% model.rows.forEach(function(r) { var detailId = 'detail-' + r.id; %>
+              <tr class="decision-row">
+                <td><%= r.globalRank %></td>
+                <th scope="row"><% if (r.url && r.url !== '#') { %><a href="<%= r.url %>" target="_blank" rel="noopener noreferrer"><%= r.resort %></a><% } else { %><%= r.resort %><% } %><br><span class="decision-country"><%= r.country || 'Unknown' %></span></th>
+
+                <% if (mode === 'go-soon') { %>
+                  <td class="decision-snow">
+                    <% if (r.forecast.status === 'ok') { %><strong><%= r.primarySnowCm %> cm</strong><span class="decision-elev"> @ <%= r.forecast.elevationM %> m</span><% } else { %><span class="decision-unavailable">unavailable</span><% } %>
+                  </td>
+                  <td>
+                    <% if (r.forecast.status === 'ok') { %>
+                      <%= r.forecast.tempMaxC === null ? 'n/a' : r.forecast.tempMaxC + '°C' %> /
+                      <%= r.forecast.rainSumMm === null ? 'n/a' : r.forecast.rainSumMm + ' mm' %> /
+                      <%= r.forecast.windMaxKmh === null ? 'n/a' : r.forecast.windMaxKmh + ' km/h' %>
+                    <% } else { %><span class="decision-unavailable">unavailable</span><% } %>
+                  </td>
+                  <td>
+                    <% if (r.epci.status === 'ok') { %><span class="epci-badge epci-<%= r.epci.band %>"><%= r.epci.peakScore %></span> <span class="epci-experimental">experimental <%= r.epci.version %></span>
+                    <% } else if (r.epci.status === 'degraded') { %><span class="epci-badge epci-degraded">degraded</span> <span class="epci-experimental">experimental <%= r.epci.version %></span>
+                    <% } else { %><span class="decision-unavailable">unavailable</span><% } %>
+                  </td>
+                <% } %>
+
+                <td class="decision-terrain">
+                  <% if (r.terrain.status === 'ok') { %><%= r.terrain.score %> <span class="decision-source">(<%= r.terrain.source %>)</span>
+                  <% } else { %><span class="decision-unavailable">unavailable</span><% } %>
+                </td>
+                <td class="decision-history">
+                  <% if (r.history.status === 'ok') { %><%= r.history.reliability %>% <span class="decision-source">(<%= r.history.prob1.count %>/<%= r.history.prob1.denom %> comparable seasons, <%= r.history.confidence %>)</span>
+                  <% } else { %><span class="decision-unavailable">unavailable</span><% } %>
+                </td>
+                <td>
+                  <button type="button" class="decision-toggle" aria-expanded="false" aria-controls="<%= detailId %>" onclick="toggleDecision(this)">Show evidence</button>
+                </td>
+              </tr>
+              <tr class="decision-detail" id="<%= detailId %>" role="region" aria-label="Evidence detail for <%= r.resort %>" hidden>
+                <td colspan="<%= mode === 'go-soon' ? 8 : 5 %>">
+                  <% if (mode === 'go-soon') { %>
+                  <h4>Daily forecast (<%= r.forecast.leadDays.start %>–<%= r.forecast.leadDays.end %> days out)</h4>
+                  <% if (r.forecast.status === 'ok') { %>
+                    <table class="decision-timeline"><thead><tr><th scope="col">Day</th><th scope="col">Snow (cm)</th><th scope="col">Temp</th><th scope="col">Rain</th><th scope="col">Wind</th></tr></thead>
+                    <tbody><% r.forecast.daily.forEach(function(d){ %><tr><td><%= d.label %></td><td><%= d.snow %></td><td><%= d.tmax === null ? 'n/a' : d.tmax %></td><td><%= d.rain === null ? 'n/a' : d.rain %></td><td><%= d.wind === null ? 'n/a' : d.wind %></td></tr><% }); %></tbody></table>
+                    <p class="decision-provenance">Forecast source: <%= r.forecast.source %>. Freshness: <%= r.forecast.freshness || 'unknown' %>. Elevation: <%= r.forecast.elevationM %> m.</p>
+                  <% } else { %><p class="decision-unavailable">No forecast available for this resort.</p><% } %>
+                  <h4>EPCI (experimental — <%= r.epci.version %>)</h4>
+                  <% if (r.epci.status === 'unavailable') { %><p class="decision-unavailable">EPCI unavailable.</p>
+                  <% } else { %><p>Peak day: <%= r.epci.peakDayLabel || 'n/a' %>. Status: <%= r.epci.status %>. <% if (r.epci.missing && r.epci.missing.length) { %>Missing inputs: <%= r.epci.missing.join(', ') %>.<% } %> This is an experimental interpretation of forecast weather, not an observation.</p><% } %>
+                  <% } %>
+
+                  <h4>Mapped terrain</h4>
+                  <% if (r.terrain.status === 'ok') { %>
+                    <p>Score <%= r.terrain.score %> (<%= r.terrain.source %>). Vertical <%= r.terrain.verticalM %> m, length <%= r.terrain.lengthKm %> km, <%= r.terrain.runCount %> mapped runs. Ski area: <%= r.terrain.skiAreaName %>. Freshness: <%= r.terrain.freshness || 'unknown' %>.</p>
+                  <% } else { %><p class="decision-unavailable">No mapped route data (<%= r.terrain.reason || 'unavailable' %>). Terrain ranking is not avalanche guidance.</p><% } %>
+
+                  <h4>Historical seasons</h4>
+                  <% if (r.history.status === 'ok') { %>
+                    <p><%= r.history.reliabilityText %> Median <%= r.history.median %> cm (IQR <%= r.history.p25 %>–<%= r.history.p75 %>). Recent ten: <%= r.history.recentTen.reliability %>% over <%= r.history.recentTen.seasonsUsed %> seasons. Record period: <%= r.history.freshness ? r.history.freshness.first + ' to ' + r.history.freshness.last : 'unknown' %>. Station elevation: <%= r.history.elevationM %> m.</p>
+                  <% } else { %><p class="decision-unavailable">No comparable historical seasons for this window.</p><% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% if (pagination.totalPages > 1) { %>
+      <nav class="decision-pagination" aria-label="Decision result pages">
+        <% if (pagination.hasPrevious) { %><a rel="prev" href="<%= pagination.previousHref %>">Previous</a><% } %>
+        <% pagination.pages.forEach(function(page) { %>
+          <a href="<%= page.href %>" <%- page.current ? 'aria-current="page"' : '' %>><%= page.number %></a>
+        <% }); %>
+        <% if (pagination.hasNext) { %><a rel="next" href="<%= pagination.nextHref %>">Next</a><% } %>
+      </nav>
+      <% } %>
+      <% } %>
+
+      <div class="decision-safety">
+        <h4>How to read this</h4>
+        <ul>
+          <li>Forecast, historical, mapped-route, and weather-station elevations can differ; each block states its own elevation.</li>
+          <li>Terrain ranking describes mapped lift-served freeride extent. It is <strong>not avalanche guidance</strong> and says nothing about snowpack stability, visibility, legal access, lift or route opening, or suitability for your ability.</li>
+          <li>Check your official local avalanche service before any off-piste travel.</li>
+          <li>EPCI is an experimental interpretation of forecast weather, not an observed measurement.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  <script>
+    function toggleDecision(btn){
+      var id = btn.getAttribute('aria-controls');
+      var detail = document.getElementById(id);
+      if(!detail) return;
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      detail.hidden = open;
+      btn.textContent = open ? 'Show evidence' : 'Hide evidence';
+    }
+  </script>
+</body>
+</html>

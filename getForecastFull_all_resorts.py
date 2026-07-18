@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 import logging
-import subprocess
+import json
+import time
+from forecast_provenance import build_provenance
+from weather_batch import run_batch, write_json_atomic
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -12,33 +14,13 @@ logging.info(f"Python version: {sys.version}")
 logging.info(f"Python executable: {sys.executable}")
 logging.info(f"Python path: {sys.path}")
 
-# Check pip installation
-try:
-    import pkg_resources
-    installed_packages = [f"{pkg.key} {pkg.version}" for pkg in pkg_resources.working_set]
-    logging.info("Installed packages:")
-    for pkg in installed_packages:
-        logging.info(pkg)
-except Exception as e:
-    logging.error(f"Error checking installed packages: {e}")
-
 try:
     import openmeteo_requests
-    import json
     import requests_cache
     from retry_requests import retry
-    import time
     logging.info("All required packages imported successfully")
 except ImportError as e:
     logging.error(f"Failed to import required package: {str(e)}")
-    logging.error(f"Python path: {sys.path}")
-    # Try to install the missing package
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "openmeteo-requests"])
-        logging.info("Successfully installed openmeteo-requests")
-        import openmeteo_requests
-    except Exception as install_error:
-        logging.error(f"Failed to install package: {str(install_error)}")
     sys.exit(1)
 
 # Rest of your existing code...
@@ -64,11 +46,8 @@ COMMON_PARAMS = {
     "forecast_days": 14
 }
 
-# Initialize the output data structure
-output = {}
-
 # Function to fetch weather data for a given resort
-def fetch_weather_data(resort):
+def fetch_weather_data(resort, output, issue_time):
     """Fetches weather data for a given resort."""
     
     # Initialize output for the resort
@@ -140,6 +119,19 @@ def fetch_weather_data(resort):
                 # Store daily values in the output for the specific elevation
                 for idx, var in enumerate(COMMON_PARAMS['daily']):
                     output[resort['resort']]["elevations"][lift_name][var] = daily_data.Variables(idx).ValuesAsNumpy().tolist()
+
+                # Record provenance
+                present = [v for v in COMMON_PARAMS['daily'] if output[resort['resort']]["elevations"][lift_name].get(v)]
+                output[resort['resort']]["elevations"][lift_name]["provenance"] = build_provenance(
+                    provider="open-meteo",
+                    model=params.get("models", ["best_match"])[0] if isinstance(params.get("models"), list) else "best_match",
+                    issue_time_utc=issue_time,
+                    api_url=API_URL,
+                    generated_at=issue_time,
+                    units={"snowfall": "cm", "temperature": "°C", "rain": "mm", "wind": "km/h"},
+                    present_vars=present,
+                    expected_vars=["snowfall_sum", "temperature_2m_max", "rain_sum", "wind_speed_10m_max"],
+                )
             else:
                 logging.warning(f"No daily data available for {resort['resort']} at {lift_name}")
         
@@ -153,17 +145,12 @@ def main():
     with open('resorts_for_forecast.json', 'r', encoding='utf-8') as f:
         resorts = json.load(f)
 
-    
-    
-    # Loop through each resort and fetch weather data
-    for resort in resorts:
-        logging.info(f"Fetching data for {resort['resort']}")
-        fetch_weather_data(resort)
-    
-    # Write the output to a file
-    with open('weather_dataFull_7.json', 'w', encoding='utf-8') as file:
-        json.dump(output, file,ensure_ascii=False, indent=4)
-        logging.info("Weather data successfully written to 'weather_dataFull_7.json'")
+    issue_time, output = run_batch(
+        resorts,
+        fetch_weather_data,
+        lambda data: write_json_atomic(data, 'weather_dataFull_7.json'),
+    )
+    logging.info("Weather batch %s successfully written for %d resorts", issue_time, len(output))
 
 if __name__ == "__main__":
     main()

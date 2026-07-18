@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Freeride Terrain</title><link rel="stylesheet" href="/styles/indexStyle.css"></head>
+<body><%- include('partials/navbar') %><main class="container freeride-page">
+<h1>Lift-served freeride terrain <span class="beta-badge">Beta</span></h1>
+<p class="freeride-intro">Ranked by mapped off-piste and steep-run vertical plus length, for resorts with a high-confidence or explicitly reviewed OpenSkiMap match. This is not complete terrain coverage, and it is not avalanche or safety guidance.</p>
+<div class="table-container freeride-table-container">
+  <table class="freeride-table">
+    <thead><tr>
+      <th scope="col">#</th><th scope="col">Resort</th><th scope="col">Score</th>
+      <th scope="col">Source</th><th scope="col">Terrain metrics</th>
+    </tr></thead>
+    <tbody>
+    <% ranked.forEach((item, index) => { %>
+      <tr>
+        <td data-label="Rank"><%= index + 1 %></td>
+        <th scope="row" data-label="Resort"><%= item.resort %></th>
+        <td data-label="Score"><strong><%= item.score.toFixed(1) %></strong></td>
+        <td data-label="Source" class="freeride-source">
+          <span class="confidence-measured">Mapped routes (measured)</span>
+          <small>Freshness: <%= item.computed_at || metadata.computed_at || 'unknown' %></small>
+        </td>
+        <td class="freeride-metrics">
+          <span data-label="Vertical"><strong>Vertical:</strong> <%= Math.round(item.freeride_vertical_m).toLocaleString() %> m</span>
+          <span data-label="Mapped length"><strong>Mapped length:</strong> <%= item.freeride_length_km.toFixed(1) %> km</span>
+          <span data-label="Route count"><strong>Route count:</strong> <%= item.freeride_run_count %></span>
+        </td>
+      </tr>
+    <% }); %>
+    </tbody>
+  </table>
+</div>
+<section class="no-data-section"><h2>No mapped route data</h2><p>These resorts are not ranked: no reviewed OpenSkiMap match, an ambiguous identity, or no qualifying mapped routes found.</p><ul><% unavailable.forEach(item => { %><li><%= item.resort %> <span class="unavailable-reason">(<%= item.reason %>)</span></li><% }); %></ul></section>
+</main></body></html>

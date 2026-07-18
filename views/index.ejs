@@ -25,7 +25,6 @@
                     <ul>
                         <li>7 and 14-day snowfall forecasts</li>
                         <li>Past 14-day snowfall</li>
-                        <li>Powder day probability predictions</li>
                         <li>Historical snowfall analysis based on 30-year seasonal trends</li>
                     </ul>
                 </div>
@@ -34,6 +33,26 @@
                 </div>
             </div>
         </header>
+
+        <% if (typeof topPowder !== 'undefined' && topPowder && topPowder.length) { %>
+        <section class="pqi-home-section">
+            <div class="section-header">
+                <h2>Experimental Powder Conditions Index</h2>
+                <p class="epci-disclaimer"><%= epciDisclaimer %></p>
+                <p class="epci-version">Formula version: <%= epciVersion %></p>
+                <div class="button-group"><a href="/powder-quality" class="btn">See experimental conditions</a></div>
+            </div>
+            <div class="pqi-home-grid">
+                <% topPowder.forEach(function(resort) { %>
+                    <a href="/powder-quality" class="pqi-card pqi-<%= resort.band %>-border">
+                        <span class="pqi-card-name"><%= resort.resort %></span>
+                        <span class="pqi-card-meta"><%= resort.bestSnow %> cm fresh &middot; <%= resort.peakDayLabel %></span>
+                        <span class="pqi-badge pqi-<%= resort.band %>"><%= resort.status === 'ok' ? resort.peakScore : resort.status %></span>
+                    </a>
+                <% }); %>
+            </div>
+        </section>
+        <% } %>
 
         <section class="forecast-section">
             <div class="section-one-header">
@@ -139,223 +158,19 @@
         </section>
 
         
-<section class="article-section">
-    <h2>Monthly Powder Paradise: Best times and resorts to chase fresh snow</h2>
-    
-    <p>Our advanced machine learning analysis has revealed fascinating patterns in powder probability across European ski destinations. A "powder day" in our analysis is defined as any day with 10cm or more of fresh snow - the threshold that turns a good ski day into an unforgettable one. In table below you can see resorts with highest probability of powder day in each month. Overall La Clusaz-Manigod has the highest powder day probability</p>
-    
-    <div class="chart-container">
-      <table class="probability-table">
-        <thead>
-          <tr>
-            <th>Resort</th>
-            <th>Country</th>
-            <th>Month</th>
-            <th>Probability</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>La Clusaz-Manigod</td>
-            <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-            <td>January</td>
-            <td>12.7%</td>
-          </tr>
-          <tr>
-            <td>Kaiseregg-Riggisalp-Schwarzsee</td>
-            <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-            <td>January</td>
-            <td>11.9%</td>
-          </tr>
-          <tr>
-            <td>Megève-Saint-Gervais</td>
-            <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-            <td>February</td>
-            <td>10.1%</td>
-          </tr> 
-          <tr>
-            <td>La Clusaz-Manigod </td>
-            <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-            <td>March</td>
-            <td>9.3%</td>
-          </tr>
-          <tr>
-            <td>Zürs (Ski Arlberg)</td>
-            <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-            <td>April</td>
-            <td>11.0%</td>
-          </tr>
-          <tr>
-            <td>Zermatt - Matterhorn</td>
-            <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-            <td>April</td>
-            <td>11.0%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  
-    <h2>Country-by-Country Monthly Powder Prospects</h2>
-    
-    <p>Each major Alpine country offers unique powder opportunities throughout the season. Here's a detailed breakdown by month showing the top resort with highest powder day probability for each country:</p>
-  
-    <div class="monthly-grid">
-      <div class="month-card">
-        <div class="month-title">December</div>
-        <table class="probability-table">
-          <tbody>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-              <td>La Clusaz-Manigod</td>
-              <td>10.9%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-              <td>Kaiseregg-Riggisalp</td>
-              <td>10.1%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/it.png" alt="Italy" class="country-flag">Italy</td>
-              <td>Courmayeur</td>
-              <td>7.8%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-              <td>St. Christoph</td>
-              <td>6.6%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <div class="month-card">
-        <div class="month-title">January</div>
-        <table class="probability-table">
-          <tbody>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-              <td>La Clusaz-Manigod</td>
-              <td>12.7%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-              <td>Kaiseregg-Riggisalp</td>
-              <td>11.9%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/it.png" alt="Italy" class="country-flag">Italy</td>
-              <td>La Thuile</td>
-              <td>9.0%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-              <td>Lech</td>
-              <td>6.9%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <div class="month-card">
-        <div class="month-title">February</div>
-        <table class="probability-table">
-          <tbody>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-              <td>Kaiseregg-Riggisalp</td>
-              <td>10.5%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-              <td>Megève-Saint-Gervais</td>
-              <td>10.1%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/it.png" alt="Italy" class="country-flag">Italy</td>
-              <td>Courmayeur</td>
-              <td>7.7%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-              <td>Dachstein West</td>
-              <td>6.3%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <div class="month-card">
-        <div class="month-title">March</div>
-        <table class="probability-table">
-          <tbody>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-              <td>La Clusaz-Manigod</td>
-              <td>9.3%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-              <td>Kaiseregg-Riggisalp</td>
-              <td>8.9%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/it.png" alt="Italy" class="country-flag">Italy</td>
-              <td>La Thuile</td>
-              <td>8.3%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-              <td>Lech</td>
-              <td>6.6%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <div class="month-card">
-        <div class="month-title">April</div>
-        <table class="probability-table">
-          <tbody>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/at.png" alt="Austria" class="country-flag">Austria</td>
-              <td>Zürs</td>
-              <td>11.0%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/ch.png" alt="Switzerland" class="country-flag">Switzerland</td>
-              <td>Zermatt - Matterhorn</td>
-              <td>11.0%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/it.png" alt="Italy" class="country-flag">Italy</td>
-              <td>Courmayeur</td>
-              <td>9.7%</td>
-            </tr>
-            <tr>
-              <td><img src="https://flagcdn.com/w20/fr.png" alt="France" class="country-flag">France</td>
-              <td>Les Contamines</td>
-              <td>7.8%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  
-    <p>Some key insights from our country analysis:</p>
-    <ul>
-      <li><strong>France</strong> dominates the early season, with La Clusaz-Manigod offering the highest powder probabilities across all regions in January.</li>
-      <li><strong>Switzerland</strong> shows remarkable consistency, with Kaiseregg-Riggisalp maintaining high powder probabilities throughout the core winter months.</li>
-      <li><strong>Austria</strong> excels in spring conditions, with Zürs offering prime late-season powder opportunities.</li>
-      <li><strong>Italy</strong> peaks in April, with Courmayeur and La Thuile sharing honors for the highest powder probabilities.</li>
-    </ul>
-  
-    <p>For optimal powder hunting, consider these month-by-month recommendations:</p>
-    <ul>
-      <li><strong>December-January:</strong> Focus on French resorts, particularly in the La Clusaz area</li>
-      <li><strong>February:</strong> Swiss resorts offer the most consistent powder opportunities</li>
-      <li><strong>March-April:</strong> High-altitude resorts in Austria and Switzerland provide the best late-season powder chances</li>
-    </ul>
-  </section>
+        <section class="freeride-home-section">
+            <div class="section-one-header"><h2>Top mapped freeride terrain</h2><a href="/freeride" class="btn">View full leaderboard</a></div>
+            <div class="table-container"><table class="freeride-table"><thead><tr><th>Resort</th><th>Score</th><th>Mapped terrain</th></tr></thead><tbody>
+                <% (freerideTop5 || []).forEach(function(item) { %><tr><td><%= item.resort %></td><td><%= item.score.toFixed(1) %></td><td><%= Math.round(item.freeride_vertical_m).toLocaleString() %> m · <%= item.freeride_length_km.toFixed(1) %> km · <%= item.freeride_run_count %> routes</td></tr><% }); %>
+            </tbody></table></div>
+        </section>
+
+        <section class="article-section">
+          <h2>Historical powder reliability</h2>
+          <p>See where powder has historically been most reliable for any date window,
+             season by season, based on modelled snowfall — not a forecast.</p>
+          <a href="/allHistory" class="btn">Explore historical reliability</a>
+        </section>
     </main>
 </body>
 </html>

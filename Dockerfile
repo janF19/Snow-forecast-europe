@@ -1,27 +1,33 @@
-FROM node:18-slim
-
-# Install Python
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.12-slim AS history-builder
 
 WORKDIR /app
 
-# Copy package files and install Node dependencies
-COPY package*.json ./
-RUN npm install
-
-# Copy Python requirements and install
 COPY requirements.txt ./
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-COPY . .
+COPY history ./history
+COPY filtered_weather_data.csv ./
+RUN python -m history.build_records --generated-at 2026-07-11T00:00:00Z
 
-# Expose port
+FROM node:24-bookworm-slim AS runtime
+
+WORKDIR /app
+ENV DATA_DIR=/app/data
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY app.js ./
+COPY controllers ./controllers
+COPY routes ./routes
+COPY snapshots ./snapshots
+COPY utils ./utils
+COPY views ./views
+COPY public ./public
+COPY styles ./styles
+COPY data ./data
+COPY weather_dataFull_7.json resorts_for_forecast.json freeride_terrain.json ./
+COPY --from=history-builder /app/history_season_records.json ./
+
 EXPOSE 3002
-
-# Start the application
 CMD ["node", "app.js"]

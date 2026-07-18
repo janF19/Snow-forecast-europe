@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>History Data</title>
     <link rel="stylesheet" href="/styles/indexStyle.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
     <style>
         .resort-cell {
             display: flex;
@@ -36,19 +35,28 @@
     
     
    
-    <p class="snowfall-description">Select date and country where would you like to go in future and see top resorts based on average historical snowfall in last 30 years</p>
+    <p class="snowfall-description">
+      Pick a date window and country to see where powder has historically been most
+      reliable, season by season. Values are <strong>modelled snowfall</strong>
+      (Open-Meteo historical reanalysis), not station observations, and describe the
+      past — not a forecast for a future year.
+    </p>
 
     <div class="history-form-container">
         <h2 class="date-range-title">Select Date Range (MM-DD):</h2>
         <form id="snowfall-form" onsubmit="handleFormSubmit(event)">
+            <p id="history-date-help" class="form-help">Choose any dates; historical comparison uses the month and day.</p>
+            <p id="history-date-error" class="field-error" role="alert" hidden></p>
             <div class="date-input-group">
-                <label for="startDate">From:</label>
-                <input type="date" id="startDate" name="startDate" required>
+                <label for="startDate">From date</label>
+                <input type="date" id="startDate" name="startDate" required aria-label="From date"
+                       aria-describedby="history-date-help history-date-error" aria-invalid="false">
             </div>
-    
+
             <div class="date-input-group">
-                <label for="endDate">Until:</label>
-                <input type="date" id="endDate" name="endDate" required>
+                <label for="endDate">Until date</label>
+                <input type="date" id="endDate" name="endDate" required aria-label="Until date"
+                       aria-describedby="history-date-help history-date-error" aria-invalid="false">
             </div>
 
             <div class="filter-container">
@@ -72,7 +80,20 @@
     <div id="result"></div>
 
     <script>
-        let allResults = []; // Store all results for filtering
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+        const dateError = document.getElementById('history-date-error');
+
+        [startInput, endInput].forEach((input) => {
+          input.addEventListener('invalid', () => {
+            input.setAttribute('aria-invalid', 'true');
+            dateError.textContent = `${input.getAttribute('aria-label')} is required.`;
+            dateError.hidden = false;
+          });
+          input.addEventListener('input', () => {
+            input.setAttribute('aria-invalid', 'false');
+          });
+        });
 
         function getCountryFlag(country) {
             const countryMap = {
@@ -84,74 +105,68 @@
                 'slovenia': 'si',
                 'germany': 'de'
             };
-            
+
             const countryLower = country ? country.toLowerCase().trim() : '';
             return countryMap[countryLower];
         }
 
-        function filterAndDisplayResults(country = 'all') {
-            const filteredResults = country === 'all' 
-                ? allResults 
-                : allResults.filter(stat => stat.country.toLowerCase() === country.toLowerCase());
+        function displayResults(data) {
+          const resultDiv = document.getElementById('result');
+          const ranked = data.ranked || [];
+          const limited = data.limited || [];
+          const unavailable = data.unavailable || [];
+          const period = data.provenance && data.provenance.recordPeriod
+            ? `${data.provenance.recordPeriod.first} to ${data.provenance.recordPeriod.last}` : '';
 
-            displayResults(filteredResults);
-        }
+          if (!ranked.length && !limited.length) {
+            resultDiv.innerHTML = '<h2>No comparable seasons with enough data for this window.</h2>';
+            return;
+          }
 
-        function displayResults(results) {
-            const resultDiv = document.getElementById('result');
-            
-            if (results.length > 0) {
-                // Sort results by average snowfall
-                results.sort((a, b) => b.avg_snowfall - a.avg_snowfall);
-                
-                let resultHTML = `
-                    <h2>Snowfall Statistics</h2>
-                    <table class="historical-stats-table">
-                        <thead>
-                            <tr>
-                                <th>Location</th>
-                                <th>Avg Snowfall (cm)</th>
-                                <th>Total Snowfall (cm)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                results.forEach(stat => {
-                    const flagCode = getCountryFlag(stat.country);
-                    let flagHtml = '';
-                    
-                    if (flagCode) {
-                        flagHtml = `<img 
-                            class="country-flag" 
-                            src="https://flagcdn.com/w20/${flagCode}.png" 
-                            alt="${stat.country}" 
-                            title="${stat.country}"
-                            onerror="this.style.display='none'"
-                        >`;
-                    }
-                    
-                    resultHTML += `
-                        <tr>
-                            <td class="resort-cell">
-                                ${flagHtml}
-                                <span>${stat.location}</span>
-                            </td>
-                            <td>${stat.avg_snowfall.toFixed(2)}</td>
-                            <td>${stat.total_snowfall.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
-                
-                resultHTML += `</tbody></table>`;
-                resultDiv.innerHTML = resultHTML;
-            } else {
-                resultDiv.innerHTML = `<h2>No snowfall data available for the selected criteria.</h2>`;
-            }
+          const row = (r) => `
+            <tr>
+              <td class="resort-cell"><span>${r.resort}</span></td>
+              <td><span class="confidence-badge ${r.confidence.toLowerCase()}">${r.confidence}</span></td>
+              <td>${r.reliabilityText}</td>
+              <td>${r.median} cm (IQR ${r.p25}–${r.p75})</td>
+              <td>${r.prob2.count}/${r.prob2.denom} (${r.prob2.pct}%)</td>
+              <td>${r.recentTen.prob1.count}/${r.recentTen.prob1.denom} (${r.recentTen.prob1.pct}%)</td>
+              <td>${r.elevation} m</td>
+            </tr>
+            <tr class="evidence"><td colspan="7">
+              <details><summary>Season-by-season evidence (${period})</summary>
+                <ul>${r.seasons.map((s) => `<li>${s.season}: ${s.total} cm, ${s.powderDays} powder day(s)${s.valid ? '' : ' — excluded (incomplete)'}</li>`).join('')}</ul>
+              </details>
+            </td></tr>`;
+
+          let html = `<h2>Historical reliability</h2>
+            <p class="methodology-note">A powder day is ≥10 cm of modelled snowfall in one local day.
+            Reliability = share of comparably complete seasons with at least one powder day in your window.
+            Climate change, complex terrain, model spatial resolution, local measurement uncertainty, and
+            future variability all limit these historical comparisons.</p>
+            <table class="reliability-table"><thead><tr>
+              <th>Resort</th><th>Confidence</th><th>Reliability</th><th>Median (IQR)</th>
+              <th>2+ powder days</th><th>Recent 10 seasons</th><th>Elevation</th>
+            </tr></thead><tbody>${ranked.map(row).join('')}</tbody></table>`;
+
+          if (limited.length) {
+            html += `<h3>Limited sample (fewer than 15 comparable seasons — shown but not ranked)</h3>
+              <table class="reliability-table"><tbody>${limited.map(row).join('')}</tbody></table>`;
+          }
+          if (unavailable.length) {
+            html += `<h3>No historical data for this window</h3>
+              <ul>${unavailable.map((u) => `<li>${u.resort} (${u.country})</li>`).join('')}</ul>`;
+          }
+          resultDiv.innerHTML = html;
         }
 
         async function handleFormSubmit(event) {
             event.preventDefault();
+
+            dateError.hidden = true;
+            dateError.textContent = '';
+            startInput.setAttribute('aria-invalid', 'false');
+            endInput.setAttribute('aria-invalid', 'false');
         
             const form = event.target;
             const formData = new FormData(form);
@@ -179,24 +194,17 @@
         
                 const data = await response.json();
                 console.log('Received data:', data);
-                
-                if (data.results && data.results.length > 0) {
-                    displayResults(data.results);
-                } else {
-                    document.getElementById('result').innerHTML = `<h2>${data.message || 'No snowfall data available for the selected criteria.'}</h2>`;
-                }
+
+                displayResults(data);
             } catch (error) {
                 console.error('Error:', error);
+                dateError.textContent = error.message || 'Error calculating snowfall';
+                dateError.hidden = false;
+                startInput.setAttribute('aria-invalid', 'true');
+                endInput.setAttribute('aria-invalid', 'true');
                 document.getElementById('result').innerHTML = `<h2 class="error">Error: ${error.message || 'Error calculating snowfall'}</h2>`;
             }
         }
-
-        // Add event listener for country filter changes
-        document.getElementById('countryFilter').addEventListener('change', (e) => {
-            if (allResults.length > 0) {
-                filterAndDisplayResults(e.target.value);
-            }
-        });
     </script>
 </body>
 </html>

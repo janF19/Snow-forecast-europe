@@ -1,0 +1,12 @@
+{
+  "Dachstein West": {
+    "reason": "Name conflicts with its coordinates, elevation, and URL in the resort catalogue; the 2026-07-11 production-verification review found the override target pointed at the wrong OpenSkiMap ski area. Treat as unavailable until the resort catalogue entry is corrected.",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  },
+  "Mitterdorf-Almberg": {
+    "reason": "The mapped OpenSkiMap area produces an implausible 284.8 km terrain total. It is unavailable until the area mapping is independently reviewed.",
+    "reviewer": "codex",
+    "reviewed_at": "2026-07-12"
+  }
+}
